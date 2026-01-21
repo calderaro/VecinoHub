@@ -546,3 +546,102 @@ export async function listOpenPollsWithVoteCounts(ctx: ServiceContext) {
     voteCount: counts.get(poll.id) ?? 0,
   }));
 }
+
+export async function getPollsStats(ctx: ServiceContext) {
+  requireAdmin(ctx);
+
+  const activeResult = await db
+    .select({ value: count() })
+    .from(polls)
+    .where(eq(polls.status, "active"));
+
+  const draftResult = await db
+    .select({ value: count() })
+    .from(polls)
+    .where(eq(polls.status, "draft"));
+
+  const closedResult = await db
+    .select({ value: count() })
+    .from(polls)
+    .where(eq(polls.status, "closed"));
+
+  return {
+    active: Number(activeResult[0]?.value ?? 0),
+    drafts: Number(draftResult[0]?.value ?? 0),
+    closed: Number(closedResult[0]?.value ?? 0),
+  };
+}
+
+export async function listDraftPolls(ctx: ServiceContext, limit = 6) {
+  requireAdmin(ctx);
+
+  const rows = await db
+    .select({
+      poll: polls,
+      creatorName: users.name,
+    })
+    .from(polls)
+    .leftJoin(users, eq(polls.createdBy, users.id))
+    .where(eq(polls.status, "draft"))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row.poll,
+    creatorName: row.creatorName,
+  }));
+}
+
+export async function listActivePollsWithParticipation(ctx: ServiceContext) {
+  requireAdmin(ctx);
+
+  const activePolls = await db
+    .select()
+    .from(polls)
+    .where(eq(polls.status, "active"));
+
+  if (activePolls.length === 0) {
+    return [];
+  }
+
+  const activeGroupsResult = await db
+    .select({ value: countDistinct(groupMemberships.groupId) })
+    .from(groupMemberships)
+    .where(eq(groupMemberships.status, "active"));
+  const totalGroups = Number(activeGroupsResult[0]?.value ?? 0);
+
+  const pollIds = activePolls.map((poll) => poll.id);
+
+  const voteStats = await db
+    .select({
+      pollId: votes.pollId,
+      voteCount: count(),
+      groupCount: countDistinct(votes.groupId),
+    })
+    .from(votes)
+    .where(inArray(votes.pollId, pollIds))
+    .groupBy(votes.pollId);
+
+  const statsMap = new Map(
+    voteStats.map((s) => [
+      s.pollId,
+      {
+        voteCount: Number(s.voteCount),
+        groupCount: Number(s.groupCount),
+      },
+    ])
+  );
+
+  return activePolls.map((poll) => {
+    const stats = statsMap.get(poll.id) ?? { voteCount: 0, groupCount: 0 };
+    const participation =
+      totalGroups > 0 ? (stats.groupCount / totalGroups) * 100 : 0;
+
+    return {
+      ...poll,
+      voteCount: stats.voteCount,
+      groupsVoted: stats.groupCount,
+      totalGroups,
+      participation: Math.round(participation),
+    };
+  });
+}

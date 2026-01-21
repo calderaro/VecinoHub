@@ -1,4 +1,4 @@
-import { and, count, countDistinct, eq, ilike, inArray } from "drizzle-orm";
+import { and, count, countDistinct, eq, ilike, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -527,4 +527,111 @@ export async function getCampaignParticipation(
     activeGroups: Number(activeGroupsResult[0]?.value ?? 0),
     contributingGroups: Number(contributingGroupsResult[0]?.value ?? 0),
   };
+}
+
+export async function getFundraisingStats(ctx: ServiceContext) {
+  requireAdmin(ctx);
+
+  const openCampaignsResult = await db
+    .select({ value: count() })
+    .from(fundraisingCampaigns)
+    .where(eq(fundraisingCampaigns.status, "open"));
+
+  const pendingContributionsResult = await db
+    .select({ value: count() })
+    .from(fundraisingContributions)
+    .where(eq(fundraisingContributions.status, "submitted"));
+
+  return {
+    openCampaigns: Number(openCampaignsResult[0]?.value ?? 0),
+    pendingContributions: Number(pendingContributionsResult[0]?.value ?? 0),
+  };
+}
+
+export async function listOpenCampaignsWithProgress(ctx: ServiceContext) {
+  requireAdmin(ctx);
+
+  const openCampaigns = await db
+    .select()
+    .from(fundraisingCampaigns)
+    .where(eq(fundraisingCampaigns.status, "open"));
+
+  if (openCampaigns.length === 0) {
+    return [];
+  }
+
+  const campaignIds = openCampaigns.map((c) => c.id);
+
+  const contributions = await db
+    .select({
+      campaignId: fundraisingContributions.campaignId,
+      totalAmount: sql<string>`COALESCE(SUM(CASE WHEN ${fundraisingContributions.status} = 'confirmed' THEN ${fundraisingContributions.amount}::numeric ELSE 0 END), 0)`,
+      totalCount: count(),
+      pendingCount: sql<number>`SUM(CASE WHEN ${fundraisingContributions.status} = 'submitted' THEN 1 ELSE 0 END)`,
+      confirmedCount: sql<number>`SUM(CASE WHEN ${fundraisingContributions.status} = 'confirmed' THEN 1 ELSE 0 END)`,
+    })
+    .from(fundraisingContributions)
+    .where(inArray(fundraisingContributions.campaignId, campaignIds))
+    .groupBy(fundraisingContributions.campaignId);
+
+  const contributionMap = new Map(
+    contributions.map((c) => [
+      c.campaignId,
+      {
+        totalAmount: Number(c.totalAmount),
+        totalCount: Number(c.totalCount),
+        pendingCount: Number(c.pendingCount),
+        confirmedCount: Number(c.confirmedCount),
+      },
+    ])
+  );
+
+  return openCampaigns.map((campaign) => {
+    const stats = contributionMap.get(campaign.id) ?? {
+      totalAmount: 0,
+      totalCount: 0,
+      pendingCount: 0,
+      confirmedCount: 0,
+    };
+    const goalAmount = Number(campaign.goalAmount);
+    const progress = goalAmount > 0 ? (stats.totalAmount / goalAmount) * 100 : 0;
+
+    return {
+      ...campaign,
+      collectedAmount: stats.totalAmount,
+      contributionCount: stats.totalCount,
+      pendingCount: stats.pendingCount,
+      confirmedCount: stats.confirmedCount,
+      progress: Math.min(progress, 100),
+    };
+  });
+}
+
+export async function listPendingContributions(ctx: ServiceContext, limit = 10) {
+  requireAdmin(ctx);
+
+  const rows = await db
+    .select({
+      contribution: fundraisingContributions,
+      groupName: groups.name,
+      submitterName: users.name,
+      campaignTitle: fundraisingCampaigns.title,
+    })
+    .from(fundraisingContributions)
+    .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
+    .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
+    .innerJoin(
+      fundraisingCampaigns,
+      eq(fundraisingContributions.campaignId, fundraisingCampaigns.id)
+    )
+    .where(eq(fundraisingContributions.status, "submitted"))
+    .orderBy(fundraisingContributions.createdAt)
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row.contribution,
+    groupName: row.groupName,
+    submitterName: row.submitterName,
+    campaignTitle: row.campaignTitle,
+  }));
 }

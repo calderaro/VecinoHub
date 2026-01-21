@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, count, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -208,4 +208,42 @@ export async function removeEvent(
   }
 
   return removed[0];
+}
+
+export async function listUpcomingEvents(ctx: ServiceContext, limit = 6) {
+  requireAdmin(ctx);
+  const now = new Date();
+
+  const rows = await db
+    .select({
+      event: events,
+      creatorName: users.name,
+    })
+    .from(events)
+    .leftJoin(users, eq(events.createdBy, users.id))
+    .where(sql`${events.startsAt} >= ${now}`)
+    .orderBy(events.startsAt)
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row.event,
+    creatorName: row.creatorName,
+  }));
+}
+
+export async function getEventsStats(ctx: ServiceContext) {
+  requireAdmin(ctx);
+  const now = new Date();
+
+  const upcomingResult = await db
+    .select({ value: count() })
+    .from(events)
+    .where(sql`${events.startsAt} >= ${now}`);
+
+  const totalResult = await db.select({ value: count() }).from(events);
+
+  return {
+    upcoming: Number(upcomingResult[0]?.value ?? 0),
+    total: Number(totalResult[0]?.value ?? 0),
+  };
 }

@@ -227,3 +227,61 @@ export async function removePost(
 
   return removed[0];
 }
+
+export async function getPostsStats(ctx: ServiceContext) {
+  requireAdmin(ctx);
+
+  const publishedResult = await db
+    .select({ value: count() })
+    .from(posts)
+    .where(eq(posts.status, "published"));
+
+  const draftResult = await db
+    .select({ value: count() })
+    .from(posts)
+    .where(eq(posts.status, "draft"));
+
+  return {
+    published: Number(publishedResult[0]?.value ?? 0),
+    drafts: Number(draftResult[0]?.value ?? 0),
+  };
+}
+
+export async function listRecentPosts(ctx: ServiceContext, limit = 6) {
+  requireAdmin(ctx);
+
+  const rows = await db
+    .select({
+      post: posts,
+      creatorName: users.name,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.createdBy, users.id))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row.post,
+    creatorName: row.creatorName,
+  }));
+}
+
+export async function listDraftPosts(ctx: ServiceContext, limit = 6) {
+  requireAdmin(ctx);
+
+  const rows = await db
+    .select({
+      post: posts,
+      creatorName: users.name,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.createdBy, users.id))
+    .where(eq(posts.status, "draft"))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row.post,
+    creatorName: row.creatorName,
+  }));
+}
