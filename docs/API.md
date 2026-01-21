@@ -36,15 +36,15 @@
 - `polls.removeOption` (mutation, admin)
 - `polls.vote` (mutation, group member)
 
-### payments
-- `payments.createRequest` (mutation, admin)
-- `payments.updateRequest` (mutation, admin)
-- `payments.closeRequest` (mutation, admin)
-- `payments.submitReport` (mutation, group member)
-- `payments.confirmReport` (mutation, admin)
-- `payments.rejectReport` (mutation, admin)
-- `payments.deleteReport` (mutation, group member/admin)
-- `payments.updateReportStatus` (mutation, admin)
+### fundraising
+- `fundraising.createCampaign` (mutation, admin)
+- `fundraising.updateCampaign` (mutation, admin)
+- `fundraising.closeCampaign` (mutation, admin)
+- `fundraising.submitContribution` (mutation, group member)
+- `fundraising.confirmContribution` (mutation, admin)
+- `fundraising.rejectContribution` (mutation, admin)
+- `fundraising.deleteContribution` (mutation, group member/admin)
+- `fundraising.updateContributionStatus` (mutation, admin)
 
 ### events
 - `events.list` (query)
@@ -67,8 +67,8 @@
 - `groups.addMember`: groupId, email (or userId)
 - `polls.create`: title, description
 - `polls.vote`: pollId, groupId, optionId
-- `payments.createRequest`: title, description, goalAmount, dueDate
-- `payments.submitReport`: paymentRequestId, groupId, method, amount, wireReference?, wireDate?
+- `fundraising.createCampaign`: title, description, goalAmount, dueDate
+- `fundraising.submitContribution`: campaignId, groupId, method, amount, wireReference?, wireDate?
 - `users.updateProfile`: username, image
 - `events.create`: title, startsAt, endsAt?, location?, description?
 - `posts.create`: title, content, status?

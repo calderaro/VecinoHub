@@ -7,7 +7,7 @@
 - CSR: yes
 
 ## Dashboard
-- Summary widgets: groups, polls, open payment requests
+- Summary widgets: groups, polls, active campaigns
 - Summary widgets: upcoming events, latest posts
 - SSR: yes (services)
 
@@ -25,13 +25,13 @@
 - SSR: yes for lists and details
 - CSR: vote form only, option management dialogs
 
-## Payments
-- Payment requests list
-- Report payment (cash or wire transfer) via separate report page
-- Multiple reports per group, per-report amount
-- Admin report status updates + filters
+## Fundraising
+- Campaigns list
+- Submit contribution (cash or wire transfer) via separate contribution page
+- Multiple contributions per group, per-contribution amount
+- Admin contribution status updates + filters
 - SSR: yes for lists and detail
-- CSR: report and confirm actions
+- CSR: contribution and confirm actions
 
 ## Profile
 - Update username and profile photo
@@ -54,6 +54,6 @@
 - Users list, role edits, status
 - Group management
 - Poll management
-- Payment request management
+- Campaign management
 - Events management
 - Posts management

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { trpc } from "@/lib/trpc";
 
-export function PaymentRequestForm() {
+export function CampaignForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -15,7 +15,7 @@ export function PaymentRequestForm() {
   const isValid =
     title.trim().length > 0 && goalAmount.trim().length > 0;
 
-  const createRequest = trpc.payments.createRequest.useMutation({
+  const createCampaign = trpc.fundraising.createCampaign.useMutation({
     onSuccess: () => {
       setTitle("");
       setDescription("");
@@ -36,7 +36,7 @@ export function PaymentRequestForm() {
           setError("Title and goal amount are required.");
           return;
         }
-        createRequest.mutate({
+        createCampaign.mutate({
           title,
           description: description || undefined,
           goalAmount,
@@ -44,7 +44,7 @@ export function PaymentRequestForm() {
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Create payment request</h2>
+      <h2 className="text-lg font-semibold">Create campaign</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-300">
           <span>Title</span>
@@ -93,9 +93,9 @@ export function PaymentRequestForm() {
       <button
         className="mt-4 rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!isValid || createRequest.isLoading}
+        disabled={!isValid || createCampaign.isLoading}
       >
-        {createRequest.isLoading ? "Creating..." : "Create request"}
+        {createCampaign.isLoading ? "Creating..." : "Create campaign"}
       </button>
     </form>
   );

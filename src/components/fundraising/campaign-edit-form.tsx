@@ -5,14 +5,14 @@ import { useState } from "react";
 
 import { trpc } from "@/lib/trpc";
 
-export function PaymentEditForm({
-  paymentRequestId,
+export function CampaignEditForm({
+  campaignId,
   initialTitle,
   initialDescription,
   initialGoalAmount,
   initialStatus,
 }: {
-  paymentRequestId: string;
+  campaignId: string;
   initialTitle: string;
   initialDescription: string | null;
   initialGoalAmount: string;
@@ -27,7 +27,7 @@ export function PaymentEditForm({
   const isValid =
     title.trim().length > 0 && goalAmount.trim().length > 0;
 
-  const updateRequest = trpc.payments.updateRequest.useMutation({
+  const updateCampaign = trpc.fundraising.updateCampaign.useMutation({
     onSuccess: () => router.refresh(),
     onError: (err) => setError(err.message),
   });
@@ -42,8 +42,8 @@ export function PaymentEditForm({
           setError("Title and goal amount are required.");
           return;
         }
-        updateRequest.mutate({
-          paymentRequestId,
+        updateCampaign.mutate({
+          campaignId,
           title,
           description: description || undefined,
           goalAmount,
@@ -51,7 +51,7 @@ export function PaymentEditForm({
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Edit payment request</h2>
+      <h2 className="text-lg font-semibold">Edit campaign</h2>
       <div className="mt-4 space-y-4">
         <label className="space-y-2 text-sm text-slate-300">
           <span>Title</span>
@@ -105,9 +105,9 @@ export function PaymentEditForm({
       <button
         className="mt-4 rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!isValid || updateRequest.isLoading}
+        disabled={!isValid || updateCampaign.isLoading}
       >
-        {updateRequest.isLoading ? "Saving..." : "Save changes"}
+        {updateCampaign.isLoading ? "Saving..." : "Save changes"}
       </button>
     </form>
   );

@@ -4,8 +4,9 @@
 - `role`: `user`, `admin`
 - `membership_status`: `active`, `inactive`
 - `poll_status`: `draft`, `active`, `closed`
-- `payment_method`: `cash`, `wire_transfer`
-- `payment_report_status`: `submitted`, `confirmed`, `rejected`
+- `contribution_method`: `cash`, `wire_transfer`
+- `contribution_status`: `submitted`, `confirmed`, `rejected`
+- `campaign_status`: `open`, `closed`
 - `post_status`: `draft`, `published`
 
 ## users
@@ -62,7 +63,7 @@
 - `created_at`
 - Unique: (`poll_id`, `group_id`)
 
-## payment_requests
+## fundraising_campaigns
 - `id` (pk)
 - `title`
 - `description`
@@ -74,9 +75,9 @@
 - `created_at`
 - `updated_at`
 
-## payment_reports
+## fundraising_contributions
 - `id` (pk)
-- `payment_request_id` (fk -> payment_requests.id)
+- `campaign_id` (fk -> fundraising_campaigns.id)
 - `group_id` (fk -> groups.id)
 - `submitted_by` (fk -> users.id)
 - `method` (cash, wire_transfer)
@@ -89,7 +90,7 @@
 - `created_at`
 - `updated_at`
   
-Note: multiple reports per group are allowed.
+Note: multiple contributions per group are allowed.
 
 ## events
 - `id` (pk)
@@ -119,8 +120,8 @@ Note: multiple reports per group are allowed.
 - `group_memberships.user_id`
 - `votes.poll_id`
 - `votes.group_id`
-- `payment_reports.payment_request_id`
-- `payment_reports.group_id`
+- `fundraising_contributions.campaign_id`
+- `fundraising_contributions.group_id`
 - `events.starts_at`
 - `posts.status`
 - `posts.published_at`

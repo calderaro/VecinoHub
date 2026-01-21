@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
 
-import { PaymentReportForm } from "@/components/payments/payment-report-form";
+import { ContributionForm } from "@/components/fundraising/contribution-form";
 import { listUserGroups } from "@/services/groups";
-import { getPaymentRequestDetail } from "@/services/payments";
+import { getCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
-export default async function AdminPaymentReportPage({
+export default async function AdminContributionPage({
   params,
 }: {
-  params: { paymentRequestId: string } | Promise<{ paymentRequestId: string }>;
+  params: { campaignId: string } | Promise<{ campaignId: string }>;
 }) {
   const session = await getSession();
 
@@ -22,12 +22,12 @@ export default async function AdminPaymentReportPage({
 
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
-  const request = await getPaymentRequestDetail(serviceContext, {
-    paymentRequestId: resolvedParams.paymentRequestId,
+  const campaign = await getCampaignDetail(serviceContext, {
+    campaignId: resolvedParams.campaignId,
   });
 
-  if (request.status !== "open") {
-    redirect(`/admin/payments/${request.id}`);
+  if (campaign.status !== "open") {
+    redirect(`/admin/fundraising/${campaign.id}`);
   }
 
   const groups = await listUserGroups(serviceContext);
@@ -35,17 +35,17 @@ export default async function AdminPaymentReportPage({
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Report payment</h1>
-        <p className="text-sm text-slate-400">{request.title}</p>
+        <h1 className="text-3xl font-semibold">Submit contribution</h1>
+        <p className="text-sm text-slate-400">{campaign.title}</p>
         <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
-          <span>Per group: ${request.amount}</span>
-          <span>Goal: ${request.goalAmount}</span>
+          <span>Per group: ${campaign.amount}</span>
+          <span>Goal: ${campaign.goalAmount}</span>
         </div>
       </header>
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <PaymentReportForm
-          paymentRequestId={request.id}
+        <ContributionForm
+          campaignId={campaign.id}
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}
         />
       </section>

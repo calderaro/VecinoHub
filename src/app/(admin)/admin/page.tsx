@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { listAllGroups } from "@/services/groups";
-import { listOpenPaymentsWithReportCounts } from "@/services/payments";
+import { listOpenCampaignsWithContributionCounts } from "@/services/fundraising";
 import { listOpenPollsWithVoteCounts } from "@/services/polls";
 import { listUsers } from "@/services/users";
 import { getSession } from "@/server/auth";
@@ -19,11 +19,11 @@ export default async function AdminPage() {
   }
 
   const serviceContext = { user: session.user };
-  const [users, groups, openPolls, openPayments] = await Promise.all([
+  const [users, groups, openPolls, openCampaigns] = await Promise.all([
     listUsers(serviceContext),
     listAllGroups(serviceContext),
     listOpenPollsWithVoteCounts(serviceContext),
-    listOpenPaymentsWithReportCounts(serviceContext),
+    listOpenCampaignsWithContributionCounts(serviceContext),
   ]);
 
   return (
@@ -31,7 +31,7 @@ export default async function AdminPage() {
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold">Admin control room</h1>
         <p className="text-sm text-slate-400">
-          High-level overview of users, groups, polls, and payments.
+          High-level overview of users, groups, polls, and fundraising.
         </p>
       </header>
 
@@ -40,7 +40,7 @@ export default async function AdminPage() {
               { label: "Users", value: users.length },
               { label: "Groups", value: groups.length },
               { label: "Open Polls", value: openPolls.length },
-              { label: "Open Payments", value: openPayments.length },
+              { label: "Active Campaigns", value: openCampaigns.length },
             ].map((item) => (
             <div
               key={item.label}
@@ -80,22 +80,22 @@ export default async function AdminPage() {
             </ul>
           </div>
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <h2 className="text-lg font-semibold">Open payment requests</h2>
+            <h2 className="text-lg font-semibold">Active campaigns</h2>
             <ul className="mt-4 space-y-3 text-sm text-slate-300">
-              {openPayments.length === 0 ? (
-                <li className="text-slate-500">No open requests.</li>
+              {openCampaigns.length === 0 ? (
+                <li className="text-slate-500">No active campaigns.</li>
               ) : (
-                openPayments.slice(0, 6).map((payment) => (
+                openCampaigns.slice(0, 6).map((campaign) => (
                   <li
-                    key={payment.id}
+                    key={campaign.id}
                     className="rounded-lg border border-slate-800/80 px-3 py-2"
                   >
-                    <Link href={`/admin/payments/${payment.id}`}>
+                    <Link href={`/admin/fundraising/${campaign.id}`}>
                       <p className="font-medium text-slate-200">
-                        {payment.title}
+                        {campaign.title}
                       </p>
                       <p className="text-xs text-slate-500">
-                        Reports: {payment.reportCount}
+                        Contributions: {campaign.contributionCount}
                       </p>
                     </Link>
                   </li>

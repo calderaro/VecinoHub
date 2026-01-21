@@ -17,13 +17,13 @@ export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const userStatusEnum = pgEnum("user_status", ["active", "inactive"]);
 export const membershipStatusEnum = pgEnum("membership_status", ["active", "inactive"]);
 export const pollStatusEnum = pgEnum("poll_status", ["draft", "active", "closed"]);
-export const paymentMethodEnum = pgEnum("payment_method", ["cash", "wire_transfer"]);
-export const paymentReportStatusEnum = pgEnum("payment_report_status", [
+export const contributionMethodEnum = pgEnum("contribution_method", ["cash", "wire_transfer"]);
+export const contributionStatusEnum = pgEnum("contribution_status", [
   "submitted",
   "confirmed",
   "rejected",
 ]);
-export const paymentRequestStatusEnum = pgEnum("payment_request_status", [
+export const campaignStatusEnum = pgEnum("campaign_status", [
   "open",
   "closed",
 ]);
@@ -204,14 +204,14 @@ export const votes = pgTable(
   ]
 );
 
-export const paymentRequests = pgTable("payment_requests", {
+export const fundraisingCampaigns = pgTable("fundraising_campaigns", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   goalAmount: numeric("goal_amount", { precision: 12, scale: 2 }).notNull(),
   dueDate: date("due_date"),
-  status: paymentRequestStatusEnum("status").notNull().default("open"),
+  status: campaignStatusEnum("status").notNull().default("open"),
   createdBy: uuid("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -221,19 +221,19 @@ export const paymentRequests = pgTable("payment_requests", {
     .defaultNow(),
 });
 
-export const paymentReports = pgTable(
-  "payment_reports",
+export const fundraisingContributions = pgTable(
+  "fundraising_contributions",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    paymentRequestId: uuid("payment_request_id").notNull(),
+    campaignId: uuid("campaign_id").notNull(),
     groupId: uuid("group_id").notNull(),
     submittedBy: uuid("submitted_by").notNull(),
-    method: paymentMethodEnum("method").notNull(),
+    method: contributionMethodEnum("method").notNull(),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
     wireReference: text("wire_reference"),
     wireDate: date("wire_date"),
     wireAmount: numeric("wire_amount", { precision: 12, scale: 2 }),
-    status: paymentReportStatusEnum("status").notNull().default("submitted"),
+    status: contributionStatusEnum("status").notNull().default("submitted"),
     confirmedBy: uuid("confirmed_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -243,8 +243,8 @@ export const paymentReports = pgTable(
       .defaultNow(),
   },
   (table) => [
-    index("payment_reports_request_id_idx").on(table.paymentRequestId),
-    index("payment_reports_group_id_idx").on(table.groupId),
+    index("fundraising_contributions_campaign_id_idx").on(table.campaignId),
+    index("fundraising_contributions_group_id_idx").on(table.groupId),
   ]
 );
 

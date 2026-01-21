@@ -4,23 +4,23 @@ import { useRouter } from "next/navigation";
 
 import { trpc } from "@/lib/trpc";
 
-type Report = {
+type Contribution = {
   id: string;
   status: "submitted" | "confirmed" | "rejected";
   method: "cash" | "wire_transfer";
 };
 
-export function PaymentAdminActions({ report }: { report: Report }) {
+export function FundraisingAdminActions({ contribution }: { contribution: Contribution }) {
   const router = useRouter();
 
-  const confirmReport = trpc.payments.confirmReport.useMutation({
+  const confirmContribution = trpc.fundraising.confirmContribution.useMutation({
     onSuccess: () => router.refresh(),
   });
-  const rejectReport = trpc.payments.rejectReport.useMutation({
+  const rejectContribution = trpc.fundraising.rejectContribution.useMutation({
     onSuccess: () => router.refresh(),
   });
 
-  if (report.status !== "submitted") {
+  if (contribution.status !== "submitted") {
     return null;
   }
 
@@ -29,18 +29,18 @@ export function PaymentAdminActions({ report }: { report: Report }) {
       <button
         className="rounded-full border border-emerald-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
-        onClick={() => confirmReport.mutate({ reportId: report.id })}
-        disabled={confirmReport.isLoading}
+        onClick={() => confirmContribution.mutate({ contributionId: contribution.id })}
+        disabled={confirmContribution.isLoading}
       >
-        {confirmReport.isLoading ? "Confirming" : "Confirm"}
+        {confirmContribution.isLoading ? "Confirming" : "Confirm"}
       </button>
       <button
         className="rounded-full border border-rose-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-rose-200 hover:bg-rose-400/10 disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
-        onClick={() => rejectReport.mutate({ reportId: report.id })}
-        disabled={rejectReport.isLoading}
+        onClick={() => rejectContribution.mutate({ contributionId: contribution.id })}
+        disabled={rejectContribution.isLoading}
       >
-        {rejectReport.isLoading ? "Rejecting" : "Reject"}
+        {rejectContribution.isLoading ? "Rejecting" : "Reject"}
       </button>
     </div>
   );

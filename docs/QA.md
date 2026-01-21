@@ -16,11 +16,11 @@
 - Group member votes once per group
 - Admin sees results summary
 
-## Payments
-- Admin creates payment request
-- User submits cash payment report
-- User submits wire transfer report (reference, date, amount required)
-- Admin confirms payment report
+## Fundraising
+- Admin creates campaign
+- User submits cash contribution
+- User submits wire transfer contribution (reference, date, amount required)
+- Admin confirms contribution
 - User sees updated status
 
 ## Access Control

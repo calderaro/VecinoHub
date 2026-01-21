@@ -13,8 +13,8 @@
 - View their groups and members
 - View polls
 - Vote on polls for their groups (neighbor UI only)
-- View payment requests
-- Submit and delete payment reports for their groups (while request is open)
+- View fundraising campaigns
+- Submit and delete contributions for their groups (while campaign is open)
 - Update own profile (username, photo)
 - View events
 - View published posts
@@ -28,8 +28,8 @@
 - Create/edit/close/re-open/reset polls
 - Launch polls (draft -> active)
 - Manage poll options (draft only)
-- Create/edit/close payment requests
-- Update payment report status
+- Create/edit/close fundraising campaigns
+- Update contribution status
 - Create/edit/delete events
 - Create/edit/publish/unpublish posts
 

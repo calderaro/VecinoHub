@@ -57,6 +57,13 @@
       "when": 1769018470595,
       "tag": "0007_clumsy_unicorn",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769100000000,
+      "tag": "0008_rename_payment_to_fundraising",
+      "breakpoints": true
     }
   ]
 }

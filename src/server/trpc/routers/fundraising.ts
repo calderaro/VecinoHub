@@ -1,29 +1,29 @@
 import { z } from "zod";
 
 import {
-  closePaymentRequest,
-  confirmPaymentReport,
-  createPaymentRequest,
-  deletePaymentReport,
-  listPaymentRequests,
-  rejectPaymentReport,
-  submitPaymentReport,
-  updatePaymentReportStatus,
-  updatePaymentRequest,
-} from "@/services/payments";
+  closeCampaign,
+  confirmContribution,
+  createCampaign,
+  deleteContribution,
+  listCampaigns,
+  rejectContribution,
+  submitContribution,
+  updateContributionStatus,
+  updateCampaign,
+} from "@/services/fundraising";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getServiceContext, handleServiceError } from "../service";
 
-export const paymentsRouter = createTRPCRouter({
+export const fundraisingRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
     try {
-      return await listPaymentRequests(getServiceContext(ctx));
+      return await listCampaigns(getServiceContext(ctx));
     } catch (error) {
       handleServiceError(error);
     }
   }),
-  createRequest: protectedProcedure
+  createCampaign: protectedProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -34,15 +34,15 @@ export const paymentsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await createPaymentRequest(getServiceContext(ctx), input);
+        return await createCampaign(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  updateRequest: protectedProcedure
+  updateCampaign: protectedProcedure
     .input(
       z.object({
-        paymentRequestId: z.string().uuid(),
+        campaignId: z.string().uuid(),
         title: z.string().min(1).optional(),
         description: z.string().optional(),
         goalAmount: z.string().min(1).optional(),
@@ -52,24 +52,24 @@ export const paymentsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await updatePaymentRequest(getServiceContext(ctx), input);
+        return await updateCampaign(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  closeRequest: protectedProcedure
-    .input(z.object({ paymentRequestId: z.string().uuid() }))
+  closeCampaign: protectedProcedure
+    .input(z.object({ campaignId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        return await closePaymentRequest(getServiceContext(ctx), input);
+        return await closeCampaign(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  submitReport: protectedProcedure
+  submitContribution: protectedProcedure
     .input(
       z.object({
-        paymentRequestId: z.string().uuid(),
+        campaignId: z.string().uuid(),
         groupId: z.string().uuid(),
         method: z.enum(["cash", "wire_transfer"]),
         amount: z.string().min(1),
@@ -80,48 +80,48 @@ export const paymentsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await submitPaymentReport(getServiceContext(ctx), input);
+        return await submitContribution(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  deleteReport: protectedProcedure
-    .input(z.object({ reportId: z.string().uuid() }))
+  deleteContribution: protectedProcedure
+    .input(z.object({ contributionId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        return await deletePaymentReport(getServiceContext(ctx), input);
+        return await deleteContribution(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  updateReportStatus: protectedProcedure
+  updateContributionStatus: protectedProcedure
     .input(
       z.object({
-        reportId: z.string().uuid(),
+        contributionId: z.string().uuid(),
         status: z.enum(["submitted", "confirmed", "rejected"]),
       })
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await updatePaymentReportStatus(getServiceContext(ctx), input);
+        return await updateContributionStatus(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  confirmReport: protectedProcedure
-    .input(z.object({ reportId: z.string().uuid() }))
+  confirmContribution: protectedProcedure
+    .input(z.object({ contributionId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        return await confirmPaymentReport(getServiceContext(ctx), input);
+        return await confirmContribution(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
     }),
-  rejectReport: protectedProcedure
-    .input(z.object({ reportId: z.string().uuid() }))
+  rejectContribution: protectedProcedure
+    .input(z.object({ contributionId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        return await rejectPaymentReport(getServiceContext(ctx), input);
+        return await rejectContribution(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

@@ -50,8 +50,8 @@ export default async function AdminLayout({
             <Link className="hover:text-emerald-200" href="/admin/polls">
               Polls
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/payments">
-              Payments
+            <Link className="hover:text-emerald-200" href="/admin/fundraising">
+              Fundraising
             </Link>
             <Link className="hover:text-emerald-200" href="/admin/events">
               Events

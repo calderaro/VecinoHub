@@ -48,7 +48,7 @@ Source of truth: `docs/ARCHITECTURE.md` and `docs/RULES.md`.
 - `src/app/`: Next.js routes and pages.
 - `src/app/api/`: API entrypoints (tRPC + auth routes).
 - `src/server/trpc/`: tRPC router, context, middleware.
-- `src/services/`: domain services (users, groups, polls, payments).
+- `src/services/`: domain services (users, groups, polls, fundraising).
 - `src/db/`: Drizzle config and schema.
 - `src/lib/`: shared helpers/utilities.
 - `drizzle/`: migrations and drizzle metadata.

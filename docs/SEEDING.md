@@ -6,8 +6,8 @@
 - 2 groups (houses)
 - Assign group admins and memberships
 - 1 poll with 2 options
-- 1 payment request
-- 1 submitted payment report (wire transfer)
+- 1 fundraising campaign
+- 1 submitted contribution (wire transfer)
 - 1 event
 - 1 post
 

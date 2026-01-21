@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { PaymentRequestForm } from "@/components/payments/payment-request-form";
+import { CampaignForm } from "@/components/fundraising/campaign-form";
 import { getSession } from "@/server/auth";
 
-export default async function NewPaymentRequestPage() {
+export default async function NewCampaignPage() {
   const session = await getSession();
 
   if (!session) {
@@ -11,19 +11,19 @@ export default async function NewPaymentRequestPage() {
   }
 
   if (session.user.role !== "admin") {
-    redirect("/admin/payments");
+    redirect("/admin/fundraising");
   }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Create payment request</h1>
+        <h1 className="text-3xl font-semibold">Create campaign</h1>
         <p className="text-sm text-slate-400">
           Request neighborhood contributions.
         </p>
       </header>
 
-      <PaymentRequestForm />
+      <CampaignForm />
     </div>
   );
 }

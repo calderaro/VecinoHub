@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { listEventsPaged } from "@/services/events";
-import { listPaymentRequestsPaged } from "@/services/payments";
+import { listCampaignsPaged } from "@/services/fundraising";
 import { listPollsPaged } from "@/services/polls";
 import { listPostsPaged } from "@/services/posts";
 import { getGroupById, listGroupMembers } from "@/services/groups";
@@ -39,7 +39,7 @@ export default async function DashboardPage({
     limit: 5,
     offset: 0,
   });
-  const payments = await listPaymentRequestsPaged(serviceContext, {
+  const campaigns = await listCampaignsPaged(serviceContext, {
     status: "open",
     limit: 5,
     offset: 0,
@@ -250,54 +250,52 @@ export default async function DashboardPage({
         )}
       </section>
 
-      {/* Payments Section */}
+      {/* Fundraising Section */}
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Open Payments</h2>
+            <h2 className="text-lg font-semibold text-slate-100">Active Campaigns</h2>
             <p className="text-sm text-slate-400">
-              {payments.total} open request{payments.total !== 1 ? "s" : ""}
+              {campaigns.total} open campaign{campaigns.total !== 1 ? "s" : ""}
             </p>
           </div>
           <Link
-            href={`/dashboard/${resolvedParams.groupId}/payments`}
+            href={`/dashboard/${resolvedParams.groupId}/fundraising`}
             className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
           >
-            View all payments
+            View all campaigns
           </Link>
         </div>
 
-        {payments.items.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No open payment requests.</p>
+        {campaigns.items.length === 0 ? (
+          <p className="mt-6 text-sm text-slate-400">No active campaigns.</p>
         ) : (
           <ul className="mt-6 divide-y divide-slate-800">
-            {payments.items.map((payment) => (
-              <li key={payment.id} className="py-4 first:pt-0 last:pb-0">
+            {campaigns.items.map((campaign) => (
+              <li key={campaign.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
-                  href={`/dashboard/${resolvedParams.groupId}/payments/${payment.id}`}
+                  href={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`}
                   className="group flex items-start justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-100 group-hover:text-emerald-300 transition">
-                      {payment.title}
+                      {campaign.title}
                     </p>
                     <p className="mt-1 text-sm text-slate-400">
                       <span className="text-emerald-300 font-medium">
-                        ${Number(payment.amount).toFixed(2)}
+                        Goal: ${Number(campaign.goalAmount).toLocaleString()}
                       </span>
-                      <span className="ml-1 text-slate-500">per group</span>
-                      {payment.dueDate && (
-                        <span className="ml-2 text-slate-500">
-                          &bull; Due {new Intl.DateTimeFormat("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          }).format(new Date(payment.dueDate))}
-                        </span>
-                      )}
+                      <span className="ml-2 text-slate-500">
+                        (${Number(campaign.amount).toLocaleString()} per group)
+                      </span>
                     </p>
-                    {payment.creatorName && (
+                    {campaign.dueDate && (
                       <p className="mt-1 text-xs text-slate-500">
-                        by {payment.creatorName}
+                        Due {new Intl.DateTimeFormat("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }).format(new Date(campaign.dueDate))}
                       </p>
                     )}
                   </div>

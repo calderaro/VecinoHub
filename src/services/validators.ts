@@ -3,7 +3,7 @@ import { z } from "zod";
 export const idSchema = z.string().uuid();
 export const roleSchema = z.enum(["user", "admin"]);
 export const statusSchema = z.enum(["active", "inactive"]);
-export const paymentMethodSchema = z.enum(["cash", "wire_transfer"]);
+export const contributionMethodSchema = z.enum(["cash", "wire_transfer"]);
 export const usernameSchema = z
   .string()
   .trim()

@@ -10,12 +10,12 @@ type GroupOption = {
   name: string;
 };
 
-export function PaymentReportForm({
-  paymentRequestId,
+export function ContributionForm({
+  campaignId,
   groups,
   initialGroupId,
 }: {
-  paymentRequestId: string;
+  campaignId: string;
   groups: GroupOption[];
   initialGroupId?: string;
 }) {
@@ -33,7 +33,7 @@ export function PaymentReportForm({
     method === "cash" ||
     (wireReference.trim().length > 0 && wireDate.trim().length > 0);
 
-  const submitReport = trpc.payments.submitReport.useMutation({
+  const submitContribution = trpc.fundraising.submitContribution.useMutation({
     onSuccess: () => {
       setAmount("");
       setWireReference("");
@@ -58,15 +58,15 @@ export function PaymentReportForm({
         event.preventDefault();
         setError(null);
         if (!amountReady) {
-          setError("Payment amount is required.");
+          setError("Contribution amount is required.");
           return;
         }
         if (!wireReady) {
           setError("Wire transfer details are required.");
           return;
         }
-        submitReport.mutate({
-          paymentRequestId,
+        submitContribution.mutate({
+          campaignId,
           groupId,
           method,
           amount,
@@ -149,9 +149,9 @@ export function PaymentReportForm({
       <button
         className="w-full rounded-lg bg-emerald-400 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!amountReady || !wireReady || submitReport.isLoading}
+        disabled={!amountReady || !wireReady || submitContribution.isLoading}
       >
-        {submitReport.isLoading ? "Submitting" : "Report payment"}
+        {submitContribution.isLoading ? "Submitting" : "Submit contribution"}
       </button>
     </form>
   );

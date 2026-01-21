@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { listPaymentRequestsPaged } from "@/services/payments";
+import { listCampaignsPaged } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -13,7 +13,7 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-export default async function PaymentsPage({
+export default async function FundraisingPage({
   searchParams,
 }: {
   searchParams?:
@@ -42,7 +42,7 @@ export default async function PaymentsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: requests, total } = await listPaymentRequestsPaged(
+  const { items: campaigns, total } = await listCampaignsPaged(
     { user: session.user },
     {
       query: query || undefined,
@@ -58,17 +58,17 @@ export default async function PaymentsPage({
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-semibold">Payments</h1>
+          <h1 className="text-3xl font-semibold">Fundraising</h1>
           <p className="text-sm text-slate-400">
-            Report payments and track confirmations.
+            Manage campaigns and track contributions.
           </p>
         </div>
         {session.user.role === "admin" ? (
           <Link
             className="rounded-full border border-emerald-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200"
-            href="/admin/payments/new"
+            href="/admin/fundraising/new"
           >
-            Add request
+            Add campaign
           </Link>
         ) : null}
       </header>
@@ -77,7 +77,7 @@ export default async function PaymentsPage({
         <input
           className="min-w-[220px] flex-1 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
           name="q"
-          placeholder="Search requests"
+          placeholder="Search campaigns"
           defaultValue={query}
         />
         <select
@@ -98,8 +98,8 @@ export default async function PaymentsPage({
       </form>
 
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        {requests.length === 0 ? (
-          <p className="text-sm text-slate-400">No payment requests found.</p>
+        {campaigns.length === 0 ? (
+          <p className="text-sm text-slate-400">No campaigns found.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -107,22 +107,46 @@ export default async function PaymentsPage({
                 <tr>
                   <th className="py-2">Title</th>
                   <th className="py-2">Status</th>
-                  <th className="py-2">Amount</th>
+                  <th className="py-2">Goal</th>
+                  <th className="py-2">Per Group</th>
+                  <th className="py-2">Due Date</th>
                   <th className="py-2 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="text-slate-200">
-                {requests.map((request) => (
-                  <tr key={request.id} className="border-t border-slate-800/80">
-                    <td className="py-3 font-medium">{request.title}</td>
-                    <td className="py-3 text-slate-400 capitalize">
-                      {request.status}
+                {campaigns.map((campaign) => (
+                  <tr key={campaign.id} className="border-t border-slate-800/80">
+                    <td className="py-3 font-medium">{campaign.title}</td>
+                    <td className="py-3">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                          campaign.status === "open"
+                            ? "bg-emerald-900/50 text-emerald-300"
+                            : "bg-slate-700/50 text-slate-400"
+                        }`}
+                      >
+                        {campaign.status}
+                      </span>
                     </td>
-                    <td className="py-3 text-slate-400">${request.amount}</td>
+                    <td className="py-3 text-emerald-300 font-medium">
+                      ${Number(campaign.goalAmount).toLocaleString()}
+                    </td>
+                    <td className="py-3 text-slate-400">
+                      ${Number(campaign.amount).toLocaleString()}
+                    </td>
+                    <td className="py-3 text-slate-400">
+                      {campaign.dueDate
+                        ? new Intl.DateTimeFormat("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }).format(new Date(campaign.dueDate))
+                        : "—"}
+                    </td>
                     <td className="py-3 text-right">
                       <Link
                         className="text-xs uppercase tracking-[0.2em] text-emerald-200 hover:text-emerald-100"
-                        href={`/admin/payments/${request.id}`}
+                        href={`/admin/fundraising/${campaign.id}`}
                       >
                         View
                       </Link>
@@ -143,7 +167,7 @@ export default async function PaymentsPage({
           {page > 1 ? (
             <Link
               className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
-              href={`/admin/payments${buildQuery({ q: query || undefined, status: status || undefined, page: String(page - 1) })}`}
+              href={`/admin/fundraising${buildQuery({ q: query || undefined, status: status || undefined, page: String(page - 1) })}`}
             >
               Prev
             </Link>
@@ -151,7 +175,7 @@ export default async function PaymentsPage({
           {page < totalPages ? (
             <Link
               className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
-              href={`/admin/payments${buildQuery({ q: query || undefined, status: status || undefined, page: String(page + 1) })}`}
+              href={`/admin/fundraising${buildQuery({ q: query || undefined, status: status || undefined, page: String(page + 1) })}`}
             >
               Next
             </Link>

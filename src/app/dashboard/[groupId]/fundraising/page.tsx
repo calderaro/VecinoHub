@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { listPaymentRequestsPaged } from "@/services/payments";
+import { listCampaignsPaged } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -13,7 +13,7 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-export default async function NeighborPaymentsPage({
+export default async function NeighborFundraisingPage({
   params,
   searchParams,
 }: {
@@ -41,7 +41,7 @@ export default async function NeighborPaymentsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: requests, total } = await listPaymentRequestsPaged(
+  const { items: campaigns, total } = await listCampaignsPaged(
     { user: session.user },
     {
       query: query || undefined,
@@ -56,9 +56,9 @@ export default async function NeighborPaymentsPage({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Payments</h1>
+        <h1 className="text-3xl font-semibold">Fundraising</h1>
         <p className="text-sm text-slate-400">
-          Pending payment requests.
+          Active campaigns.
         </p>
       </header>
 
@@ -66,7 +66,7 @@ export default async function NeighborPaymentsPage({
         <input
           className="min-w-[220px] flex-1 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
           name="q"
-          placeholder="Search requests"
+          placeholder="Search campaigns"
           defaultValue={query}
         />
         <button
@@ -78,31 +78,43 @@ export default async function NeighborPaymentsPage({
       </form>
 
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        {requests.length === 0 ? (
-          <p className="text-sm text-slate-400">No open requests found.</p>
+        {campaigns.length === 0 ? (
+          <p className="text-sm text-slate-400">No active campaigns found.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.2em] text-slate-500">
                 <tr>
                   <th className="py-2">Title</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2">Amount</th>
+                  <th className="py-2">Goal</th>
+                  <th className="py-2">Your Group</th>
+                  <th className="py-2">Due Date</th>
                   <th className="py-2 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="text-slate-200">
-                {requests.map((request) => (
-                  <tr key={request.id} className="border-t border-slate-800/80">
-                    <td className="py-3 font-medium">{request.title}</td>
-                    <td className="py-3 text-slate-400 capitalize">
-                      {request.status}
+                {campaigns.map((campaign) => (
+                  <tr key={campaign.id} className="border-t border-slate-800/80">
+                    <td className="py-3 font-medium">{campaign.title}</td>
+                    <td className="py-3 text-emerald-300 font-medium">
+                      ${Number(campaign.goalAmount).toLocaleString()}
                     </td>
-                    <td className="py-3 text-slate-400">${request.amount}</td>
+                    <td className="py-3 text-slate-400">
+                      ${Number(campaign.amount).toLocaleString()}
+                    </td>
+                    <td className="py-3 text-slate-400">
+                      {campaign.dueDate
+                        ? new Intl.DateTimeFormat("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }).format(new Date(campaign.dueDate))
+                        : "—"}
+                    </td>
                     <td className="py-3 text-right">
                       <Link
                         className="text-xs uppercase tracking-[0.2em] text-emerald-200 hover:text-emerald-100"
-                        href={`/dashboard/${resolvedParams.groupId}/payments/${request.id}`}
+                        href={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`}
                       >
                         View
                       </Link>
@@ -123,7 +135,7 @@ export default async function NeighborPaymentsPage({
           {page > 1 ? (
             <Link
               className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
-              href={`/dashboard/${resolvedParams.groupId}/payments${buildQuery({ q: query || undefined, page: String(page - 1) })}`}
+              href={`/dashboard/${resolvedParams.groupId}/fundraising${buildQuery({ q: query || undefined, page: String(page - 1) })}`}
             >
               Prev
             </Link>
@@ -131,7 +143,7 @@ export default async function NeighborPaymentsPage({
           {page < totalPages ? (
             <Link
               className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
-              href={`/dashboard/${resolvedParams.groupId}/payments${buildQuery({ q: query || undefined, page: String(page + 1) })}`}
+              href={`/dashboard/${resolvedParams.groupId}/fundraising${buildQuery({ q: query || undefined, page: String(page + 1) })}`}
             >
               Next
             </Link>

@@ -7,8 +7,8 @@ import {
   groups,
   events,
   posts,
-  paymentReports,
-  paymentRequests,
+  fundraisingContributions,
+  fundraisingCampaigns,
   pollOptions,
   polls,
   users,
@@ -111,7 +111,7 @@ async function main() {
 
   const existingGroups = await db.select().from(groups).limit(1);
   if (existingGroups.length > 0) {
-    console.log("Groups already exist, skipping group/poll/payment seed.");
+    console.log("Groups already exist, skipping group/poll/fundraising seed.");
     return;
   }
 
@@ -168,33 +168,33 @@ async function main() {
     },
   ]);
 
-  const [paymentRequest] = await db
-    .insert(paymentRequests)
+  const [campaign] = await db
+    .insert(fundraisingCampaigns)
     .values({
       title: "Pago de seguridad",
       description: "Pago mensual de guardia",
       amount: "150.00",
       goalAmount: "300.00",
       status: "open",
-      dueDate: new Date(),
+      dueDate: new Date().toISOString().split("T")[0],
       createdBy: admin.id,
     })
     .returning();
 
-  await db.insert(paymentReports).values([
+  await db.insert(fundraisingContributions).values([
     {
-      paymentRequestId: paymentRequest.id,
+      campaignId: campaign.id,
       groupId: casa101.id,
       submittedBy: ana.id,
       method: "wire_transfer",
       amount: "150.00",
       wireReference: "TRX-0001",
-      wireDate: new Date(),
+      wireDate: new Date().toISOString().split("T")[0],
       wireAmount: "150.00",
       status: "submitted",
     },
     {
-      paymentRequestId: paymentRequest.id,
+      campaignId: campaign.id,
       groupId: casa202.id,
       submittedBy: luis.id,
       method: "cash",

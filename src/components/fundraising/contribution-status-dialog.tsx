@@ -5,29 +5,29 @@ import { useEffect, useState } from "react";
 
 import { trpc } from "@/lib/trpc";
 
-type Report = {
+type Contribution = {
   id: string;
   status: "submitted" | "confirmed" | "rejected";
 };
 
-export function PaymentReportStatusDialog({
-  report,
+export function ContributionStatusDialog({
+  contribution,
   canEdit,
 }: {
-  report: Report;
+  contribution: Contribution;
   canEdit: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState(report.status);
+  const [status, setStatus] = useState(contribution.status);
 
   useEffect(() => {
     if (open) {
-      setStatus(report.status);
+      setStatus(contribution.status);
     }
-  }, [open, report.status]);
+  }, [open, contribution.status]);
 
-  const updateStatus = trpc.payments.updateReportStatus.useMutation({
+  const updateStatus = trpc.fundraising.updateContributionStatus.useMutation({
     onSuccess: () => {
       setOpen(false);
       router.refresh();
@@ -49,10 +49,10 @@ export function PaymentReportStatusDialog({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-slate-100">
-              Update payment report
+              Update contribution
             </h3>
             <p className="mt-1 text-sm text-slate-400">
-              Choose the new status for this report.
+              Choose the new status for this contribution.
             </p>
 
             <label className="mt-4 block space-y-2 text-xs uppercase tracking-[0.2em] text-slate-500">
@@ -61,7 +61,7 @@ export function PaymentReportStatusDialog({
                 className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
                 value={status}
                 onChange={(event) =>
-                  setStatus(event.target.value as Report["status"])
+                  setStatus(event.target.value as Contribution["status"])
                 }
               >
                 <option value="submitted">Submitted</option>
@@ -83,7 +83,7 @@ export function PaymentReportStatusDialog({
                 className="rounded-full border border-emerald-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() =>
-                  updateStatus.mutate({ reportId: report.id, status })
+                  updateStatus.mutate({ contributionId: contribution.id, status })
                 }
                 disabled={updateStatus.isLoading}
               >

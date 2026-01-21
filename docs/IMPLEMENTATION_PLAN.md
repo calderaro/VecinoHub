@@ -32,9 +32,9 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Add user profile fields (username, image) and unique username constraint.
 
 ## 3) Core Domain Schema (Drizzle)
-- [x] Create tables: groups (houses), memberships, polls, poll_options, votes, payment_requests, payment_reports.
+- [x] Create tables: groups (houses), memberships, polls, poll_options, votes, fundraising_campaigns, fundraising_contributions.
 - [x] Add constraints and indexes (unique vote per group per poll, unique membership per user per group).
-- [x] Add enum for payment method (cash, wire_transfer) and report status (submitted, confirmed, rejected).
+- [x] Add enum for contribution method (cash, wire_transfer) and contribution status (submitted, confirmed, rejected).
 - [ ] Add foreign keys and timestamps.
 - [x] Create initial migration and apply to local database.
 - [x] Keep schema aligned with `docs/DATA_MODEL.md`.
@@ -48,7 +48,7 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Keep routers aligned with `docs/API.md` and update docs on changes.
 
 ## 4.1) Services Layer Foundation
-- [x] Create `src/services/` with domain modules (auth, groups, polls, payments, users).
+- [x] Create `src/services/` with domain modules (auth, groups, polls, fundraising, users).
 - [x] Define service patterns: input validation, DB access, and business logic in services only.
 - [x] Add service helpers for pagination, filters, and shared errors.
 
@@ -74,23 +74,23 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Admin: view results summary + participation.
 - [x] Pages: use services directly for SSR read-only poll data.
 
-## 8) Payment Requests & Reports
-- [x] Admin: create/edit/close payment requests.
-- [x] Admin: goal-based requests (per-group amount derived from active groups).
-- [x] User: submit payment report (cash or wire transfer).
+## 8) Fundraising Campaigns & Contributions
+- [x] Admin: create/edit/close campaigns.
+- [x] Admin: goal-based campaigns (per-group amount derived from active groups).
+- [x] User: submit contribution (cash or wire transfer).
 - [x] User: for wire transfer, require reference number and date.
-- [x] User: can submit multiple reports per request and delete while open.
-- [x] Admin: update payment report status (confirm/reject/edit).
-- [ ] User: view report status history.
-- [x] Pages: use services directly for SSR read-only payment data.
+- [x] User: can submit multiple contributions per campaign and delete while open.
+- [x] Admin: update contribution status (confirm/reject/edit).
+- [ ] User: view contribution status history.
+- [x] Pages: use services directly for SSR read-only fundraising data.
 
 ## 9) UI/UX Pages
 - [x] Auth pages (login, register).
 - [x] Dashboard with role-based widgets.
 - [x] Groups page (list + detail + membership management).
 - [x] Polls page (list + detail + vote form + results).
-- [x] Payments page (requests + submit report + admin confirmations).
-- [x] Admin panel (users, groups, polls, payments).
+- [x] Fundraising page (campaigns + submit contribution + admin confirmations).
+- [x] Admin panel (users, groups, polls, fundraising).
 - [x] Add app navigation and shared layout.
 - [x] Dual UI: neighbor dashboard at `/dashboard/:groupId`, admin UI at `/admin`.
 - [x] Keep page coverage aligned with `docs/SCREENS.md`.
@@ -119,7 +119,7 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 
 ## 12) Testing & QA
 - [ ] Unit tests for permissions and critical mutations.
-- [ ] Integration tests for auth + core flows (poll vote, payment report).
+- [ ] Integration tests for auth + core flows (poll vote, contribution).
 - [ ] Manual QA checklist for MVP flows.
 - [ ] Keep QA coverage aligned with `docs/QA.md`.
 
