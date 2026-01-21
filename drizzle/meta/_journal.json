@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1768939809937,
+      "tag": "0000_greedy_the_spike",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768958150283,
+      "tag": "0001_payment_reports_amount",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768990000000,
+      "tag": "0002_payment_requests_goal",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768995000000,
+      "tag": "0003_poll_option_details",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769000000000,
+      "tag": "0004_users_email_ci",
+      "breakpoints": true
+    }
+  ]
+}

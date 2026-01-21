@@ -8,14 +8,17 @@
 
 ## Rendering & Architecture
 - Prefer SSR whenever possible; use CSR only when necessary (e.g., interactive forms).
+- Client-side data fetching must use React Query.
+- Client-side forms must use React Hook Form.
 
 ## API & Mutations
 - All mutations must go through tRPC.
 - Avoid direct client-side database access.
+- For tRPC client calls, use the official React Query integration (TanStack React Query).
 
 ## Services Layer
 - Maintain a dedicated services layer for all database interactions.
-- Perform data validation in the services layer.
+- Perform data validation in the services layer using Zod.
 - Business logic must live in the services layer.
 - tRPC routes should call services and avoid embedding business logic.
 - For read-only data access, pages can call services directly to enable SSR and avoid unnecessary tRPC routes and client-side data fetching.

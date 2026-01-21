@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: vecinohub-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: vecinohub
+      POSTGRES_PASSWORD: vecinohub
+      POSTGRES_DB: vecinohub
+    volumes:
+      - vecinohub_pgdata:/var/lib/postgresql/data
+
+volumes:
+  vecinohub_pgdata:

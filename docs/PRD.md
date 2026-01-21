@@ -8,6 +8,7 @@ Build a neighborhood administration web app where residents (organized by house 
 - Manage residents by house groups with clear role-based access.
 - Enable group-based voting.
 - Track payment requests and confirmations (wire transfer or cash).
+ - Support goal-based payment requests with per-group amounts derived from active groups.
 
 ## 3) Non-Goals (for now)
 - Payment processing integrations.
@@ -26,9 +27,10 @@ House group roles:
 - **House Group**: name/identifier, address (optional), group admin.
 - **Group Membership**: user + group + status. Users may belong to multiple groups.
 - **Poll**: title, description, options, status (draft/active/closed), createdBy.
-- **Vote**: groupId + pollId + choice (one per group).
-- **Payment Request**: title, description, amount, due date, createdBy.
-- **Payment Report**: groupId + paymentRequestId + submittedBy + method (cash/wire transfer) + status (submitted/confirmed/rejected) + confirmedBy + proof details.
+- **Poll Option**: label, optional description, optional amount.
+- **Vote**: groupId + pollId + choice (one per group, overwrite allowed until closed).
+- **Payment Request**: title, description, goalAmount, per-group amount (derived), due date, createdBy.
+- **Payment Report**: groupId + paymentRequestId + submittedBy + method (cash/wire transfer) + amount + status (submitted/confirmed/rejected) + confirmedBy + proof details.
 
 Wire transfer proof details:
 - Reference number
@@ -46,14 +48,20 @@ Wire transfer proof details:
 - Group admin adds/removes members in their group.
 
 ### Voting
-- Admin creates poll.
-- Each house group can cast one vote.
+- Admin creates poll (draft).
+- Admin configures poll options in the poll detail view (draft only).
+- Admin launches poll to active state (options locked).
+- Each house group can cast one vote; subsequent votes overwrite until poll closes.
+- Admin can close, re-open, or reset a poll to draft (reset clears votes).
 - Votes are visible to admins; group sees their own vote status.
 
 ### Payment Request & Confirmation
-- Admin creates payment request.
-- House group member submits payment report (cash or wire transfer details).
-- Admin confirms or rejects payment reports.
+- Admin creates payment request with a goal amount.
+- Per-group amount is derived from `goalAmount / active groups`.
+- House group member submits one or more payment reports (cash or wire transfer).
+- Each report includes an amount; wire transfer requires reference + date.
+- Reports can be deleted by the submitter while the request is open.
+- Admin confirms, rejects, or updates report status.
 
 ## 7) Permissions Matrix (High Level)
 - **User**: view own groups; submit payment reports.
