@@ -14,6 +14,7 @@
 - `users.list` (query, admin)
 - `users.updateRole` (mutation, admin)
 - `users.updateStatus` (mutation, admin)
+- `users.updateProfile` (mutation, user)
 
 ### groups
 - `groups.list` (query, admin)
@@ -45,6 +46,22 @@
 - `payments.deleteReport` (mutation, group member/admin)
 - `payments.updateReportStatus` (mutation, admin)
 
+### events
+- `events.list` (query)
+- `events.get` (query)
+- `events.create` (mutation, admin)
+- `events.update` (mutation, admin)
+- `events.remove` (mutation, admin)
+
+### posts
+- `posts.list` (query)
+- `posts.get` (query)
+- `posts.create` (mutation, admin)
+- `posts.update` (mutation, admin)
+- `posts.publish` (mutation, admin)
+- `posts.unpublish` (mutation, admin)
+- `posts.remove` (mutation, admin)
+
 ## Inputs (High Level)
 - `groups.create`: name, address, adminUserId
 - `groups.addMember`: groupId, email (or userId)
@@ -52,3 +69,6 @@
 - `polls.vote`: pollId, groupId, optionId
 - `payments.createRequest`: title, description, goalAmount, dueDate
 - `payments.submitReport`: paymentRequestId, groupId, method, amount, wireReference?, wireDate?
+- `users.updateProfile`: username, image
+- `events.create`: title, startsAt, endsAt?, location?, description?
+- `posts.create`: title, content, status?

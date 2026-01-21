@@ -8,7 +8,9 @@ import { trpc } from "@/lib/trpc";
 type AdminUser = {
   id: string;
   name: string;
+  username: string | null;
   email: string;
+  image: string | null;
   role: "user" | "admin";
   status: "active" | "inactive";
 };
@@ -82,16 +84,34 @@ export function UsersTable({
         {users.length === 0 ? (
           <p className="text-sm text-slate-500">No users found.</p>
         ) : (
-          users.map((user) => (
-            <div
-              key={user.id}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-800/80 px-3 py-3 text-sm"
-            >
-              <div>
-                <p className="font-medium text-slate-200">{user.name}</p>
-                <p className="text-xs text-slate-500">{user.email}</p>
-                <p className="text-xs text-slate-500">{user.id}</p>
-              </div>
+          users.map((user) => {
+            const displayName = user.username ?? user.name;
+            return (
+              <div
+                key={user.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-800/80 px-3 py-3 text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  {user.image ? (
+                    <img
+                      className="h-10 w-10 rounded-full border border-slate-800 object-cover"
+                      src={user.image}
+                      alt={displayName}
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-300">
+                      {(displayName?.[0] ?? "?").toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-slate-200">{displayName}</p>
+                    {user.username ? (
+                      <p className="text-xs text-slate-500">{user.name}</p>
+                    ) : null}
+                    <p className="text-xs text-slate-500">{user.email}</p>
+                    <p className="text-xs text-slate-500">{user.id}</p>
+                  </div>
+                </div>
               <div className="flex flex-wrap items-center gap-3">
                 <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
                   Role
@@ -126,8 +146,9 @@ export function UsersTable({
                   </select>
                 </label>
               </div>
-            </div>
-          ))
+              </div>
+            );
+          })
         )}
       </div>
       {error ? (

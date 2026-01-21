@@ -6,11 +6,14 @@
 - `poll_status`: `draft`, `active`, `closed`
 - `payment_method`: `cash`, `wire_transfer`
 - `payment_report_status`: `submitted`, `confirmed`, `rejected`
+- `post_status`: `draft`, `published`
 
 ## users
 - `id` (pk)
 - `email` (unique)
+- `username` (unique, case-insensitive)
 - `name`
+- `image` (profile photo)
 - `role`
 - `status`
 - `created_at`
@@ -88,11 +91,36 @@
   
 Note: multiple reports per group are allowed.
 
+## events
+- `id` (pk)
+- `title`
+- `description` (optional)
+- `starts_at`
+- `ends_at` (optional)
+- `location` (optional)
+- `created_by` (fk -> users.id)
+- `created_at`
+- `updated_at`
+
+## posts
+- `id` (pk)
+- `title`
+- `content`
+- `status` (draft, published)
+- `published_at` (nullable)
+- `created_by` (fk -> users.id)
+- `created_at`
+- `updated_at`
+
 ## Indexes
 - `users.email`
+- `users.username` (case-insensitive)
 - `group_memberships.group_id`
 - `group_memberships.user_id`
 - `votes.poll_id`
 - `votes.group_id`
 - `payment_reports.payment_request_id`
 - `payment_reports.group_id`
+- `events.starts_at`
+- `posts.status`
+- `posts.published_at`

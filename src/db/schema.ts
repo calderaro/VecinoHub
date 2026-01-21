@@ -35,6 +35,7 @@ export const users = pgTable(
     email: text("email").notNull(),
     emailVerified: boolean("email_verified").notNull().default(false),
     name: text("name").notNull(),
+    username: text("username"),
     image: text("image"),
     role: roleEnum("role").notNull().default("user"),
     status: userStatusEnum("status").notNull().default("active"),
@@ -47,6 +48,7 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex("users_email_unique").on(sql`lower(${table.email})`),
+    uniqueIndex("users_username_unique").on(sql`lower(${table.username})`),
   ]
 );
 

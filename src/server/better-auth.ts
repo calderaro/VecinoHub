@@ -32,6 +32,10 @@ export const auth = betterAuth({
       updatedAt: "updatedAt",
     },
     additionalFields: {
+      username: {
+        type: "string",
+        required: false,
+      },
       role: {
         type: "string",
         required: true,

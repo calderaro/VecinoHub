@@ -1,4 +1,4 @@
-import { and, count, eq, ilike } from "drizzle-orm";
+import { and, count, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -7,7 +7,7 @@ import { users } from "@/db/schema";
 import { ServiceError } from "./errors";
 import { requireAdmin } from "./guards";
 import type { ServiceContext } from "./types";
-import { idSchema, roleSchema, statusSchema } from "./validators";
+import { idSchema, roleSchema, statusSchema, usernameSchema } from "./validators";
 
 const listUsersSchema = z
   .object({
@@ -38,8 +38,15 @@ export async function listUsersPaged(
   requireAdmin(ctx);
   const { query, role, status, limit, offset } = listUsersPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
+  const searchFilter = search
+    ? or(
+        ilike(users.name, search),
+        ilike(users.email, search),
+        ilike(users.username, search)
+      )
+    : undefined;
   const filters = [
-    search ? ilike(users.name, search) : undefined,
+    searchFilter,
     role ? eq(users.role, role) : undefined,
     status ? eq(users.status, status) : undefined,
   ].filter(Boolean);
@@ -100,6 +107,81 @@ export async function updateUserStatus(
     .update(users)
     .set({ status })
     .where(eq(users.id, userId))
+    .returning();
+
+  if (!updated[0]) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  return updated[0];
+}
+
+export async function getUserProfile(ctx: ServiceContext) {
+  const profile = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      username: users.username,
+      image: users.image,
+      role: users.role,
+      status: users.status,
+    })
+    .from(users)
+    .where(eq(users.id, ctx.user.id))
+    .limit(1);
+
+  if (!profile[0]) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  return profile[0];
+}
+
+const updateProfileSchema = z
+  .object({
+    username: usernameSchema.optional(),
+    image: z.string().url().max(2048).nullable().optional(),
+  })
+  .refine((data) => data.username !== undefined || data.image !== undefined, {
+    message: "Profile updates require a username or image.",
+  });
+
+export async function updateUserProfile(
+  ctx: ServiceContext,
+  input: z.input<typeof updateProfileSchema>
+) {
+  const { username, image } = updateProfileSchema.parse(input);
+
+  if (username) {
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          sql`lower(${users.username}) = lower(${username})`,
+          sql`${users.id} <> ${ctx.user.id}`
+        )
+      )
+      .limit(1);
+
+    if (existing[0]) {
+      throw new ServiceError("Username already in use.", "CONFLICT");
+    }
+  }
+
+  const updates: Partial<typeof users.$inferInsert> = {};
+  if (username !== undefined) {
+    updates.username = username;
+  }
+  if (image !== undefined) {
+    updates.image = image;
+  }
+
+  const updated = await db
+    .update(users)
+    .set(updates)
+    .where(eq(users.id, ctx.user.id))
     .returning();
 
   if (!updated[0]) {

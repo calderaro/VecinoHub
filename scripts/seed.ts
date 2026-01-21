@@ -18,6 +18,7 @@ type SeedUser = {
   email: string;
   password: string;
   name: string;
+  username: string;
   role: "user" | "admin";
 };
 
@@ -26,18 +27,21 @@ const seedUsers: SeedUser[] = [
     email: "admin@vecinohub.local",
     password: "Admin123!",
     name: "Vecino Admin",
+    username: "vecino_admin",
     role: "admin",
   },
   {
     email: "ana@vecinohub.local",
     password: "User123!",
     name: "Ana Perez",
+    username: "ana_perez",
     role: "user",
   },
   {
     email: "luis@vecinohub.local",
     password: "User123!",
     name: "Luis Romero",
+    username: "luis_romero",
     role: "user",
   },
 ];
@@ -50,6 +54,12 @@ async function ensureUser(user: SeedUser) {
     .limit(1);
 
   if (existing.length > 0) {
+    if (!existing[0].username) {
+      await db
+        .update(users)
+        .set({ username: user.username })
+        .where(eq(users.id, existing[0].id));
+    }
     return existing[0];
   }
 
@@ -69,6 +79,13 @@ async function ensureUser(user: SeedUser) {
 
   if (!created[0]) {
     throw new Error(`Failed to create user ${user.email}`);
+  }
+
+  if (!created[0].username) {
+    await db
+      .update(users)
+      .set({ username: user.username })
+      .where(eq(users.id, created[0].id));
   }
 
   return created[0];

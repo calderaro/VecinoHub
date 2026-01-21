@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { listUsers, updateUserRole, updateUserStatus } from "@/services/users";
+import {
+  listUsers,
+  updateUserProfile,
+  updateUserRole,
+  updateUserStatus,
+} from "@/services/users";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getServiceContext, handleServiceError } from "../service";
@@ -29,6 +34,24 @@ export const usersRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         return await updateUserStatus(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  updateProfile: protectedProcedure
+    .input(
+      z
+        .object({
+          username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9._-]+$/).optional(),
+          image: z.string().url().max(2048).nullable().optional(),
+        })
+        .refine((data) => data.username !== undefined || data.image !== undefined, {
+          message: "Profile updates require a username or image.",
+        })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await updateUserProfile(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

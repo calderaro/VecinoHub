@@ -9,7 +9,9 @@ import { useToast } from "@/components/ui/toast";
 type GroupMember = {
   id: string;
   name: string;
+  username: string | null;
   email: string;
+  image: string | null;
   role: "user" | "admin";
   status: "active" | "inactive";
 };
@@ -77,34 +79,51 @@ export function GroupMembers({
       {members.length === 0 ? (
         <p className="text-sm text-slate-500">No members yet.</p>
       ) : (
-        members.map((member) => (
-          <div
-            key={member.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-800/80 px-3 py-2"
-          >
-            <div>
-              <p className="text-sm font-medium text-slate-200">
-                {member.name}
-              </p>
-              <p className="text-xs text-slate-500">{member.email}</p>
+        members.map((member) => {
+          const displayName = member.username ?? member.name;
+          const secondary = member.username ? member.name : member.email;
+          return (
+            <div
+              key={member.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-800/80 px-3 py-2"
+            >
+              <div className="flex items-center gap-3">
+                {member.image ? (
+                  <img
+                    className="h-9 w-9 rounded-full border border-slate-800 object-cover"
+                    src={member.image}
+                    alt={displayName}
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-300">
+                    {(displayName?.[0] ?? "?").toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-slate-200">
+                    {displayName}
+                  </p>
+                  <p className="text-xs text-slate-500">{secondary}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-slate-700 px-2 py-1 text-xs uppercase tracking-[0.2em] text-slate-400">
+                  {member.role}
+                </span>
+                {canManage ? (
+                  <button
+                    className="text-xs uppercase tracking-[0.2em] text-rose-300 hover:text-rose-200"
+                    type="button"
+                    onClick={() => setPendingRemove(member)}
+                    disabled={removeMember.isLoading}
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full border border-slate-700 px-2 py-1 text-xs uppercase tracking-[0.2em] text-slate-400">
-                {member.role}
-              </span>
-              {canManage ? (
-                <button
-                  className="text-xs uppercase tracking-[0.2em] text-rose-300 hover:text-rose-200"
-                  type="button"
-                  onClick={() => setPendingRemove(member)}
-                  disabled={removeMember.isLoading}
-                >
-                  Remove
-                </button>
-              ) : null}
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
 
       {addOpen ? (
@@ -180,7 +199,8 @@ export function GroupMembers({
               Remove member
             </h3>
             <p className="mt-1 text-sm text-slate-400">
-              Remove {pendingRemove.name} from this group?
+              Remove {(pendingRemove.username ?? pendingRemove.name)} from this
+              group?
             </p>
 
             <div className="mt-6 flex flex-wrap justify-end gap-2">

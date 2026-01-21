@@ -317,7 +317,9 @@ export async function listGroupMembers(
     .select({
       id: users.id,
       name: users.name,
+      username: users.username,
       email: users.email,
+      image: users.image,
       role: users.role,
       status: users.status,
     })

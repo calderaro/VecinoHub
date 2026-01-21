@@ -5,6 +5,8 @@ import { auth } from "./better-auth";
 export type SessionUser = {
   id: string;
   role: "user" | "admin";
+  username: string | null;
+  image: string | null;
 };
 
 export type Session = {
@@ -17,7 +19,7 @@ export async function getSession(): Promise<Session> {
 
   const sessionResult = await auth.api
     .getSession({
-      headers: cookie ? { cookie } : undefined,
+      headers: cookie ? { cookie } : {},
     })
     .catch(() => null);
 
@@ -29,6 +31,8 @@ export async function getSession(): Promise<Session> {
     user: {
       id: sessionResult.user.id,
       role: sessionResult.user.role as SessionUser["role"],
+      username: (sessionResult.user as { username?: string }).username ?? null,
+      image: sessionResult.user.image ?? null,
     },
   };
 }

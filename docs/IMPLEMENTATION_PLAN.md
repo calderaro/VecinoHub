@@ -29,6 +29,7 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Implement email signup/login flow.
 - [x] Create server-side auth helpers (getSession).
 - [x] Add role enum (user/admin) and seed an initial admin account (via seed script).
+- [x] Add user profile fields (username, image) and unique username constraint.
 
 ## 3) Core Domain Schema (Drizzle)
 - [x] Create tables: groups (houses), memberships, polls, poll_options, votes, payment_requests, payment_reports.
@@ -55,6 +56,7 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Admin: list users with roles and group memberships.
 - [x] Admin: update user role (user/admin).
 - [x] Admin: deactivate/activate user account.
+- [x] User: update profile (username, photo).
 
 ## 6) Groups (Houses)
 - [x] Admin: create/edit/delete group.
@@ -92,6 +94,9 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Add app navigation and shared layout.
 - [x] Dual UI: neighbor dashboard at `/dashboard/:groupId`, admin UI at `/admin`.
 - [x] Keep page coverage aligned with `docs/SCREENS.md`.
+- [x] Profile page (username, photo).
+- [ ] Events pages (list, detail, admin editor).
+- [ ] Posts pages (list, detail, admin editor).
 
 ## 10) Access Control & Guards
 - [x] Route protection for authenticated pages.
@@ -103,6 +108,12 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 ## 11) Notifications & Audit (MVP-light)
 - [x] Add audit fields (createdBy, confirmedBy).
 - [ ] Add basic activity feed for admins (optional for MVP).
+
+## 11.1) Events & Posts
+- [ ] Add events schema, services, and tRPC router.
+- [ ] Add posts schema, services, and tRPC router.
+- [ ] Add permissions checks for events/posts (admin-only writes).
+- [ ] Update seed data for events/posts (optional).
 
 ## 12) Testing & QA
 - [ ] Unit tests for permissions and critical mutations.

@@ -5,10 +5,13 @@ Build a neighborhood administration web app where residents (organized by house 
 
 ## 2) Goals
 - Allow secure email-based registration and login.
+- Allow users to configure a public username and profile photo for display.
 - Manage residents by house groups with clear role-based access.
 - Enable group-based voting.
 - Track payment requests and confirmations (wire transfer or cash).
  - Support goal-based payment requests with per-group amounts derived from active groups.
+- Provide a shared events board for upcoming neighborhood events.
+- Provide admin-authored news/posts for neighborhood-wide updates.
 
 ## 3) Non-Goals (for now)
 - Payment processing integrations.
@@ -23,7 +26,7 @@ House group roles:
 - Each group (house) has a **Group Admin** who can add/remove members in their group.
 
 ## 5) Core Entities
-- **User**: email, name, role (user/admin), status, auth identity.
+- **User**: email, username, profile photo, name, role (user/admin), status, auth identity.
 - **House Group**: name/identifier, address (optional), group admin.
 - **Group Membership**: user + group + status. Users may belong to multiple groups.
 - **Poll**: title, description, options, status (draft/active/closed), createdBy.
@@ -31,6 +34,8 @@ House group roles:
 - **Vote**: groupId + pollId + choice (one per group, overwrite allowed until closed).
 - **Payment Request**: title, description, goalAmount, per-group amount (derived), due date, createdBy.
 - **Payment Report**: groupId + paymentRequestId + submittedBy + method (cash/wire transfer) + amount + status (submitted/confirmed/rejected) + confirmedBy + proof details.
+- **Event**: title, description, date/time, location (optional), createdBy.
+- **Post**: title, content, status (draft/published), publishedAt, createdBy.
 
 Wire transfer proof details:
 - Reference number
@@ -63,22 +68,37 @@ Wire transfer proof details:
 - Reports can be deleted by the submitter while the request is open.
 - Admin confirms, rejects, or updates report status.
 
+### User Profiles
+- Users set a public username and profile photo.
+- UI uses username/photo instead of email for display.
+
+### Events
+- Admins create events with title, date/time, and optional location.
+- Users can view upcoming events.
+
+### News/Posts
+- Admins author and publish posts for neighborhood-wide updates.
+- Users can read published posts.
+
 ## 7) Permissions Matrix (High Level)
-- **User**: view own groups; submit payment reports.
-- **Admin**: full access.
+- **User**: view own groups; submit payment reports; update own profile; view events and posts.
+- **Admin**: full access, including managing events and posts.
 - **Group Admin**: manage membership in their group.
 
 ## 8) MVP Screens
 - Auth (login/register)
 - Dashboard (role-based summary)
+- Profile settings
 - Group page (members, role actions)
 - Polls (list, view, vote, results)
 - Payment Requests (list, report payment, admin confirm)
+- Events (list, detail)
+- News/Posts (list, detail, admin editor)
 
 ## 9) Data & API
 - API via tRPC, serialized with SuperJSON.
 - DB via Drizzle + Postgres.
-- Core tables: users, groups, memberships, polls, poll_options, votes, payment_requests, payment_reports.
+- Core tables: users, groups, memberships, polls, poll_options, votes, payment_requests, payment_reports, events, posts.
 
 ## 10) Auditing & History
 - Track createdBy and confirmedBy on sensitive actions.

@@ -8,6 +8,7 @@
 
 ## Dashboard
 - Summary widgets: groups, polls, open payment requests
+- Summary widgets: upcoming events, latest posts
 - SSR: yes (services)
 
 ## Groups
@@ -32,8 +33,27 @@
 - SSR: yes for lists and detail
 - CSR: report and confirm actions
 
+## Profile
+- Update username and profile photo
+- SSR: yes (current profile)
+- CSR: yes (photo URL + save)
+
+## Events
+- Events list and details
+- Admin create/edit/delete
+- SSR: yes for lists and detail
+- CSR: admin forms
+
+## News/Posts
+- Posts list and details
+- Admin create/edit/publish/unpublish
+- SSR: yes for lists and detail
+- CSR: admin editor
+
 ## Admin Panel
 - Users list, role edits, status
 - Group management
 - Poll management
 - Payment request management
+- Events management
+- Posts management

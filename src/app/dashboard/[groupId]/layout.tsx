@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AppNav } from "@/components/app-nav";
-import { GroupSelector } from "@/components/group-selector";
-import { SignOutButton } from "@/components/sign-out-button";
+import { UserMenu } from "@/components/user-menu";
 import { listUserGroups } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
@@ -36,32 +34,28 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-900/80 bg-slate-950/80">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6">
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
+          <Link
+            href={`/dashboard/${resolvedParams.groupId}`}
+            className="group flex flex-col"
+          >
+            <span className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-200 transition group-hover:text-emerald-300">
               VecinoHub
-            </p>
-            <p className="text-sm text-slate-300">Neighborhood dashboard</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <GroupSelector
-              groups={groups.map((group) => ({ id: group.id, name: group.name }))}
-              selectedGroupId={resolvedParams.groupId}
-              basePath="/dashboard"
-            />
-            <AppNav basePath={`/dashboard/${resolvedParams.groupId}`} />
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {session.user.role === "admin" ? (
-              <Link
-                href="/admin"
-                className="rounded-full border border-slate-800 px-3 py-1 text-emerald-200 hover:border-emerald-300"
-              >
-                Admin
-              </Link>
-            ) : null}
-            <SignOutButton />
-          </div>
+            </span>
+            <span className="text-xs uppercase tracking-[0.2em] text-slate-400 transition group-hover:text-emerald-300/70">
+              Dashboard
+            </span>
+          </Link>
+          <UserMenu
+            user={{
+              username: session.user.username,
+              image: session.user.image,
+              role: session.user.role,
+            }}
+            groupName={selectedGroup.name}
+            groups={groups.map((group) => ({ id: group.id, name: group.name }))}
+            selectedGroupId={resolvedParams.groupId}
+          />
         </div>
       </header>
       {children}

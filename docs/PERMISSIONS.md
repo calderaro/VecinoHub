@@ -15,6 +15,9 @@
 - Vote on polls for their groups (neighbor UI only)
 - View payment requests
 - Submit and delete payment reports for their groups (while request is open)
+- Update own profile (username, photo)
+- View events
+- View published posts
 - If admin role: can manage members in any group (add/remove)
 
 ### Admin
@@ -27,6 +30,8 @@
 - Manage poll options (draft only)
 - Create/edit/close payment requests
 - Update payment report status
+- Create/edit/delete events
+- Create/edit/publish/unpublish posts
 
 ## Permission Checks (Server-Side)
 - Mutations must verify role and group scope.
