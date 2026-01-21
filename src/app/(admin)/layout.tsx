@@ -53,6 +53,12 @@ export default async function AdminLayout({
             <Link className="hover:text-emerald-200" href="/admin/payments">
               Payments
             </Link>
+            <Link className="hover:text-emerald-200" href="/admin/events">
+              Events
+            </Link>
+            <Link className="hover:text-emerald-200" href="/admin/posts">
+              Posts
+            </Link>
           </nav>
           <UserMenu
             user={{

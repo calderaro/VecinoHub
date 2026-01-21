@@ -22,3 +22,10 @@
 - Business logic must live in the services layer.
 - tRPC routes should call services and avoid embedding business logic.
 - For read-only data access, pages can call services directly to enable SSR and avoid unnecessary tRPC routes and client-side data fetching.
+
+## Database Migrations
+- **Never write migration files manually.** Always use Drizzle Kit to generate them.
+- Update the schema in `src/db/schema.ts` first.
+- Run `npm run db:generate` to generate the migration file.
+- Run `npm run db:migrate` to apply the migration.
+- Review generated migrations before applying to ensure they are correct.

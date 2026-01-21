@@ -2,7 +2,7 @@ import { and, count, countDistinct, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { groupMemberships, pollOptions, polls, votes } from "@/db/schema";
+import { groupMemberships, pollOptions, polls, users, votes } from "@/db/schema";
 
 import { ServiceError } from "./errors";
 import { requireAdmin, requireGroupMember } from "./guards";
@@ -393,12 +393,21 @@ export async function listPollsPaged(
       : eq(polls.status, "active"),
   ].filter(Boolean);
 
-  const items = await db
-    .select()
+  const rows = await db
+    .select({
+      poll: polls,
+      creatorName: users.name,
+    })
     .from(polls)
+    .leftJoin(users, eq(polls.createdBy, users.id))
     .where(filters.length ? and(...(filters as [typeof polls.status, ...unknown[]])) : undefined)
     .limit(limit)
     .offset(offset);
+
+  const items = rows.map((row) => ({
+    ...row.poll,
+    creatorName: row.creatorName,
+  }));
 
   const totalResult = await db
     .select({ value: count() })

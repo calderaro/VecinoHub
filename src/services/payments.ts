@@ -373,12 +373,21 @@ export async function listPaymentRequestsPaged(
     status ? eq(paymentRequests.status, status) : undefined,
   ].filter(Boolean);
 
-  const items = await db
-    .select()
+  const rows = await db
+    .select({
+      paymentRequest: paymentRequests,
+      creatorName: users.name,
+    })
     .from(paymentRequests)
+    .leftJoin(users, eq(paymentRequests.createdBy, users.id))
     .where(filters.length ? and(...(filters as [typeof paymentRequests.status, ...unknown[]])) : undefined)
     .limit(limit)
     .offset(offset);
+
+  const items = rows.map((row) => ({
+    ...row.paymentRequest,
+    creatorName: row.creatorName,
+  }));
 
   const totalResult = await db
     .select({ value: count() })

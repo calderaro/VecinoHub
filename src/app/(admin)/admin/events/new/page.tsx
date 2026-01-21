@@ -1,0 +1,28 @@
+import { redirect } from "next/navigation";
+
+import { EventForm } from "@/components/events/event-form";
+import { getSession } from "@/server/auth";
+
+export default async function NewEventPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (session.user.role !== "admin") {
+    redirect("/dashboard");
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-12">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold">Create event</h1>
+        <p className="text-sm text-slate-400">
+          Publish a new neighborhood event.
+        </p>
+      </header>
+      <EventForm mode="create" />
+    </div>
+  );
+}

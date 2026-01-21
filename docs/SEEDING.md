@@ -8,6 +8,8 @@
 - 1 poll with 2 options
 - 1 payment request
 - 1 submitted payment report (wire transfer)
+- 1 event
+- 1 post
 
 ## Local Seed Steps
 1) Run migrations.

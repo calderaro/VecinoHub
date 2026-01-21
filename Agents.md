@@ -24,6 +24,12 @@ project docs. Treat it as a "how to work here" reference.
 - Respect unique constraints (e.g., one vote per group per poll).
 - Include auditing fields (`created_by`, `confirmed_by`) where specified.
 
+## Database Migrations
+- **Never write migration files manually.** Always use Drizzle Kit to generate them.
+- After updating `src/db/schema.ts`, run `npm run db:generate` to create the migration.
+- Then run `npm run db:migrate` to apply it to the database.
+- Review generated migrations before applying to ensure correctness.
+
 ## Permissions and Access Control
 - Enforce server-side checks per `docs/PERMISSIONS.md`.
 - Group admins can only manage members of their own group.

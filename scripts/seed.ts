@@ -5,6 +5,8 @@ import { db } from "@/db";
 import {
   groupMemberships,
   groups,
+  events,
+  posts,
   paymentReports,
   paymentRequests,
   pollOptions,
@@ -198,6 +200,28 @@ async function main() {
       method: "cash",
       amount: "150.00",
       status: "submitted",
+    },
+  ]);
+
+  await db.insert(events).values([
+    {
+      title: "Neighborhood cleanup",
+      description: "Monthly community cleanup and meet-up.",
+      startsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      endsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7 + 1000 * 60 * 60 * 2),
+      location: "Community hall",
+      createdBy: admin.id,
+    },
+  ]);
+
+  await db.insert(posts).values([
+    {
+      title: "Community update",
+      content:
+        "Thanks for participating in the last cleanup. We will share next steps soon.",
+      status: "published",
+      publishedAt: new Date(),
+      createdBy: admin.id,
     },
   ]);
 

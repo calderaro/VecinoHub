@@ -10,6 +10,8 @@ export function AppNav({ basePath }: { basePath: string }) {
     { href: `${basePath}/members`, label: "Members" },
     { href: `${basePath}/polls`, label: "Polls" },
     { href: `${basePath}/payments`, label: "Payments" },
+    { href: `${basePath}/events`, label: "Events" },
+    { href: `${basePath}/posts`, label: "Posts" },
   ];
 
   return (

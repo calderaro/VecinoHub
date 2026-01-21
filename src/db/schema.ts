@@ -27,6 +27,8 @@ export const paymentRequestStatusEnum = pgEnum("payment_request_status", [
   "open",
   "closed",
 ]);
+export const postStatusEnum = pgEnum("post_status", ["draft", "published"]);
+
 
 export const users = pgTable(
   "users",
@@ -243,5 +245,47 @@ export const paymentReports = pgTable(
   (table) => [
     index("payment_reports_request_id_idx").on(table.paymentRequestId),
     index("payment_reports_group_id_idx").on(table.groupId),
+  ]
+);
+
+export const events = pgTable(
+  "events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    location: text("location"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("events_starts_at_idx").on(table.startsAt)]
+);
+
+export const posts = pgTable(
+  "posts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    status: postStatusEnum("status").notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("posts_status_idx").on(table.status),
+    index("posts_published_at_idx").on(table.publishedAt),
   ]
 );

@@ -95,8 +95,8 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Dual UI: neighbor dashboard at `/dashboard/:groupId`, admin UI at `/admin`.
 - [x] Keep page coverage aligned with `docs/SCREENS.md`.
 - [x] Profile page (username, photo).
-- [ ] Events pages (list, detail, admin editor).
-- [ ] Posts pages (list, detail, admin editor).
+- [x] Events pages (list, detail, admin editor).
+- [x] Posts pages (list, detail, admin editor).
 
 ## 10) Access Control & Guards
 - [x] Route protection for authenticated pages.
@@ -110,10 +110,12 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [ ] Add basic activity feed for admins (optional for MVP).
 
 ## 11.1) Events & Posts
-- [ ] Add events schema, services, and tRPC router.
-- [ ] Add posts schema, services, and tRPC router.
-- [ ] Add permissions checks for events/posts (admin-only writes).
-- [ ] Update seed data for events/posts (optional).
+- [x] Add events schema, services, and tRPC router.
+- [x] Add posts schema, services, and tRPC router.
+- [x] Add permissions checks for events (admin-only writes).
+- [x] Add permissions checks for posts (admin-only writes).
+- [x] Update seed data for events (optional).
+- [x] Update seed data for posts (optional).
 
 ## 12) Testing & QA
 - [ ] Unit tests for permissions and critical mutations.
