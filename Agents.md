@@ -1,75 +1,121 @@
-# VecinoHub Agent Guidelines
+# VecinoHub Agent Guide
 
-This file guides ChatGPT Codex to implement changes consistently with the
-project docs. Treat it as a "how to work here" reference.
+This file orients coding agents to the VecinoHub repo. Follow it in addition
+to project docs. If guidance conflicts, use the priority order below.
 
-## Source of Truth
-- Primary docs: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/RULES.md`,
-  `docs/DATA_MODEL.md`, `docs/API.md`, `docs/PERMISSIONS.md`,
-  `docs/SCREENS.md`, `docs/QA.md`, `docs/SEEDING.md`,
-  `docs/IMPLEMENTATION_PLAN.md`.
-- If you change behavior, update the relevant doc(s) to stay aligned.
-- If docs conflict, prefer `docs/RULES.md` and `docs/ARCHITECTURE.md`, then
-  `docs/PRD.md`, then the rest.
+## Sources of truth (priority order)
+- docs/RULES.md and docs/ARCHITECTURE.md
+- docs/PRD.md
+- docs/DATA_MODEL.md, docs/API.md, docs/PERMISSIONS.md
+- docs/SCREENS.md, docs/QA.md, docs/SEEDING.md, docs/IMPLEMENTATION_PLAN.md
 
-## Architecture Rules (Non-Negotiable)
-- **SSR-first** for read-only pages. Use services directly from server pages.
-- **All mutations go through tRPC**.
-- **Services layer** (`src/services/`) owns validation, business logic, and DB
-  access. tRPC routers call services only.
-- **No direct DB access from pages or tRPC routers** beyond service calls.
+## Repository layout
+- src/app: Next.js App Router routes and pages (SSR-first).
+- src/services: domain services with validation, business logic, and DB access.
+- src/server/trpc: tRPC routers, context, and service error handling.
+- src/db: Drizzle schema and db client.
+- src/components: shared UI components.
+- src/lib: shared utilities and client helpers.
+- docs: product, architecture, API, data model, permissions, QA checklists.
 
-## Data Model Alignment
-- Keep schema aligned with `docs/DATA_MODEL.md` (tables, enums, constraints).
-- Respect unique constraints (e.g., one vote per group per poll).
-- Include auditing fields (`created_by`, `confirmed_by`) where specified.
+## Commands (build/lint/test)
+- Install deps: npm install
+- Dev server: npm run dev
+- Production build: npm run build
+- Start prod server: npm run start
+- Lint: npm run lint
+- Lint single file: npm run lint -- path/to/file.tsx
+- DB up/down: npm run db:up | npm run db:down
+- Migrations generate/apply: npm run db:generate | npm run db:migrate
+- Seed data: npm run seed
 
-## Database Migrations
-- **Never write migration files manually.** Always use Drizzle Kit to generate them.
-- After updating `src/db/schema.ts`, run `npm run db:generate` to create the migration.
-- Then run `npm run db:migrate` to apply it to the database.
-- Review generated migrations before applying to ensure correctness.
+## Tests
+- No automated test runner configured in package.json.
+- No test files found in the repo.
+- For acceptance coverage, use docs/QA.md as manual test checklist.
+- If you add tests, document how to run a single test here.
 
-## Permissions and Access Control
-- Enforce server-side checks per `docs/PERMISSIONS.md`.
+## Architecture rules (non-negotiable)
+- SSR-first for read-only pages. Use services directly from server pages.
+- All mutations go through tRPC.
+- Services layer owns validation, business logic, and DB access.
+- tRPC routers must stay thin and call services only.
+- No direct DB access from pages or routers beyond services.
+
+## Data model and migrations
+- Keep schema aligned with docs/DATA_MODEL.md (tables, enums, constraints).
+- Respect unique constraints (ex: one vote per group per poll).
+- Include auditing fields (created_by, confirmed_by) where specified.
+- Never hand-write migrations; use Drizzle Kit.
+- Update src/db/schema.ts then run npm run db:generate and npm run db:migrate.
+- Review generated migrations before applying.
+
+## Permissions and access control
+- Enforce server-side checks per docs/PERMISSIONS.md.
 - Group admins can only manage members of their own group.
 - Validate membership before read-only SSR access when required.
 
-## API Contract
-- Keep routers aligned with `docs/API.md` (names, responsibilities, inputs).
+## API contract
+- Keep routers aligned with docs/API.md (names, responsibilities, inputs).
 - Prefer adding/adjusting service methods before expanding router surface.
+- Use getServiceContext + handleServiceError in routers.
 
-## UI/UX Expectations
-- Match screens and SSR/CSR split in `docs/SCREENS.md`.
-- Use CSR only for interactive forms; keep data loading on SSR when possible.
+## Rendering and client data
+- SSR whenever possible; use CSR only for interactive forms.
 - Client-side data fetching must use React Query.
-- Client-side forms must use React Hook Form.
+- New client-side forms must use React Hook Form unless the feature already has a legacy form.
+- For client tRPC, use @trpc/react-query integration.
 
-## Client Data and Forms
-- For client-side tRPC usage, use the React Query integration per
-  `https://trpc.io/docs/client/react`.
+## Code style and conventions
+- Language: TypeScript with strict type checking (tsconfig strict true).
+- Formatting: rely on eslint-config-next defaults; 2-space indent used in repo.
+- Quotes: double quotes for strings and imports.
+- Semicolons: present consistently; follow existing file style.
+- Imports: order external, then absolute @/, then relative.
+- Keep one blank line between import groups.
+- Prefer named exports in services and routers.
+- Use import type for type-only imports.
 
-## Product Scope
-- MVP scope and roles are defined in `docs/PRD.md`.
-- Do not introduce new roles or features without updating PRD and permissions.
+## Naming conventions
+- Functions/variables: camelCase.
+- Components: PascalCase.
+- Zod schemas: <name>Schema and const for schema definitions.
+- Services: verbs like listUsers, updateUserRole, createCampaign.
+- Database fields: snake_case in schema; JS properties are camelCase.
+- Enums: lower-case string literals (see src/db/schema.ts).
 
-## QA and Testing
-- Use `docs/QA.md` as the acceptance checklist for flows you touch.
-- Add or update tests for permissions or critical mutations when feasible.
+## Validation and error handling
+- Validate inputs in services with Zod before DB access.
+- Services throw ServiceError with code:
+  - UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INVALID
+- tRPC routers must catch and pass errors to handleServiceError.
+- Do not return raw errors to the client.
+- Check for not-found results and raise ServiceError("...", "NOT_FOUND").
 
-## Seeding
-- Keep seed data aligned with `docs/SEEDING.md`.
-- If schema changes, update seed script and docs together.
+## Service-layer expectations
+- Keep all business logic in src/services.
+- Avoid embedding business logic inside routers or pages.
+- Use guards (requireAdmin, requireGroupAdmin, etc.) for permissions.
+- Avoid N+1 queries; batch in services when necessary.
 
-## Code Style and Structure
-- Keep logic in services. Routers are thin, pages are for data orchestration.
-- Prefer clear, explicit validation and error handling in services.
-- Avoid unnecessary client fetching; prefer SSR data dependencies.
+## UI and UX expectations
+- Match screens and SSR/CSR split in docs/SCREENS.md.
+- Respect MVP scope and roles in docs/PRD.md.
 
-## Change Checklist (Use for every task)
-- Does it follow SSR-first + services-only DB access?
-- Are mutations routed through tRPC?
-- Are permissions enforced server-side?
-- Do docs need updates (API, data model, screens, permissions)?
-- Does the QA checklist cover this change?
+## Documentation touchpoints
+- Update docs/API.md when router inputs/outputs or endpoints change.
+- Update docs/DATA_MODEL.md and docs/SEEDING.md when schema changes.
+- Update docs/PERMISSIONS.md when access rules change.
+- Update docs/SCREENS.md when a screen flow or UI contract changes.
+- Update docs/QA.md with new or modified manual checks.
 
+## QA checklist
+- Use docs/QA.md for flows you touch.
+- Add or update tests for permissions/critical mutations when feasible.
+
+## Change checklist
+- SSR-first + services-only DB access followed?
+- Mutations routed through tRPC?
+- Permissions enforced server-side?
+- Docs updated (API, data model, screens, permissions)?
+- QA checklist considered for impacted flows?
