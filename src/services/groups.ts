@@ -259,10 +259,11 @@ export async function listGroupsPaged(
     return { items, total: Number(totalResult[0]?.value ?? 0) };
   }
 
-  const filters = [
-    eq(groupMemberships.userId, ctx.user.id),
-    search ? ilike(groups.name, search) : undefined,
-  ].filter(Boolean);
+  const searchFilter = search ? ilike(groups.name, search) : undefined;
+  const membershipFilter = eq(groupMemberships.userId, ctx.user.id);
+  const combinedFilter = searchFilter
+    ? and(membershipFilter, searchFilter)
+    : membershipFilter;
 
   const items = await db
     .select({
@@ -273,7 +274,7 @@ export async function listGroupsPaged(
     })
     .from(groups)
     .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
-    .where(and(...(filters as [typeof groupMemberships.userId, ...unknown[]])))
+    .where(combinedFilter)
     .limit(limit)
     .offset(offset);
 
@@ -281,7 +282,7 @@ export async function listGroupsPaged(
     .select({ value: count() })
     .from(groups)
     .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
-    .where(and(...(filters as [typeof groupMemberships.userId, ...unknown[]])));
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }

@@ -384,14 +384,17 @@ export async function listPollsPaged(
   const { query, status, limit, offset } = listPollsPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
 
-  const filters = [
-    search ? ilike(polls.title, search) : undefined,
+  const searchFilter = search ? ilike(polls.title, search) : undefined;
+  const statusFilter =
     ctx.user.role === "admin"
       ? status
         ? eq(polls.status, status)
         : undefined
-      : eq(polls.status, "active"),
-  ].filter(Boolean);
+      : eq(polls.status, "active");
+  const combinedFilter =
+    searchFilter && statusFilter
+      ? and(searchFilter, statusFilter)
+      : (searchFilter ?? statusFilter);
 
   const rows = await db
     .select({
@@ -400,7 +403,7 @@ export async function listPollsPaged(
     })
     .from(polls)
     .leftJoin(users, eq(polls.createdBy, users.id))
-    .where(filters.length ? and(...(filters as [typeof polls.status, ...unknown[]])) : undefined)
+    .where(combinedFilter)
     .limit(limit)
     .offset(offset);
 
@@ -412,7 +415,7 @@ export async function listPollsPaged(
   const totalResult = await db
     .select({ value: count() })
     .from(polls)
-    .where(filters.length ? and(...(filters as [typeof polls.status, ...unknown[]])) : undefined);
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }

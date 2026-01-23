@@ -45,23 +45,30 @@ export async function listUsersPaged(
         ilike(users.username, search)
       )
     : undefined;
-  const filters = [
-    searchFilter,
-    role ? eq(users.role, role) : undefined,
-    status ? eq(users.status, status) : undefined,
-  ].filter(Boolean);
+  const roleFilter = role ? eq(users.role, role) : undefined;
+  const statusFilter = status ? eq(users.status, status) : undefined;
+  const combinedFilter =
+    searchFilter && roleFilter && statusFilter
+      ? and(searchFilter, roleFilter, statusFilter)
+      : searchFilter && roleFilter
+        ? and(searchFilter, roleFilter)
+        : searchFilter && statusFilter
+          ? and(searchFilter, statusFilter)
+          : roleFilter && statusFilter
+            ? and(roleFilter, statusFilter)
+            : (searchFilter ?? roleFilter ?? statusFilter);
 
   const items = await db
     .select()
     .from(users)
-    .where(filters.length ? and(...(filters as [typeof users.role, ...unknown[]])) : undefined)
+    .where(combinedFilter)
     .limit(limit)
     .offset(offset);
 
   const totalResult = await db
     .select({ value: count() })
     .from(users)
-    .where(filters.length ? and(...(filters as [typeof users.role, ...unknown[]])) : undefined);
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
@@ -166,7 +173,7 @@ export async function updateUserProfile(
       .limit(1);
 
     if (existing[0]) {
-      throw new ServiceError("Username already in use.", "CONFLICT");
+      throw new ServiceError("Username already in use.", "INVALID");
     }
   }
 

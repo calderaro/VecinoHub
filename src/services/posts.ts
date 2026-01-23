@@ -96,14 +96,16 @@ export async function listPostsPaged(
     ? or(ilike(posts.title, search), ilike(posts.content, search))
     : undefined;
 
-  const filters = [
-    searchFilter,
+  const statusFilter =
     ctx.user.role === "admin"
       ? status
         ? eq(posts.status, status)
         : undefined
-      : eq(posts.status, "published"),
-  ].filter(Boolean);
+      : eq(posts.status, "published");
+  const combinedFilter =
+    searchFilter && statusFilter
+      ? and(searchFilter, statusFilter)
+      : (searchFilter ?? statusFilter);
 
   const rows = await db
     .select({
@@ -112,7 +114,7 @@ export async function listPostsPaged(
     })
     .from(posts)
     .leftJoin(users, eq(posts.createdBy, users.id))
-    .where(filters.length ? and(...(filters as [typeof posts.title, ...unknown[]])) : undefined)
+    .where(combinedFilter)
     .orderBy(desc(posts.createdAt))
     .limit(limit)
     .offset(offset);
@@ -125,7 +127,7 @@ export async function listPostsPaged(
   const totalResult = await db
     .select({ value: count() })
     .from(posts)
-    .where(filters.length ? and(...(filters as [typeof posts.title, ...unknown[]])) : undefined);
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
