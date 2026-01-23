@@ -171,7 +171,7 @@ export function PollOptionsManager({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setAddOpen(false)}
-                disabled={addOption.isLoading}
+                disabled={addOption.isPending}
               >
                 Cancel
               </button>
@@ -186,9 +186,9 @@ export function PollOptionsManager({
                     amount: amount.trim() || undefined,
                   })
                 }
-                disabled={!label.trim() || addOption.isLoading}
+                disabled={!label.trim() || addOption.isPending}
               >
-                {addOption.isLoading ? "Saving" : "Save"}
+                {addOption.isPending ? "Saving" : "Save"}
               </button>
             </div>
           </div>
@@ -234,7 +234,7 @@ export function PollOptionsManager({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setEditOption(null)}
-                disabled={updateOption.isLoading}
+                disabled={updateOption.isPending}
               >
                 Cancel
               </button>
@@ -249,9 +249,9 @@ export function PollOptionsManager({
                     amount: amount.trim() || undefined,
                   })
                 }
-                disabled={!label.trim() || updateOption.isLoading}
+                disabled={!label.trim() || updateOption.isPending}
               >
-                {updateOption.isLoading ? "Saving" : "Save"}
+                {updateOption.isPending ? "Saving" : "Save"}
               </button>
             </div>
           </div>
@@ -265,14 +265,14 @@ export function PollOptionsManager({
               Delete option
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Are you sure you want to delete "{selectedLabel}"?
+              Are you sure you want to delete &quot;{selectedLabel}&quot;?
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setDeleteOption(null)}
-                disabled={removeOption.isLoading}
+                disabled={removeOption.isPending}
               >
                 Cancel
               </button>
@@ -282,9 +282,9 @@ export function PollOptionsManager({
                 onClick={() =>
                   removeOption.mutate({ optionId: deleteOption.id })
                 }
-                disabled={removeOption.isLoading}
+                disabled={removeOption.isPending}
               >
-                {removeOption.isLoading ? "Deleting" : "Delete"}
+                {removeOption.isPending ? "Deleting" : "Delete"}
               </button>
             </div>
           </div>

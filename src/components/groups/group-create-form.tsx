@@ -66,9 +66,9 @@ export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
       <button
         className="mt-4 rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!isValid || createGroup.isLoading}
+        disabled={!isValid || createGroup.isPending}
       >
-        {createGroup.isLoading ? "Creating..." : "Create group"}
+        {createGroup.isPending ? "Creating..." : "Create group"}
       </button>
     </form>
   );

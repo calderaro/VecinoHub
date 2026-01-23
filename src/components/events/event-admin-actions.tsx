@@ -43,7 +43,7 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                disabled={removeEvent.isLoading}
+                disabled={removeEvent.isPending}
               >
                 Cancel
               </button>
@@ -51,9 +51,9 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => removeEvent.mutate({ eventId })}
-                disabled={removeEvent.isLoading}
+                disabled={removeEvent.isPending}
               >
-                {removeEvent.isLoading ? "Deleting..." : "Delete"}
+                {removeEvent.isPending ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

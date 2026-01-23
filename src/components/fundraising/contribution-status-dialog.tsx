@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { trpc } from "@/lib/trpc";
 
@@ -21,12 +21,6 @@ export function ContributionStatusDialog({
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(contribution.status);
 
-  useEffect(() => {
-    if (open) {
-      setStatus(contribution.status);
-    }
-  }, [open, contribution.status]);
-
   const updateStatus = trpc.fundraising.updateContributionStatus.useMutation({
     onSuccess: () => {
       setOpen(false);
@@ -39,7 +33,10 @@ export function ContributionStatusDialog({
       <button
         className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setStatus(contribution.status);
+          setOpen(true);
+        }}
         disabled={!canEdit}
       >
         Update status
@@ -75,7 +72,7 @@ export function ContributionStatusDialog({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setOpen(false)}
-                disabled={updateStatus.isLoading}
+                disabled={updateStatus.isPending}
               >
                 Cancel
               </button>
@@ -85,9 +82,9 @@ export function ContributionStatusDialog({
                 onClick={() =>
                   updateStatus.mutate({ contributionId: contribution.id, status })
                 }
-                disabled={updateStatus.isLoading}
+                disabled={updateStatus.isPending}
               >
-                {updateStatus.isLoading ? "Saving" : "Save"}
+                {updateStatus.isPending ? "Saving" : "Save"}
               </button>
             </div>
           </div>

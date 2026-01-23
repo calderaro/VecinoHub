@@ -149,9 +149,9 @@ export function ContributionForm({
       <button
         className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!amountReady || !wireReady || submitContribution.isLoading}
+        disabled={!amountReady || !wireReady || submitContribution.isPending}
       >
-        {submitContribution.isLoading ? "Submitting" : "Submit contribution"}
+        {submitContribution.isPending ? "Submitting" : "Submit contribution"}
       </button>
     </form>
   );

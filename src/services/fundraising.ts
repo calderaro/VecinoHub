@@ -370,10 +370,16 @@ export async function listCampaignsPaged(
   const { query, status, limit, offset } = listCampaignsPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
 
-  const filters = [
-    search ? ilike(fundraisingCampaigns.title, search) : undefined,
-    status ? eq(fundraisingCampaigns.status, status) : undefined,
-  ].filter(Boolean);
+  const searchFilter = search
+    ? ilike(fundraisingCampaigns.title, search)
+    : undefined;
+  const statusFilter = status
+    ? eq(fundraisingCampaigns.status, status)
+    : undefined;
+  const combinedFilter =
+    searchFilter && statusFilter
+      ? and(searchFilter, statusFilter)
+      : (searchFilter ?? statusFilter);
 
   const rows = await db
     .select({
@@ -382,7 +388,7 @@ export async function listCampaignsPaged(
     })
     .from(fundraisingCampaigns)
     .leftJoin(users, eq(fundraisingCampaigns.createdBy, users.id))
-    .where(filters.length ? and(...(filters as [typeof fundraisingCampaigns.status, ...unknown[]])) : undefined)
+    .where(combinedFilter)
     .limit(limit)
     .offset(offset);
 
@@ -394,7 +400,7 @@ export async function listCampaignsPaged(
   const totalResult = await db
     .select({ value: count() })
     .from(fundraisingCampaigns)
-    .where(filters.length ? and(...(filters as [typeof fundraisingCampaigns.status, ...unknown[]])) : undefined);
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }

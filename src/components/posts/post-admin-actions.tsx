@@ -49,18 +49,18 @@ export function PostAdminActions({
           className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           type="button"
           onClick={() => unpublish.mutate({ postId })}
-          disabled={unpublish.isLoading}
+          disabled={unpublish.isPending}
         >
-          {unpublish.isLoading ? "Unpublishing..." : "Unpublish"}
+          {unpublish.isPending ? "Unpublishing..." : "Unpublish"}
         </button>
       ) : (
         <button
           className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
           type="button"
           onClick={() => publish.mutate({ postId })}
-          disabled={publish.isLoading}
+          disabled={publish.isPending}
         >
-          {publish.isLoading ? "Publishing..." : "Publish"}
+          {publish.isPending ? "Publishing..." : "Publish"}
         </button>
       )}
       <button
@@ -84,7 +84,7 @@ export function PostAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                disabled={remove.isLoading}
+                disabled={remove.isPending}
               >
                 Cancel
               </button>
@@ -92,9 +92,9 @@ export function PostAdminActions({
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => remove.mutate({ postId })}
-                disabled={remove.isLoading}
+                disabled={remove.isPending}
               >
-                {remove.isLoading ? "Deleting..." : "Delete"}
+                {remove.isPending ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

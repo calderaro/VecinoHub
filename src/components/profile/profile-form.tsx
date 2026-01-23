@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -81,10 +82,14 @@ export function ProfileForm({
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
         {imageTrimmed ? (
-          <img
+          <Image
             className="h-16 w-16 rounded-full border border-white/10 object-cover"
             src={imageTrimmed}
             alt={usernameTrimmed || name}
+            width={64}
+            height={64}
+            sizes="64px"
+            unoptimized
           />
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-[color:var(--surface-strong)] text-lg font-semibold text-[color:var(--muted-strong)]">

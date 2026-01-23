@@ -19,9 +19,9 @@ export function ContributionDeleteButton({
       className="rounded-full border border-rose-400/60 px-3 py-1 text-xs uppercase tracking-[0.2em] text-rose-200 transition hover:border-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
       type="button"
       onClick={() => deleteContribution.mutate({ contributionId })}
-      disabled={deleteContribution.isLoading}
+      disabled={deleteContribution.isPending}
     >
-      {deleteContribution.isLoading ? "Deleting" : "Delete"}
+      {deleteContribution.isPending ? "Deleting" : "Delete"}
     </button>
   );
 }

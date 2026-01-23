@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -64,10 +65,14 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
         className="flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(18,26,26,0.6)] px-3 py-1.5 text-sm text-[var(--foreground)] shadow-[0_12px_30px_rgba(0,0,0,0.25)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt={displayName}
             className="h-6 w-6 rounded-full object-cover"
+            width={24}
+            height={24}
+            sizes="24px"
+            unoptimized
           />
         ) : (
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(102,185,165,0.2)] text-xs font-medium uppercase text-[color:var(--muted-strong)]">

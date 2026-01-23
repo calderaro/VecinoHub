@@ -181,13 +181,13 @@ export function EventForm({
       <button
         className="mt-4 rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!isValid || createEvent.isLoading || updateEvent.isLoading}
+        disabled={!isValid || createEvent.isPending || updateEvent.isPending}
       >
         {mode === "create"
-          ? createEvent.isLoading
+          ? createEvent.isPending
             ? "Creating..."
             : "Create event"
-          : updateEvent.isLoading
+          : updateEvent.isPending
             ? "Saving..."
             : "Save changes"}
       </button>

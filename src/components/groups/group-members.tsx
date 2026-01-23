@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -89,10 +90,14 @@ export function GroupMembers({
             >
               <div className="flex items-center gap-3">
                 {member.image ? (
-                  <img
+                  <Image
                     className="h-9 w-9 rounded-full border border-white/10 object-cover"
                     src={member.image}
                     alt={displayName}
+                    width={36}
+                    height={36}
+                    sizes="36px"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[color:var(--surface-strong)] text-xs font-semibold text-[color:var(--muted-strong)]">
@@ -115,7 +120,7 @@ export function GroupMembers({
                     className="text-xs uppercase tracking-[0.2em] text-rose-300 hover:text-rose-200"
                     type="button"
                     onClick={() => setPendingRemove(member)}
-                    disabled={removeMember.isLoading}
+                    disabled={removeMember.isPending}
                   >
                     Remove
                   </button>
@@ -175,16 +180,16 @@ export function GroupMembers({
                     setAddError(null);
                     setAddOpen(false);
                   }}
-                  disabled={addMember.isLoading}
+                  disabled={addMember.isPending}
                 >
                   Cancel
                 </button>
                 <button
                   className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                   type="submit"
-                  disabled={!canSubmit || addMember.isLoading}
+                  disabled={!canSubmit || addMember.isPending}
                 >
-                  {addMember.isLoading ? "Adding" : "Add member"}
+                  {addMember.isPending ? "Adding" : "Add member"}
                 </button>
               </div>
             </form>
@@ -208,7 +213,7 @@ export function GroupMembers({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setPendingRemove(null)}
-                disabled={removeMember.isLoading}
+                disabled={removeMember.isPending}
               >
                 Cancel
               </button>
@@ -221,9 +226,9 @@ export function GroupMembers({
                     userId: pendingRemove.id,
                   })
                 }
-                disabled={removeMember.isLoading}
+                disabled={removeMember.isPending}
               >
-                {removeMember.isLoading ? "Removing" : "Remove"}
+                {removeMember.isPending ? "Removing" : "Remove"}
               </button>
             </div>
           </div>

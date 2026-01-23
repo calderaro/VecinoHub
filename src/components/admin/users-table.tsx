@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -93,10 +94,14 @@ export function UsersTable({
               >
                 <div className="flex items-center gap-3">
                   {user.image ? (
-                    <img
+                    <Image
                       className="h-10 w-10 rounded-full border border-white/10 object-cover"
                       src={user.image}
                       alt={displayName}
+                      width={40}
+                      height={40}
+                      sizes="40px"
+                      unoptimized
                     />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[color:var(--surface-strong)] text-xs font-semibold text-[color:var(--muted-strong)]">

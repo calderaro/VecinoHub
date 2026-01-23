@@ -50,7 +50,7 @@ export function PollAdminActions({
           className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setLaunchOpen(true)}
-          disabled={launchPoll.isLoading}
+          disabled={launchPoll.isPending}
         >
           Launch poll
         </button>
@@ -60,7 +60,7 @@ export function PollAdminActions({
           className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setResetOpen(true)}
-          disabled={resetPoll.isLoading}
+          disabled={resetPoll.isPending}
         >
           Reset to draft
         </button>
@@ -70,7 +70,7 @@ export function PollAdminActions({
           className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-rose-300 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setOpen(true)}
-          disabled={closePoll.isLoading}
+          disabled={closePoll.isPending}
         >
           Close poll
         </button>
@@ -79,7 +79,7 @@ export function PollAdminActions({
           className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setReopenOpen(true)}
-          disabled={reopenPoll.isLoading}
+          disabled={reopenPoll.isPending}
         >
           Re-open poll
         </button>
@@ -99,7 +99,7 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setLaunchOpen(false)}
-                disabled={launchPoll.isLoading}
+                disabled={launchPoll.isPending}
               >
                 Cancel
               </button>
@@ -107,9 +107,9 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => launchPoll.mutate({ pollId, status: "active" })}
-                disabled={launchPoll.isLoading}
+                disabled={launchPoll.isPending}
               >
-                {launchPoll.isLoading ? "Launching" : "Launch poll"}
+                {launchPoll.isPending ? "Launching" : "Launch poll"}
               </button>
             </div>
           </div>
@@ -130,7 +130,7 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setResetOpen(false)}
-                disabled={resetPoll.isLoading}
+                disabled={resetPoll.isPending}
               >
                 Cancel
               </button>
@@ -138,9 +138,9 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => resetPoll.mutate({ pollId })}
-                disabled={resetPoll.isLoading}
+                disabled={resetPoll.isPending}
               >
-                {resetPoll.isLoading ? "Resetting" : "Reset to draft"}
+                {resetPoll.isPending ? "Resetting" : "Reset to draft"}
               </button>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setOpen(false)}
-                disabled={closePoll.isLoading}
+                disabled={closePoll.isPending}
               >
                 Cancel
               </button>
@@ -169,9 +169,9 @@ export function PollAdminActions({
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => closePoll.mutate({ pollId })}
-                disabled={closePoll.isLoading}
+                disabled={closePoll.isPending}
               >
-                {closePoll.isLoading ? "Closing" : "Close poll"}
+                {closePoll.isPending ? "Closing" : "Close poll"}
               </button>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setReopenOpen(false)}
-                disabled={reopenPoll.isLoading}
+                disabled={reopenPoll.isPending}
               >
                 Cancel
               </button>
@@ -200,9 +200,9 @@ export function PollAdminActions({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => reopenPoll.mutate({ pollId })}
-                disabled={reopenPoll.isLoading}
+                disabled={reopenPoll.isPending}
               >
-                {reopenPoll.isLoading ? "Re-opening" : "Re-open poll"}
+                {reopenPoll.isPending ? "Re-opening" : "Re-open poll"}
               </button>
             </div>
           </div>

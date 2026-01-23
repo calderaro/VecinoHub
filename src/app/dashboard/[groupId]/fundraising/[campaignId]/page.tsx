@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { ContributionDeleteButton } from "@/components/fundraising/contribution-delete-button";
 import Link from "next/link";
 
-import { listUserGroups } from "@/services/groups";
 import { getCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 

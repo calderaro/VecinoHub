@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, or, sql } from "drizzle-orm";
+import { count, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -137,8 +137,6 @@ export async function listEventsPaged(
       )
     : undefined;
 
-  const filters = [searchFilter].filter(Boolean);
-
   const rows = await db
     .select({
       event: events,
@@ -146,7 +144,7 @@ export async function listEventsPaged(
     })
     .from(events)
     .leftJoin(users, eq(events.createdBy, users.id))
-    .where(filters.length ? and(...(filters as [typeof events.title, ...unknown[]])) : undefined)
+    .where(searchFilter)
     .orderBy(events.startsAt)
     .limit(limit)
     .offset(offset);
@@ -159,7 +157,7 @@ export async function listEventsPaged(
   const totalResult = await db
     .select({ value: count() })
     .from(events)
-    .where(filters.length ? and(...(filters as [typeof events.title, ...unknown[]])) : undefined);
+    .where(searchFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
