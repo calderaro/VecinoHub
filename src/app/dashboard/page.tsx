@@ -14,16 +14,18 @@ export default async function DashboardIndexPage() {
 
   if (groups.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-            VecinoHub
-          </p>
-          <h1 className="text-3xl font-semibold">No group assigned yet</h1>
-          <p className="text-sm text-slate-400">
-            Your account is pending group assignment. Please wait for a group
-            admin to add you to a house.
-          </p>
+      <div className="min-h-screen text-[var(--foreground)]">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-20">
+          <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+            <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+              VecinoHub
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold">No group assigned yet</h1>
+            <p className="mt-3 text-sm text-[color:var(--muted)]">
+              Your account is pending group assignment. Please wait for a group
+              admin to add you to a house.
+            </p>
+          </div>
         </div>
       </div>
     );

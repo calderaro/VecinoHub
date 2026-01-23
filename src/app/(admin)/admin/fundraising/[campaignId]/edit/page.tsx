@@ -26,9 +26,10 @@ export default async function CampaignEditPage({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
         <h1 className="text-3xl font-semibold">Edit campaign</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[color:var(--muted)]">
           Update title, goal amount, and status.
         </p>
       </header>

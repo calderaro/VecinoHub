@@ -23,40 +23,37 @@ export default async function AdminLayout({
   const groups = await listUserGroups({ user: session.user });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-900/80 bg-slate-950/80">
+    <div className="min-h-screen text-[var(--foreground)]">
+      <header className="border-b border-white/10 bg-[rgba(10,16,16,0.78)] backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6">
-          <Link
-            href="/admin"
-            className="group flex flex-col"
-          >
-            <span className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-200 transition group-hover:text-emerald-300">
+          <Link href="/admin" className="group flex flex-col">
+            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-strong)] transition group-hover:text-[color:var(--accent)]">
               VecinoHub
             </span>
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-400 transition group-hover:text-emerald-300/70">
+            <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
               Admin
             </span>
           </Link>
-          <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.2em] text-slate-400">
-            <Link className="hover:text-emerald-200" href="/admin">
+          <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin">
               Overview
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/users">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/users">
               Users
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/groups">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/groups">
               Groups
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/polls">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/polls">
               Polls
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/fundraising">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/fundraising">
               Fundraising
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/events">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/events">
               Events
             </Link>
-            <Link className="hover:text-emerald-200" href="/admin/posts">
+            <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/posts">
               Posts
             </Link>
           </nav>

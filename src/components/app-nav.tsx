@@ -15,7 +15,7 @@ export function AppNav({ basePath }: { basePath: string }) {
   ];
 
   return (
-    <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.2em] text-slate-400">
+    <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
       {navLinks.map((link) => {
         const isActive = pathname === link.href;
         return (
@@ -24,8 +24,8 @@ export function AppNav({ basePath }: { basePath: string }) {
             href={link.href}
             className={
               isActive
-                ? "text-emerald-200"
-                : "transition hover:text-emerald-200"
+                ? "text-[color:var(--accent)]"
+                : "transition hover:text-[color:var(--accent-strong)]"
             }
           >
             {link.label}

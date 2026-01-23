@@ -27,7 +27,7 @@ export function FundraisingAdminActions({ contribution }: { contribution: Contri
   return (
     <div className="flex flex-wrap gap-2">
       <button
-        className="rounded-full border border-emerald-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:bg-[rgba(225,177,94,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
         onClick={() => confirmContribution.mutate({ contributionId: contribution.id })}
         disabled={confirmContribution.isLoading}

@@ -28,14 +28,15 @@ export default async function MembersPage({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">House roster</p>
         <h1 className="text-3xl font-semibold">{group.name} members</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[color:var(--muted)]">
           Manage residents in this house group.
         </p>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         <GroupMembers
           groupId={group.id}
           members={members}

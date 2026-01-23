@@ -33,50 +33,50 @@ export default async function NeighborCampaignDetailPage({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
         <h1 className="text-3xl font-semibold">{campaign.title}</h1>
         {campaign.description ? (
-          <p className="text-sm text-slate-400">{campaign.description}</p>
+          <p className="text-sm text-[color:var(--muted)]">{campaign.description}</p>
         ) : null}
-        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
           <span>Status: {campaign.status}</span>
           <span>Per group: ${campaign.amount}</span>
           <span>Goal: ${campaign.goalAmount}</span>
         </div>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Your contributions</h2>
           {campaign.status === "open" ? (
             <Link
-              className="rounded-full border border-emerald-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200"
+              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}/contribute`}
             >
               Submit contribution
             </Link>
           ) : null}
         </div>
-        <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
           Total contributed: ${contributedTotal.toFixed(2)}
         </p>
         <div className="mt-4 space-y-3">
           {contributions.length === 0 ? (
-            <p className="text-sm text-slate-500">No contributions submitted yet.</p>
+            <p className="text-sm text-[color:var(--muted)]">No contributions submitted yet.</p>
           ) : (
             contributions.map((contribution) => (
               <div
                 key={contribution.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-800/80 px-3 py-2 text-sm text-slate-300"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-3 py-2 text-sm text-[color:var(--muted-strong)]"
               >
                 <div>
-                  <p className="font-medium text-slate-200">
+                  <p className="font-medium text-[var(--foreground)]">
                     {contribution.method.replace("_", " ")}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Amount: ${contribution.amount}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Status: {contribution.status}
                   </p>
                 </div>

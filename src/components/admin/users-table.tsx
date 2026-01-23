@@ -44,18 +44,18 @@ export function UsersTable({
   });
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-semibold">Users</h2>
         <form className="flex flex-wrap gap-3" method="get">
           <input
-            className="min-w-[200px] rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
+            className="min-w-[200px] rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             name="q"
             placeholder="Search users"
             defaultValue={query}
           />
           <select
-            className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
+            className="rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             name="role"
             defaultValue={role}
           >
@@ -64,7 +64,7 @@ export function UsersTable({
             <option value="admin">Admin</option>
           </select>
           <select
-            className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none ring-slate-700 focus:ring-2"
+            className="rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             name="status"
             defaultValue={status}
           >
@@ -73,7 +73,7 @@ export function UsersTable({
             <option value="inactive">Inactive</option>
           </select>
           <button
-            className="rounded-lg border border-slate-800 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             type="submit"
           >
             Filter
@@ -82,41 +82,41 @@ export function UsersTable({
       </div>
       <div className="mt-4 space-y-3">
         {users.length === 0 ? (
-          <p className="text-sm text-slate-500">No users found.</p>
+          <p className="text-sm text-[color:var(--muted)]">No users found.</p>
         ) : (
           users.map((user) => {
             const displayName = user.username ?? user.name;
             return (
               <div
                 key={user.id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-800/80 px-3 py-3 text-sm"
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-3 py-3 text-sm"
               >
                 <div className="flex items-center gap-3">
                   {user.image ? (
                     <img
-                      className="h-10 w-10 rounded-full border border-slate-800 object-cover"
+                      className="h-10 w-10 rounded-full border border-white/10 object-cover"
                       src={user.image}
                       alt={displayName}
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-300">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[color:var(--surface-strong)] text-xs font-semibold text-[color:var(--muted-strong)]">
                       {(displayName?.[0] ?? "?").toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-slate-200">{displayName}</p>
+                    <p className="font-medium text-[var(--foreground)]">{displayName}</p>
                     {user.username ? (
-                      <p className="text-xs text-slate-500">{user.name}</p>
+                      <p className="text-xs text-[color:var(--muted)]">{user.name}</p>
                     ) : null}
-                    <p className="text-xs text-slate-500">{user.email}</p>
-                    <p className="text-xs text-slate-500">{user.id}</p>
+                    <p className="text-xs text-[color:var(--muted)]">{user.email}</p>
+                    <p className="text-xs text-[color:var(--muted)]">{user.id}</p>
                   </div>
                 </div>
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <label className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                   Role
                   <select
-                    className="mt-2 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs text-slate-100 outline-none ring-slate-700 focus:ring-2"
+                    className="mt-2 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                     value={user.role}
                     onChange={(event) =>
                       updateRole.mutate({
@@ -129,10 +129,10 @@ export function UsersTable({
                     <option value="admin">admin</option>
                   </select>
                 </label>
-                <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <label className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                   Status
                   <select
-                    className="mt-2 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs text-slate-100 outline-none ring-slate-700 focus:ring-2"
+                    className="mt-2 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                     value={user.status}
                     onChange={(event) =>
                       updateStatus.mutate({
@@ -152,19 +152,19 @@ export function UsersTable({
         )}
       </div>
       {error ? (
-        <p className="mt-3 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+        <p className="mt-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
           {error}
         </p>
       ) : null}
 
-      <div className="mt-6 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-slate-500">
+      <div className="mt-6 flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
         <span>
           Page {currentPage} of {totalPages}
         </span>
         <div className="flex items-center gap-3">
           {currentPage > 1 ? (
             <a
-              className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
+              className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin?${new URLSearchParams({
                 q: query || "",
                 role: role || "",
@@ -177,7 +177,7 @@ export function UsersTable({
           ) : null}
           {currentPage < totalPages ? (
             <a
-              className="rounded-full border border-slate-800 px-3 py-1 text-slate-300 hover:border-emerald-300"
+              className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin?${new URLSearchParams({
                 q: query || "",
                 role: role || "",

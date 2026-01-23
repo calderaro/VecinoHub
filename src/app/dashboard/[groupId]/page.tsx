@@ -47,34 +47,35 @@ export default async function DashboardPage({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Neighborhood overview</p>
         <h1 className="text-3xl font-semibold">{group.name}</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[color:var(--muted)]">
           Overview for this house group.
         </p>
       </header>
 
       {/* Posts Section */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Latest Posts</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Latest Posts</h2>
+            <p className="text-sm text-[color:var(--muted)]">
               {posts.total} post{posts.total !== 1 ? "s" : ""} published
             </p>
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/posts`}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             View all posts
           </Link>
         </div>
 
         {posts.items.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No posts yet.</p>
+          <p className="mt-6 text-sm text-[color:var(--muted)]">No posts yet.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-800">
+          <ul className="mt-6 divide-y divide-white/10">
             {posts.items.map((post) => (
               <li key={post.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -82,13 +83,13 @@ export default async function DashboardPage({
                   className="group flex items-start justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-100 group-hover:text-emerald-300 transition">
+                    <p className="font-medium text-[var(--foreground)] transition group-hover:text-[color:var(--accent)]">
                       {post.title}
                     </p>
-                    <p className="mt-1 line-clamp-2 text-sm text-slate-400">
+                    <p className="mt-1 line-clamp-2 text-sm text-[color:var(--muted)]">
                       {post.content}
                     </p>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-[color:var(--muted)]">
                       {new Intl.DateTimeFormat("en-US", {
                         month: "short",
                         day: "numeric",
@@ -102,7 +103,7 @@ export default async function DashboardPage({
                     </p>
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-emerald-300"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -117,26 +118,26 @@ export default async function DashboardPage({
       </section>
 
       {/* Events Section */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Upcoming Events</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Upcoming Events</h2>
+            <p className="text-sm text-[color:var(--muted)]">
               {events.total} event{events.total !== 1 ? "s" : ""} scheduled
             </p>
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/events`}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             View all events
           </Link>
         </div>
 
         {events.items.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No upcoming events yet.</p>
+          <p className="mt-6 text-sm text-[color:var(--muted)]">No upcoming events yet.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-800">
+          <ul className="mt-6 divide-y divide-white/10">
             {events.items.map((event) => (
               <li key={event.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -144,10 +145,10 @@ export default async function DashboardPage({
                   className="group flex items-start justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-100 group-hover:text-emerald-300 transition">
+                    <p className="font-medium text-[var(--foreground)] transition group-hover:text-[color:var(--accent)]">
                       {event.title}
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">
+                    <p className="mt-1 text-sm text-[color:var(--muted)]">
                       {new Intl.DateTimeFormat("en-US", {
                         weekday: "short",
                         month: "short",
@@ -156,19 +157,19 @@ export default async function DashboardPage({
                         minute: "2-digit",
                       }).format(event.startsAt)}
                       {event.location && (
-                        <span className="ml-2 text-slate-500">
+                        <span className="ml-2 text-[color:var(--muted)]">
                           &bull; {event.location}
                         </span>
                       )}
                     </p>
                     {event.creatorName && (
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-[color:var(--muted)]">
                         by {event.creatorName}
                       </p>
                     )}
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-emerald-300"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -183,26 +184,26 @@ export default async function DashboardPage({
       </section>
 
       {/* Polls Section */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Active Polls</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Active Polls</h2>
+            <p className="text-sm text-[color:var(--muted)]">
               {polls.total} poll{polls.total !== 1 ? "s" : ""} available
             </p>
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/polls`}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             View all polls
           </Link>
         </div>
 
         {polls.items.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No active polls yet.</p>
+          <p className="mt-6 text-sm text-[color:var(--muted)]">No active polls yet.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-800">
+          <ul className="mt-6 divide-y divide-white/10">
             {polls.items.map((poll) => (
               <li key={poll.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -210,21 +211,21 @@ export default async function DashboardPage({
                   className="group flex items-start justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-100 group-hover:text-emerald-300 transition">
+                    <p className="font-medium text-[var(--foreground)] transition group-hover:text-[color:var(--accent)]">
                       {poll.title}
                     </p>
                     {poll.description && (
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-400">
+                      <p className="mt-1 line-clamp-2 text-sm text-[color:var(--muted)]">
                         {poll.description}
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-slate-500">
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                    <p className="mt-2 text-xs text-[color:var(--muted)]">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${
                         poll.status === "active"
-                          ? "bg-emerald-900/50 text-emerald-300"
+                          ? "border-[rgba(102,185,165,0.45)] bg-[rgba(102,185,165,0.2)] text-[color:var(--accent-cool)]"
                           : poll.status === "draft"
-                          ? "bg-slate-700/50 text-slate-400"
-                          : "bg-red-900/50 text-red-300"
+                          ? "border-white/15 bg-white/5 text-[color:var(--muted)]"
+                          : "border-rose-500/40 bg-rose-500/15 text-rose-200"
                       }`}>
                         {poll.status}
                       </span>
@@ -236,7 +237,7 @@ export default async function DashboardPage({
                     </p>
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-emerald-300"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -251,26 +252,26 @@ export default async function DashboardPage({
       </section>
 
       {/* Fundraising Section */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Active Campaigns</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Active Campaigns</h2>
+            <p className="text-sm text-[color:var(--muted)]">
               {campaigns.total} open campaign{campaigns.total !== 1 ? "s" : ""}
             </p>
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/fundraising`}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             View all campaigns
           </Link>
         </div>
 
         {campaigns.items.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No active campaigns.</p>
+          <p className="mt-6 text-sm text-[color:var(--muted)]">No active campaigns.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-800">
+          <ul className="mt-6 divide-y divide-white/10">
             {campaigns.items.map((campaign) => (
               <li key={campaign.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -278,19 +279,19 @@ export default async function DashboardPage({
                   className="group flex items-start justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-100 group-hover:text-emerald-300 transition">
+                    <p className="font-medium text-[var(--foreground)] transition group-hover:text-[color:var(--accent)]">
                       {campaign.title}
                     </p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      <span className="text-emerald-300 font-medium">
+                    <p className="mt-1 text-sm text-[color:var(--muted)]">
+                      <span className="text-[color:var(--accent)] font-medium">
                         Goal: ${Number(campaign.goalAmount).toLocaleString()}
                       </span>
-                      <span className="ml-2 text-slate-500">
+                      <span className="ml-2 text-[color:var(--muted)]">
                         (${Number(campaign.amount).toLocaleString()} per group)
                       </span>
                     </p>
                     {campaign.dueDate && (
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-[color:var(--muted)]">
                         Due {new Intl.DateTimeFormat("en-US", {
                           month: "short",
                           day: "numeric",
@@ -300,7 +301,7 @@ export default async function DashboardPage({
                     )}
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-emerald-300"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -315,44 +316,44 @@ export default async function DashboardPage({
       </section>
 
       {/* Members Section */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Group Members</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Group Members</h2>
+            <p className="text-sm text-[color:var(--muted)]">
               {members.length} member{members.length !== 1 ? "s" : ""} in this group
             </p>
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/members`}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 transition hover:border-emerald-300 hover:text-emerald-200"
+            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             View all members
           </Link>
         </div>
 
         {members.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-400">No members yet.</p>
+          <p className="mt-6 text-sm text-[color:var(--muted)]">No members yet.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-slate-800">
+          <ul className="mt-6 divide-y divide-white/10">
             {members.slice(0, 5).map((member) => (
               <li key={member.id} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-sm font-medium text-slate-300">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(225,177,94,0.18)] text-sm font-medium text-[color:var(--muted-strong)]">
                     {member.name?.charAt(0).toUpperCase() || member.email.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-100">
+                    <p className="font-medium text-[var(--foreground)]">
                       {member.name}
                     </p>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[color:var(--muted)]">
                       {member.email}
                     </p>
                   </div>
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${
                     member.role === "admin"
-                      ? "bg-amber-900/50 text-amber-300"
-                      : "bg-slate-700/50 text-slate-400"
+                      ? "border-[rgba(225,177,94,0.5)] bg-[rgba(225,177,94,0.2)] text-[color:var(--accent)]"
+                      : "border-white/10 bg-white/5 text-[color:var(--muted)]"
                   }`}>
                     {member.role}
                   </span>

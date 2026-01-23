@@ -19,10 +19,10 @@ export function GroupSelector({
   const router = useRouter();
 
   return (
-    <label className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+    <label className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
       Group
       <select
-        className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs text-slate-100 outline-none ring-slate-700 focus:ring-2"
+        className="rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
         value={selectedGroupId}
         onChange={(event) => {
           router.push(`${basePath}/${event.target.value}`);

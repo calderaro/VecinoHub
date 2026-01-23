@@ -33,16 +33,16 @@ export default async function GroupDetailPage({
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">{group.name}</h1>
           {group.address ? (
-            <p className="text-sm text-slate-400">{group.address}</p>
+            <p className="text-sm text-[color:var(--muted)]">{group.address}</p>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-3">
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-400">
+          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
             {canManage ? "Group admin" : "Member"}
           </span>
           {canManage ? (
             <Link
-              className="rounded-full border border-emerald-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200"
+              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/admin/groups/${group.id}/edit`}
             >
               Edit
@@ -51,7 +51,7 @@ export default async function GroupDetailPage({
         </div>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         <h2 className="text-lg font-semibold">Members</h2>
         <GroupMembers
           groupId={group.id}

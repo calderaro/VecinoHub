@@ -96,22 +96,22 @@ export default async function CampaignDetailPage({
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">{campaign.title}</h1>
           {campaign.description ? (
-            <p className="text-sm text-slate-400">{campaign.description}</p>
+            <p className="text-sm text-[color:var(--muted)]">{campaign.description}</p>
           ) : null}
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             Status: {campaign.status}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200">
+          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">
             Per group: ${campaign.amount}
           </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300">
+          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
             Goal: ${campaign.goalAmount}
           </span>
           {session.user.role === "admin" ? (
             <Link
-              className="rounded-full border border-emerald-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200"
+              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/admin/fundraising/${campaign.id}/edit`}
             >
               Edit
@@ -121,34 +121,34 @@ export default async function CampaignDetailPage({
       </header>
 
       {session.user.role === "admin" ? (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">Contributions</h2>
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+            <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
               Groups contributed: {participation.contributingGroups}/
               {participation.activeGroups} ({participationPercent}%)
             </div>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             <span>Total contributed: ${contributedTotal.toFixed(2)}</span>
             <span>Completion: {completionPercent}%</span>
           </div>
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             {campaign.status === "open" ? (
               <Link
-                className="rounded-full border border-emerald-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
                 href={`/admin/fundraising/${campaign.id}/contribute`}
               >
                 Submit contribution
               </Link>
             ) : null}
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             <Link
               className={`rounded-full border px-3 py-1 ${
                 !statusFilter
-                  ? "border-emerald-300 text-emerald-200"
-                  : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({})}`}
             >
@@ -157,8 +157,8 @@ export default async function CampaignDetailPage({
             <Link
               className={`rounded-full border px-3 py-1 ${
                 statusFilter === "submitted"
-                  ? "border-emerald-300 text-emerald-200"
-                  : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "submitted" })}`}
             >
@@ -167,8 +167,8 @@ export default async function CampaignDetailPage({
             <Link
               className={`rounded-full border px-3 py-1 ${
                 statusFilter === "confirmed"
-                  ? "border-emerald-300 text-emerald-200"
-                  : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "confirmed" })}`}
             >
@@ -177,8 +177,8 @@ export default async function CampaignDetailPage({
             <Link
               className={`rounded-full border px-3 py-1 ${
                 statusFilter === "rejected"
-                  ? "border-emerald-300 text-emerald-200"
-                  : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
+                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "rejected" })}`}
             >
@@ -187,7 +187,7 @@ export default async function CampaignDetailPage({
           </div>
           <div className="mt-4 space-y-3">
             {contributions.length === 0 ? (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-[color:var(--muted)]">
                 {statusFilter
                   ? "No contributions match this status."
                   : "No contributions submitted."}
@@ -196,28 +196,28 @@ export default async function CampaignDetailPage({
               contributions.map((contribution) => (
                 <div
                   key={contribution.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-800/80 px-3 py-2 text-sm text-slate-300"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-3 py-2 text-sm text-[color:var(--muted-strong)]"
                 >
                 <div>
-                  <p className="font-medium text-slate-200">
+                  <p className="font-medium text-[var(--foreground)]">
                     {contribution.method.replace("_", " ")}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Amount: ${contribution.amount}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Status: {contribution.status}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Group:{" "}
                     <Link
-                      className="text-emerald-200 hover:text-emerald-100"
+                      className="text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                       href={`/admin/groups/${contribution.groupId}`}
                     >
                       {contribution.groupName}
                     </Link>
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--muted)]">
                     Submitted by:{" "}
                     {contribution.submittedByName || contribution.submittedByEmail}
                   </p>

@@ -20,17 +20,14 @@ export default async function ProfilePage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-900/80 bg-slate-950/80">
+    <div className="min-h-screen text-[var(--foreground)]">
+      <header className="border-b border-white/10 bg-[rgba(10,16,16,0.78)] backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-          <Link
-            href="/dashboard"
-            className="group flex flex-col"
-          >
-            <span className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-200 transition group-hover:text-emerald-300">
+          <Link href="/dashboard" className="group flex flex-col">
+            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-strong)] transition group-hover:text-[color:var(--accent)]">
               VecinoHub
             </span>
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-400 transition group-hover:text-emerald-300/70">
+            <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
               Profile
             </span>
           </Link>

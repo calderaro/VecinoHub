@@ -47,7 +47,7 @@ export function PollAdminActions({
     <>
       {status === "draft" ? (
         <button
-          className="rounded-full border border-emerald-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setLaunchOpen(true)}
           disabled={launchPoll.isLoading}
@@ -57,7 +57,7 @@ export function PollAdminActions({
       ) : null}
       {status !== "draft" ? (
         <button
-          className="rounded-full border border-amber-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-amber-200 hover:border-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setResetOpen(true)}
           disabled={resetPoll.isLoading}
@@ -67,7 +67,7 @@ export function PollAdminActions({
       ) : null}
       {status !== "closed" ? (
         <button
-          className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-rose-300 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-rose-300 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setOpen(true)}
           disabled={closePoll.isLoading}
@@ -76,7 +76,7 @@ export function PollAdminActions({
         </button>
       ) : (
         <button
-          className="rounded-full border border-emerald-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setReopenOpen(true)}
           disabled={reopenPoll.isLoading}
@@ -87,16 +87,16 @@ export function PollAdminActions({
 
       {launchOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Launch poll
             </h3>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
               Launching a poll makes it active and locks the options. Continue?
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-slate-500"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setLaunchOpen(false)}
                 disabled={launchPoll.isLoading}
@@ -104,7 +104,7 @@ export function PollAdminActions({
                 Cancel
               </button>
               <button
-                className="rounded-full border border-emerald-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => launchPoll.mutate({ pollId, status: "active" })}
                 disabled={launchPoll.isLoading}
@@ -118,16 +118,16 @@ export function PollAdminActions({
 
       {resetOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Reset poll to draft
             </h3>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
               This will remove all votes and move the poll back to draft. Continue?
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-slate-500"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setResetOpen(false)}
                 disabled={resetPoll.isLoading}
@@ -135,7 +135,7 @@ export function PollAdminActions({
                 Cancel
               </button>
               <button
-                className="rounded-full border border-amber-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-amber-200 hover:border-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => resetPoll.mutate({ pollId })}
                 disabled={resetPoll.isLoading}
@@ -149,16 +149,16 @@ export function PollAdminActions({
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Close poll
             </h3>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
               Closing a poll prevents further votes and edits. Continue?
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-slate-500"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={closePoll.isLoading}
@@ -180,16 +180,16 @@ export function PollAdminActions({
 
       {reopenOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Re-open poll
             </h3>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
               Re-opening a poll allows groups to update their votes. Continue?
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-slate-500"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setReopenOpen(false)}
                 disabled={reopenPoll.isLoading}
@@ -197,7 +197,7 @@ export function PollAdminActions({
                 Cancel
               </button>
               <button
-                className="rounded-full border border-emerald-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-emerald-200 hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() => reopenPoll.mutate({ pollId })}
                 disabled={reopenPoll.isLoading}

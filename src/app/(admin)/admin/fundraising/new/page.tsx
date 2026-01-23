@@ -16,9 +16,10 @@ export default async function NewCampaignPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
         <h1 className="text-3xl font-semibold">Create campaign</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[color:var(--muted)]">
           Request neighborhood contributions.
         </p>
       </header>

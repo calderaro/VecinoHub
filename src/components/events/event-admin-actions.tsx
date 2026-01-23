@@ -31,16 +31,16 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
       </button>
       {confirmOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
               Delete event
             </h3>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[color:var(--muted)]">
               This will permanently remove the event from the calendar.
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-300 hover:border-slate-500"
+                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
                 type="button"
                 onClick={() => setConfirmOpen(false)}
                 disabled={removeEvent.isLoading}

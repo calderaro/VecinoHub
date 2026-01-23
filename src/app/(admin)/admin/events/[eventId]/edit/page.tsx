@@ -24,9 +24,10 @@ export default async function AdminEventEditPage({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-12">
-      <header className="space-y-2">
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
         <h1 className="text-3xl font-semibold">Edit event</h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[color:var(--muted)]">
           Update the event details before sharing them.
         </p>
       </header>

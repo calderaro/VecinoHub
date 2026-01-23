@@ -61,7 +61,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border border-slate-800 px-3 py-1.5 text-sm text-slate-200 transition hover:border-emerald-300"
+        className="flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(18,26,26,0.6)] px-3 py-1.5 text-sm text-[var(--foreground)] shadow-[0_12px_30px_rgba(0,0,0,0.25)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
       >
         {user.image ? (
           <img
@@ -70,14 +70,14 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             className="h-6 w-6 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-xs font-medium uppercase text-slate-300">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(102,185,165,0.2)] text-xs font-medium uppercase text-[color:var(--muted-strong)]">
             {displayName.charAt(0)}
           </div>
         )}
         <div className="flex flex-col items-start">
           <span className="max-w-[120px] truncate leading-tight">{displayName}</span>
           {selectedGroupId && groupName && (
-            <span className="max-w-[120px] truncate text-xs text-slate-400 leading-tight">
+            <span className="max-w-[120px] truncate text-xs leading-tight text-[color:var(--muted)]">
               {groupName}
             </span>
           )}
@@ -98,13 +98,13 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 min-w-[160px] overflow-hidden rounded-lg border border-slate-800 bg-slate-900 shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
           <div className="py-1">
             {selectedGroupId && (
               <Link
                 href={`/dashboard/${selectedGroupId}`}
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-emerald-200"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -121,7 +121,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-emerald-200"
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -138,7 +138,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-emerald-300 transition hover:bg-slate-800 hover:text-emerald-200"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--accent)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -160,8 +160,8 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
           </div>
 
           {groups && groups.length > 0 && (
-            <div className="border-t border-slate-800 py-1">
-              <p className="px-4 py-2 text-xs uppercase tracking-wider text-slate-500">
+            <div className="border-t border-white/10 py-1">
+              <p className="px-4 py-2 text-xs uppercase tracking-wider text-[color:var(--muted)]">
                 {selectedGroupId ? "Switch Group" : "Groups"}
               </p>
               {groups.map((group) => (
@@ -172,10 +172,10 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                     setIsOpen(false);
                     router.push(`/dashboard/${group.id}`);
                   }}
-                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition hover:bg-slate-800 ${
+                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition hover:bg-white/5 ${
                     selectedGroupId && group.id === selectedGroupId
-                      ? "text-emerald-300"
-                      : "text-slate-300 hover:text-emerald-200"
+                      ? "text-[color:var(--accent)]"
+                      : "text-[color:var(--muted-strong)] hover:text-[color:var(--accent-strong)]"
                   }`}
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,12 +197,12 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             </div>
           )}
 
-          <div className="border-t border-slate-800 py-1">
+          <div className="border-t border-white/10 py-1">
             <button
               type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
