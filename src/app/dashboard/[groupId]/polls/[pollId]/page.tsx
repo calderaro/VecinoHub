@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { PollVoteForm } from "@/components/polls/poll-vote-form";
 import { getPollWithOptions } from "@/services/polls";
@@ -25,6 +26,8 @@ export default async function NeighborPollDetailPage({
     pollId: poll.id,
     groupId: resolvedParams.groupId,
   });
+  const t = await getTranslations("dashboard.pollDetail");
+  const tStatus = await getTranslations("status");
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
@@ -34,12 +37,12 @@ export default async function NeighborPollDetailPage({
           <p className="text-sm text-[color:var(--muted)]">{poll.description}</p>
         ) : null}
         <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          Status: {poll.status}
+          {t("statusLabel")}: {tStatus(poll.status)}
         </p>
       </header>
 
       <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-        <h2 className="text-lg font-semibold">Options</h2>
+        <h2 className="text-lg font-semibold">{t("optionsTitle")}</h2>
         <div className="mt-4 grid gap-3">
           {poll.options.map((option) => (
             <div
@@ -54,7 +57,7 @@ export default async function NeighborPollDetailPage({
               ) : null}
               {option.amount ? (
                 <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                  Amount: ${option.amount}
+                  {t("amount", { amount: option.amount })}
                 </div>
               ) : null}
             </div>

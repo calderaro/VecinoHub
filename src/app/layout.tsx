@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Fraunces, JetBrains_Mono, Onest } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
 import { Providers } from "./providers";
+import { localeCookieName, normalizeLanguage } from "@/lib/locale";
+import { getSession } from "@/server/auth";
 
 const onest = Onest({
   variable: "--font-onest",
@@ -26,18 +30,27 @@ export const metadata: Metadata = {
   description: "Neighborhood administration for house groups.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const session = await getSession();
+  const cookieLocale = cookieStore.get(localeCookieName)?.value ?? null;
+  const sessionLocale = session?.user.preferredLanguage ?? null;
+  const locale = normalizeLanguage(cookieLocale ?? sessionLocale);
+  const messages = (await import(`../messages/${locale}.json`)).default;
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${onest.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
     >
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -19,6 +20,7 @@ export function CampaignEditForm({
   initialStatus: "open" | "closed";
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.campaignForm");
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [goalAmount, setGoalAmount] = useState(initialGoalAmount);
@@ -39,7 +41,7 @@ export function CampaignEditForm({
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Title and goal amount are required.");
+          setError(t("validationError"));
           return;
         }
         updateCampaign.mutate({
@@ -51,10 +53,10 @@ export function CampaignEditForm({
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Edit campaign</h2>
+      <h2 className="text-lg font-semibold">{t("editTitle")}</h2>
       <div className="mt-4 space-y-4">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -63,7 +65,7 @@ export function CampaignEditForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Description</span>
+          <span>{t("fields.description")}</span>
           <textarea
             className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={description}
@@ -72,7 +74,7 @@ export function CampaignEditForm({
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-            <span>Goal amount</span>
+            <span>{t("fields.goalAmount")}</span>
             <input
               className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
               value={goalAmount}
@@ -81,7 +83,7 @@ export function CampaignEditForm({
             />
           </label>
           <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-            <span>Status</span>
+            <span>{t("fields.status")}</span>
             <select
               className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
               value={status}
@@ -89,8 +91,8 @@ export function CampaignEditForm({
                 setStatus(event.target.value as "open" | "closed")
               }
             >
-              <option value="open">open</option>
-              <option value="closed">closed</option>
+              <option value="open">{t("statusOptions.open")}</option>
+              <option value="closed">{t("statusOptions.closed")}</option>
             </select>
           </label>
         </div>
@@ -107,7 +109,7 @@ export function CampaignEditForm({
         type="submit"
         disabled={!isValid || updateCampaign.isPending}
       >
-        {updateCampaign.isPending ? "Saving..." : "Save changes"}
+        {updateCampaign.isPending ? t("saving") : t("saveChanges")}
       </button>
     </form>
   );

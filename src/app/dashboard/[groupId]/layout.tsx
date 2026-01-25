@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { UserMenu } from "@/components/user-menu";
 import { listUserGroups } from "@/services/groups";
@@ -31,6 +32,8 @@ export default async function DashboardLayout({
     redirect(`/dashboard/${groups[0].id}`);
   }
 
+  const t = await getTranslations("nav");
+
   return (
     <div className="min-h-screen text-[var(--foreground)]">
       <header className="border-b border-white/10 bg-[rgba(10,16,16,0.78)] backdrop-blur">
@@ -40,7 +43,7 @@ export default async function DashboardLayout({
               VecinoHub
             </span>
             <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
-              Dashboard
+              {t("dashboard")}
             </span>
           </Link>
           <UserMenu

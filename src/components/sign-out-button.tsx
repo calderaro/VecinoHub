@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { authClient } from "@/lib/auth-client";
 
 export function SignOutButton() {
   const router = useRouter();
+  const t = useTranslations("userMenu");
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   async function handleSignOut() {
@@ -26,7 +28,7 @@ export function SignOutButton() {
       onClick={handleSignOut}
       disabled={isSigningOut}
     >
-      {isSigningOut ? "Signing out" : "Sign out"}
+      {isSigningOut ? t("signingOut") : t("signOut")}
     </button>
   );
 }

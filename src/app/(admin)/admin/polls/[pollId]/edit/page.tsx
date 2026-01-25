@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { PollEditForm } from "@/components/polls/poll-edit-form";
 import { getPollWithOptions } from "@/services/polls";
@@ -28,12 +29,16 @@ export default async function PollEditPage({
     redirect(`/admin/polls/${poll.id}`);
   }
 
+  const t = await getTranslations("admin.pollForm");
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-        <h1 className="text-3xl font-semibold">Edit poll</h1>
-        <p className="text-sm text-[color:var(--muted)]">Update poll details.</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
+        <p className="text-sm text-[color:var(--muted)]">{t("editSubtitle")}</p>
       </header>
 
       <PollEditForm

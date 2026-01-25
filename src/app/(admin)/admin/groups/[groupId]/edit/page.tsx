@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { GroupEditForm } from "@/components/groups/group-edit-form";
 import { getGroupById } from "@/services/groups";
@@ -27,12 +28,16 @@ export default async function GroupEditPage({
     redirect(`/admin/groups/${resolvedParams.groupId}`);
   }
 
+  const t = await getTranslations("admin.groupFormPage");
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-        <h1 className="text-3xl font-semibold">Edit group</h1>
-        <p className="text-sm text-[color:var(--muted)]">Update group details.</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
+        <p className="text-sm text-[color:var(--muted)]">{t("editSubtitle")}</p>
       </header>
 
       <GroupEditForm

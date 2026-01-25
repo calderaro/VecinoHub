@@ -3,9 +3,11 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
+import { setLocaleCookie } from "@/lib/locale";
 
 const usernamePattern = /^[a-zA-Z0-9._-]+$/;
 
@@ -14,16 +16,22 @@ export function ProfileForm({
   email,
   initialUsername,
   initialImage,
+  initialPreferredLanguage,
 }: {
   name: string;
   email: string;
   initialUsername: string | null;
   initialImage: string | null;
+  initialPreferredLanguage: "es" | "en";
 }) {
   const router = useRouter();
   const { addToast } = useToast();
+  const t = useTranslations("profile");
   const [username, setUsername] = useState(initialUsername ?? "");
   const [image, setImage] = useState(initialImage ?? "");
+  const [preferredLanguage, setPreferredLanguage] = useState(
+    initialPreferredLanguage
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const usernameTrimmed = username.trim();
@@ -55,7 +63,7 @@ export function ProfileForm({
       onSubmit={async (event) => {
         event.preventDefault();
         if (!canSubmit) {
-          addToast("Please fix the profile fields before saving.", "error");
+          addToast(t("validationError"), "error");
           return;
         }
         setIsSaving(true);
@@ -63,21 +71,23 @@ export function ProfileForm({
           await updateProfile.mutateAsync({
             username: usernameTrimmed,
             image: imageTrimmed ? imageTrimmed : null,
+            preferredLanguage,
           });
-          addToast("Profile updated.", "success");
+          setLocaleCookie(preferredLanguage);
+          addToast(t("updated"), "success");
           router.refresh();
         } catch (error) {
           const message =
-            error instanceof Error ? error.message : "Unable to update profile.";
+            error instanceof Error ? error.message : t("updateError");
           addToast(message, "error");
         } finally {
           setIsSaving(false);
         }
       }}
     >
-      <h2 className="text-lg font-semibold">Profile settings</h2>
+      <h2 className="text-lg font-semibold">{t("title")}</h2>
       <p className="mt-1 text-sm text-[color:var(--muted)]">
-        Set a public username and profile photo for the neighborhood UI.
+        {t("subtitle")}
       </p>
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -104,37 +114,53 @@ export function ProfileForm({
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Username</span>
+          <span>{t("usernameLabel")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            placeholder="your.username"
+            placeholder={t("usernamePlaceholder")}
             required
           />
           <p className="text-xs text-[color:var(--muted)]">
-            Use 3-32 characters: letters, numbers, dots, underscores, or dashes.
+            {t("usernameHelp")}
           </p>
           {!isUsernameValid ? (
             <p className="text-xs text-rose-200">
-              Enter a valid username before saving.
+              {t("usernameError")}
             </p>
           ) : null}
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Profile photo URL</span>
+          <span>{t("photoLabel")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={image}
             onChange={(event) => setImage(event.target.value)}
-            placeholder="https://example.com/photo.jpg"
+            placeholder={t("photoPlaceholder")}
             type="url"
           />
           {!isImageValid ? (
             <p className="text-xs text-rose-200">
-              Enter a valid URL or leave this field empty.
+              {t("photoError")}
             </p>
           ) : null}
+        </label>
+      </div>
+
+      <div className="mt-5">
+        <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
+          <span>{t("languageLabel")}</span>
+          <select
+            className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            value={preferredLanguage}
+            onChange={(event) =>
+              setPreferredLanguage(event.target.value as "es" | "en")
+            }
+          >
+            <option value="es">{t("languageSpanish")}</option>
+            <option value="en">{t("languageEnglish")}</option>
+          </select>
         </label>
       </div>
 
@@ -143,7 +169,7 @@ export function ProfileForm({
         type="submit"
         disabled={!canSubmit}
       >
-        {isSaving ? "Saving..." : "Save profile"}
+        {isSaving ? t("saving") : t("save")}
       </button>
     </form>
   );

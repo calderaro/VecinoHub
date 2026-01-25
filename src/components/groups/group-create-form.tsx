@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
 export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
   const router = useRouter();
+  const t = useTranslations("admin.groupForm");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Group name is required.");
+          setError(t("nameRequired"));
           return;
         }
         createGroup.mutate({
@@ -38,10 +40,10 @@ export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Create group</h2>
+      <h2 className="text-lg font-semibold">{t("createTitle")}</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Group name</span>
+          <span>{t("fields.name")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={name}
@@ -50,7 +52,7 @@ export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Address</span>
+          <span>{t("fields.address")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={address}
@@ -68,7 +70,7 @@ export function GroupCreateForm({ adminUserId }: { adminUserId: string }) {
         type="submit"
         disabled={!isValid || createGroup.isPending}
       >
-        {createGroup.isPending ? "Creating..." : "Create group"}
+        {createGroup.isPending ? t("creating") : t("createAction")}
       </button>
     </form>
   );

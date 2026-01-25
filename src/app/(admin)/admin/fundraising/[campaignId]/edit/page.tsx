@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { CampaignEditForm } from "@/components/fundraising/campaign-edit-form";
 import { getCampaignDetail } from "@/services/fundraising";
@@ -23,14 +24,17 @@ export default async function CampaignEditPage({
   const campaign = await getCampaignDetail({ user: session.user }, {
     campaignId: resolvedParams.campaignId,
   });
+  const t = await getTranslations("admin.campaignFormPage");
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-        <h1 className="text-3xl font-semibold">Edit campaign</h1>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
         <p className="text-sm text-[color:var(--muted)]">
-          Update title, goal amount, and status.
+          {t("editSubtitle")}
         </p>
       </header>
 

@@ -7,7 +7,13 @@ import { users } from "@/db/schema";
 import { ServiceError } from "./errors";
 import { requireAdmin } from "./guards";
 import type { ServiceContext } from "./types";
-import { idSchema, roleSchema, statusSchema, usernameSchema } from "./validators";
+import {
+  idSchema,
+  preferredLanguageSchema,
+  roleSchema,
+  statusSchema,
+  usernameSchema,
+} from "./validators";
 
 const listUsersSchema = z
   .object({
@@ -133,6 +139,7 @@ export async function getUserProfile(ctx: ServiceContext) {
       image: users.image,
       role: users.role,
       status: users.status,
+      preferredLanguage: users.preferredLanguage,
     })
     .from(users)
     .where(eq(users.id, ctx.user.id))
@@ -149,16 +156,23 @@ const updateProfileSchema = z
   .object({
     username: usernameSchema.optional(),
     image: z.string().url().max(2048).nullable().optional(),
+    preferredLanguage: preferredLanguageSchema.optional(),
   })
-  .refine((data) => data.username !== undefined || data.image !== undefined, {
-    message: "Profile updates require a username or image.",
-  });
+  .refine(
+    (data) =>
+      data.username !== undefined ||
+      data.image !== undefined ||
+      data.preferredLanguage !== undefined,
+    {
+      message: "Profile updates require a username, image, or language preference.",
+    }
+  );
 
 export async function updateUserProfile(
   ctx: ServiceContext,
   input: z.input<typeof updateProfileSchema>
 ) {
-  const { username, image } = updateProfileSchema.parse(input);
+  const { username, image, preferredLanguage } = updateProfileSchema.parse(input);
 
   if (username) {
     const existing = await db
@@ -183,6 +197,9 @@ export async function updateUserProfile(
   }
   if (image !== undefined) {
     updates.image = image;
+  }
+  if (preferredLanguage !== undefined) {
+    updates.preferredLanguage = preferredLanguage;
   }
 
   const updated = await db

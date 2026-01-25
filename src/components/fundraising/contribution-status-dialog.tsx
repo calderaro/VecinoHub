@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -18,6 +19,7 @@ export function ContributionStatusDialog({
   canEdit: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.contributionStatus");
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(contribution.status);
 
@@ -39,21 +41,21 @@ export function ContributionStatusDialog({
         }}
         disabled={!canEdit}
       >
-        Update status
+        {t("trigger")}
       </button>
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Update contribution
+              {t("title")}
             </h3>
             <p className="mt-1 text-sm text-[color:var(--muted)]">
-              Choose the new status for this contribution.
+              {t("subtitle")}
             </p>
 
             <label className="mt-4 block space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-              Status
+              {t("statusLabel")}
               <select
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                 value={status}
@@ -61,9 +63,9 @@ export function ContributionStatusDialog({
                   setStatus(event.target.value as Contribution["status"])
                 }
               >
-                <option value="submitted">Submitted</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="rejected">Rejected</option>
+                <option value="submitted">{t("statuses.submitted")}</option>
+                <option value="confirmed">{t("statuses.confirmed")}</option>
+                <option value="rejected">{t("statuses.rejected")}</option>
               </select>
             </label>
 
@@ -74,7 +76,7 @@ export function ContributionStatusDialog({
                 onClick={() => setOpen(false)}
                 disabled={updateStatus.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -84,7 +86,7 @@ export function ContributionStatusDialog({
                 }
                 disabled={updateStatus.isPending}
               >
-                {updateStatus.isPending ? "Saving" : "Save"}
+                {updateStatus.isPending ? t("saving") : t("save")}
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
@@ -38,6 +39,7 @@ export function EventForm({
 }: EventFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
+  const t = useTranslations("admin.eventForm");
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [location, setLocation] = useState(initialLocation ?? "");
@@ -76,7 +78,7 @@ export function EventForm({
         event.preventDefault();
         setError(null);
         if (!isValid || !parsedStartsAt) {
-          setError("Title and start time are required.");
+          setError(t("validationError"));
           return;
         }
         try {
@@ -99,7 +101,7 @@ export function EventForm({
             });
           }
           addToast(
-            mode === "create" ? "Event created." : "Event updated.",
+            mode === "create" ? t("createdToast") : t("updatedToast"),
             "success"
           );
           if (mode === "create") {
@@ -116,17 +118,17 @@ export function EventForm({
           }
         } catch (err) {
           const message =
-            err instanceof Error ? err.message : "Unable to save event.";
+            err instanceof Error ? err.message : t("saveError");
           setError(message);
         }
       }}
     >
       <h2 className="text-lg font-semibold">
-        {mode === "create" ? "Create event" : "Edit event"}
+        {mode === "create" ? t("createTitle") : t("editTitle")}
       </h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)] sm:col-span-2">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -135,7 +137,7 @@ export function EventForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Start time</span>
+          <span>{t("fields.startTime")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             type="datetime-local"
@@ -145,7 +147,7 @@ export function EventForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>End time</span>
+          <span>{t("fields.endTime")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             type="datetime-local"
@@ -154,16 +156,16 @@ export function EventForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)] sm:col-span-2">
-          <span>Location</span>
+          <span>{t("fields.location")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={location}
             onChange={(event) => setLocation(event.target.value)}
-            placeholder="Community hall"
+            placeholder={t("locationPlaceholder")}
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)] sm:col-span-2">
-          <span>Description</span>
+          <span>{t("fields.description")}</span>
           <textarea
             className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={description}
@@ -185,11 +187,11 @@ export function EventForm({
       >
         {mode === "create"
           ? createEvent.isPending
-            ? "Creating..."
-            : "Create event"
+            ? t("creating")
+            : t("createAction")
           : updateEvent.isPending
-            ? "Saving..."
-            : "Save changes"}
+            ? t("saving")
+            : t("saveChanges")}
       </button>
     </form>
   );

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -25,11 +26,12 @@ type UserMenuProps = {
 
 export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuProps) {
   const router = useRouter();
+  const t = useTranslations("userMenu");
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const displayName = user.username || "User";
+  const displayName = user.username || t("defaultUser");
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -119,7 +121,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                   />
                 </svg>
-                Dashboard
+                {t("dashboard")}
               </Link>
             )}
 
@@ -136,7 +138,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-              Profile
+              {t("profile")}
             </Link>
 
             {user.role === "admin" && (
@@ -159,7 +161,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                Admin Panel
+                {t("adminPanel")}
               </Link>
             )}
           </div>
@@ -167,7 +169,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
           {groups && groups.length > 0 && (
             <div className="border-t border-white/10 py-1">
               <p className="px-4 py-2 text-xs uppercase tracking-wider text-[color:var(--muted)]">
-                {selectedGroupId ? "Switch Group" : "Groups"}
+                {selectedGroupId ? t("switchGroup") : t("groups")}
               </p>
               {groups.map((group) => (
                 <button
@@ -217,7 +219,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              {isSigningOut ? "Signing out..." : "Sign out"}
+              {isSigningOut ? t("signingOut") : t("signOut")}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { GroupMembers } from "@/components/groups/group-members";
 import { getGroupById, listGroupMembers } from "@/services/groups";
@@ -25,14 +26,19 @@ export default async function MembersPage({
   });
   const canManage =
     session.user.role === "admin" || group.adminUserId === session.user.id;
+  const t = await getTranslations("dashboard.membersPage");
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">House roster</p>
-        <h1 className="text-3xl font-semibold">{group.name} members</h1>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">
+          {t("title", { name: group.name })}
+        </h1>
         <p className="text-sm text-[color:var(--muted)]">
-          Manage residents in this house group.
+          {t("subtitle")}
         </p>
       </header>
 

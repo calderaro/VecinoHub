@@ -7,6 +7,7 @@ export type SessionUser = {
   role: "user" | "admin";
   username: string | null;
   image: string | null;
+  preferredLanguage: "es" | "en";
 };
 
 export type Session = {
@@ -33,6 +34,9 @@ export async function getSession(): Promise<Session> {
       role: sessionResult.user.role as SessionUser["role"],
       username: (sessionResult.user as { username?: string }).username ?? null,
       image: sessionResult.user.image ?? null,
+      preferredLanguage:
+        (sessionResult.user as { preferredLanguage?: SessionUser["preferredLanguage"] })
+          .preferredLanguage ?? "es",
     },
   };
 }

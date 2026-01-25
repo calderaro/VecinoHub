@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { ProfileForm } from "@/components/profile/profile-form";
 import { UserMenu } from "@/components/user-menu";
 import { listUserGroups } from "@/services/groups";
 import { getUserProfile } from "@/services/users";
 import { getSession } from "@/server/auth";
+import { normalizeLanguage } from "@/lib/locale";
 
 export default async function ProfilePage() {
   const session = await getSession();
@@ -14,10 +16,12 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+
   const [profile, groups] = await Promise.all([
     getUserProfile({ user: session.user }),
     listUserGroups({ user: session.user }),
   ]);
+  const t = await getTranslations("profile");
 
   return (
     <div className="min-h-screen text-[var(--foreground)]">
@@ -28,7 +32,7 @@ export default async function ProfilePage() {
               VecinoHub
             </span>
             <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
-              Profile
+              {t("navLabel")}
             </span>
           </Link>
           <UserMenu
@@ -47,6 +51,7 @@ export default async function ProfilePage() {
           email={profile.email}
           initialUsername={profile.username}
           initialImage={profile.image}
+          initialPreferredLanguage={normalizeLanguage(profile.preferredLanguage)}
         />
       </main>
     </div>

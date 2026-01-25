@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { EventForm } from "@/components/events/event-form";
 import { getEventById } from "@/services/events";
@@ -21,14 +22,17 @@ export default async function AdminEventEditPage({
 
   const resolvedParams = await Promise.resolve(params);
   const event = await getEventById({ user: session.user }, resolvedParams);
+  const t = await getTranslations("admin.eventFormPage");
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-        <h1 className="text-3xl font-semibold">Edit event</h1>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
         <p className="text-sm text-[color:var(--muted)]">
-          Update the event details before sharing them.
+          {t("editSubtitle")}
         </p>
       </header>
       <EventForm

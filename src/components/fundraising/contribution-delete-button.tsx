@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -10,6 +11,7 @@ export function ContributionDeleteButton({
   contributionId: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.contributionDelete");
   const deleteContribution = trpc.fundraising.deleteContribution.useMutation({
     onSuccess: () => router.refresh(),
   });
@@ -21,7 +23,7 @@ export function ContributionDeleteButton({
       onClick={() => deleteContribution.mutate({ contributionId })}
       disabled={deleteContribution.isPending}
     >
-      {deleteContribution.isPending ? "Deleting" : "Delete"}
+      {deleteContribution.isPending ? t("deleting") : t("delete")}
     </button>
   );
 }

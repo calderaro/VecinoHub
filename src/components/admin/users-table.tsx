@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -32,6 +33,7 @@ export function UsersTable({
   status: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.usersTable");
   const [error, setError] = useState<string | null>(null);
 
   const updateRole = trpc.users.updateRole.useMutation({
@@ -47,12 +49,12 @@ export function UsersTable({
   return (
     <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">Users</h2>
+        <h2 className="text-lg font-semibold">{t("title")}</h2>
         <form className="flex flex-wrap gap-3" method="get">
           <input
             className="min-w-[200px] rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             name="q"
-            placeholder="Search users"
+            placeholder={t("searchPlaceholder")}
             defaultValue={query}
           />
           <select
@@ -60,30 +62,30 @@ export function UsersTable({
             name="role"
             defaultValue={role}
           >
-            <option value="">All roles</option>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
+            <option value="">{t("roles.all")}</option>
+            <option value="user">{t("roles.user")}</option>
+            <option value="admin">{t("roles.admin")}</option>
           </select>
           <select
             className="rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             name="status"
             defaultValue={status}
           >
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="">{t("statuses.all")}</option>
+            <option value="active">{t("statuses.active")}</option>
+            <option value="inactive">{t("statuses.inactive")}</option>
           </select>
           <button
             className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             type="submit"
           >
-            Filter
+            {t("filter")}
           </button>
         </form>
       </div>
       <div className="mt-4 space-y-3">
         {users.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No users found.</p>
+          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (
           users.map((user) => {
             const displayName = user.username ?? user.name;
@@ -119,7 +121,7 @@ export function UsersTable({
                 </div>
               <div className="flex flex-wrap items-center gap-3">
                 <label className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                  Role
+                  {t("roleLabel")}
                   <select
                     className="mt-2 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                     value={user.role}
@@ -130,12 +132,12 @@ export function UsersTable({
                       })
                     }
                   >
-                    <option value="user">user</option>
-                    <option value="admin">admin</option>
+                    <option value="user">{t("roles.userLower")}</option>
+                    <option value="admin">{t("roles.adminLower")}</option>
                   </select>
                 </label>
                 <label className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                  Status
+                  {t("statusLabel")}
                   <select
                     className="mt-2 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                     value={user.status}
@@ -146,8 +148,8 @@ export function UsersTable({
                       })
                     }
                   >
-                    <option value="active">active</option>
-                    <option value="inactive">inactive</option>
+                    <option value="active">{t("statuses.activeLower")}</option>
+                    <option value="inactive">{t("statuses.inactiveLower")}</option>
                   </select>
                 </label>
               </div>
@@ -163,9 +165,7 @@ export function UsersTable({
       ) : null}
 
       <div className="mt-6 flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
+        <span>{t("pagination.pageOf", { page: currentPage, total: totalPages })}</span>
         <div className="flex items-center gap-3">
           {currentPage > 1 ? (
             <a
@@ -177,7 +177,7 @@ export function UsersTable({
                 page: String(currentPage - 1),
               }).toString()}`}
             >
-              Prev
+              {t("pagination.prev")}
             </a>
           ) : null}
           {currentPage < totalPages ? (
@@ -190,7 +190,7 @@ export function UsersTable({
                 page: String(currentPage + 1),
               }).toString()}`}
             >
-              Next
+              {t("pagination.next")}
             </a>
           ) : null}
         </div>

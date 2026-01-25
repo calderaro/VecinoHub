@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
@@ -28,6 +29,7 @@ export function GroupMembers({
 }) {
   const router = useRouter();
   const { addToast } = useToast();
+  const t = useTranslations("dashboard.groupMembers");
   const [email, setEmail] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function GroupMembers({
 
   const addMember = trpc.groups.addMember.useMutation({
     onSuccess: () => {
-      addToast("Member added to the group.", "success");
+      addToast(t("toasts.added"), "success");
       setEmail("");
       setAddError(null);
       setAddOpen(false);
@@ -50,7 +52,7 @@ export function GroupMembers({
 
   const removeMember = trpc.groups.removeMember.useMutation({
     onSuccess: () => {
-      addToast("Member removed from the group.", "success");
+      addToast(t("toasts.removed"), "success");
       setPendingRemove(null);
       router.refresh();
     },
@@ -62,7 +64,7 @@ export function GroupMembers({
       {canManage ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Members
+            {t("title")}
           </p>
           <button
             className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
@@ -72,13 +74,13 @@ export function GroupMembers({
               setAddOpen(true);
             }}
           >
-            Add member
+            {t("add")}
           </button>
         </div>
       ) : null}
 
       {members.length === 0 ? (
-        <p className="text-sm text-[color:var(--muted)]">No members yet.</p>
+        <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
       ) : (
         members.map((member) => {
           const displayName = member.username ?? member.name;
@@ -113,7 +115,7 @@ export function GroupMembers({
               </div>
               <div className="flex items-center gap-2">
                 <span className="rounded-full border border-white/15 px-2 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
-                  {member.role}
+                  {t(`roles.${member.role}`)}
                 </span>
                 {canManage ? (
                   <button
@@ -122,7 +124,7 @@ export function GroupMembers({
                     onClick={() => setPendingRemove(member)}
                     disabled={removeMember.isPending}
                   >
-                    Remove
+                    {t("remove")}
                   </button>
                 ) : null}
               </div>
@@ -135,10 +137,10 @@ export function GroupMembers({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Add group member
+              {t("addDialog.title")}
             </h3>
             <p className="mt-1 text-sm text-[color:var(--muted)]">
-              Invite a member by their email address.
+              {t("addDialog.subtitle")}
             </p>
             <form
               className="mt-4 space-y-4"
@@ -146,14 +148,14 @@ export function GroupMembers({
                 event.preventDefault();
                 setAddError(null);
                 if (!canSubmit) {
-                  addToast("Email is required.", "error");
+                  addToast(t("addDialog.emailRequired"), "error");
                   return;
                 }
                 addMember.mutate({ groupId, email });
               }}
             >
               <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-                <span>Email</span>
+                <span>{t("addDialog.emailLabel")}</span>
                 <input
                   className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={email}
@@ -161,7 +163,7 @@ export function GroupMembers({
                     setEmail(event.target.value);
                     setAddError(null);
                   }}
-                  placeholder="member@email.com"
+                  placeholder={t("addDialog.emailPlaceholder")}
                   type="email"
                   required
                 />
@@ -182,14 +184,14 @@ export function GroupMembers({
                   }}
                   disabled={addMember.isPending}
                 >
-                  Cancel
+                  {t("addDialog.cancel")}
                 </button>
                 <button
                   className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
                   type="submit"
                   disabled={!canSubmit || addMember.isPending}
                 >
-                  {addMember.isPending ? "Adding" : "Add member"}
+                  {addMember.isPending ? t("addDialog.adding") : t("addDialog.add")}
                 </button>
               </div>
             </form>
@@ -201,11 +203,12 @@ export function GroupMembers({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Remove member
+              {t("removeDialog.title")}
             </h3>
             <p className="mt-1 text-sm text-[color:var(--muted)]">
-              Remove {(pendingRemove.username ?? pendingRemove.name)} from this
-              group?
+              {t("removeDialog.body", {
+                name: pendingRemove.username ?? pendingRemove.name,
+              })}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-end gap-2">
@@ -215,7 +218,7 @@ export function GroupMembers({
                 onClick={() => setPendingRemove(null)}
                 disabled={removeMember.isPending}
               >
-                Cancel
+                {t("removeDialog.cancel")}
               </button>
               <button
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
@@ -228,7 +231,7 @@ export function GroupMembers({
                 }
                 disabled={removeMember.isPending}
               >
-                {removeMember.isPending ? "Removing" : "Remove"}
+                {removeMember.isPending ? t("removeDialog.removing") : t("removeDialog.remove")}
               </button>
             </div>
           </div>

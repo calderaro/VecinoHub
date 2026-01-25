@@ -1,0 +1,812 @@
+{
+  "auth": {
+    "register": {
+      "title": "Create account",
+      "subtitle": "Join your neighborhood workspace.",
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "creating": "Creating...",
+      "action": "Create account",
+      "existing": "Already have an account?",
+      "signIn": "Sign in",
+      "errors": {
+        "createAccount": "Unable to create account.",
+        "registration": "Registration failed."
+      }
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Access your neighborhood dashboard.",
+      "email": "Email",
+      "password": "Password",
+      "signingIn": "Signing in...",
+      "action": "Sign in",
+      "newHere": "New here?",
+      "createAccount": "Create an account",
+      "errors": {
+        "invalid": "Invalid credentials.",
+        "login": "Login failed."
+      }
+    }
+  },
+  "profile": {
+    "navLabel": "Profile",
+    "title": "Profile settings",
+    "subtitle": "Set a public username and profile photo for the neighborhood UI.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "your.username",
+    "usernameHelp": "Use 3-32 characters: letters, numbers, dots, underscores, or dashes.",
+    "usernameError": "Enter a valid username before saving.",
+    "photoLabel": "Profile photo URL",
+    "photoPlaceholder": "https://example.com/photo.jpg",
+    "photoError": "Enter a valid URL or leave this field empty.",
+    "languageLabel": "Preferred language",
+    "languageSpanish": "Spanish",
+    "languageEnglish": "English",
+    "saving": "Saving...",
+    "save": "Save profile",
+    "validationError": "Please fix the profile fields before saving.",
+    "updated": "Profile updated.",
+    "updateError": "Unable to update profile."
+  },
+  "nav": {
+    "dashboard": "Dashboard"
+  },
+  "dashboard": {
+    "empty": {
+      "title": "No group assigned yet",
+      "body": "Your account is pending group assignment. Please wait for a group admin to add you to a house."
+    }
+  },
+  "userMenu": {
+    "defaultUser": "User",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "adminPanel": "Admin Panel",
+    "switchGroup": "Switch Group",
+    "groups": "Groups",
+    "signingOut": "Signing out...",
+    "signOut": "Sign out"
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin",
+      "overview": "Overview",
+      "users": "Users",
+      "groups": "Groups",
+      "polls": "Polls",
+      "fundraising": "Fundraising",
+      "events": "Events",
+      "posts": "Posts"
+    },
+    "overview": {
+      "label": "Administration",
+      "title": "Admin Overview",
+      "subtitle": "Activity summary for polls, fundraising, events, and posts.",
+      "stats": {
+        "activePolls": "Active Polls",
+        "pollDrafts": "{count} draft{count, plural, one {} other {s}} pending",
+        "openCampaigns": "Open Campaigns",
+        "pendingContributions": "{count} contribution{count, plural, one {} other {s}} to review",
+        "upcomingEvents": "Upcoming Events",
+        "totalEvents": "{count} total",
+        "publishedPosts": "Published Posts",
+        "postDrafts": "{count} draft{count, plural, one {} other {s}} to publish"
+      },
+      "polls": {
+        "title": "Active Polls",
+        "new": "+ New poll",
+        "empty": "No active polls.",
+        "participation": "{percentage}% participation",
+        "groupsVoted": "{voted} of {total} groups voted",
+        "draftsTitle": "Drafts needing attention"
+      },
+      "fundraising": {
+        "title": "Fundraising Campaigns",
+        "new": "+ New campaign",
+        "empty": "No open campaigns.",
+        "pending": "{count} pending",
+        "progress": "{collected} of {goal}",
+        "due": "Due: {date}",
+        "reviewTitle": "Contributions to review"
+      },
+      "events": {
+        "title": "Upcoming Events",
+        "new": "+ New event",
+        "empty": "No upcoming events."
+      },
+      "posts": {
+        "title": "Recent Posts",
+        "new": "+ New post",
+        "empty": "No posts yet.",
+        "draftsTitle": "Drafts to publish"
+      }
+    },
+    "users": {
+      "label": "Administration",
+      "title": "Users",
+      "subtitle": "Manage roles and access status."
+    },
+    "usersTable": {
+      "title": "Users",
+      "searchPlaceholder": "Search users",
+      "filter": "Filter",
+      "empty": "No users found.",
+      "roleLabel": "Role",
+      "statusLabel": "Status",
+      "roles": {
+        "all": "All roles",
+        "user": "User",
+        "admin": "Admin",
+        "userLower": "user",
+        "adminLower": "admin"
+      },
+      "statuses": {
+        "all": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive",
+        "activeLower": "active",
+        "inactiveLower": "inactive"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "groups": {
+      "label": "Administration",
+      "title": "Groups",
+      "subtitle": "Houses you manage or belong to.",
+      "addGroup": "Add group",
+      "searchPlaceholder": "Search groups",
+      "filter": "Filter",
+      "empty": "No groups found.",
+      "table": {
+        "name": "Name",
+        "address": "Address",
+        "admin": "Admin",
+        "action": "Action",
+        "view": "View",
+        "emptyAddress": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "groupDetail": {
+      "badge": {
+        "admin": "Group admin",
+        "member": "Member"
+      },
+      "edit": "Edit",
+      "membersTitle": "Members"
+    },
+    "groupFormPage": {
+      "label": "Administration",
+      "createTitle": "Create group",
+      "createSubtitle": "Add a new house group.",
+      "editTitle": "Edit group",
+      "editSubtitle": "Update group details."
+    },
+    "groupForm": {
+      "createTitle": "Create group",
+      "editTitle": "Edit group",
+      "nameRequired": "Group name is required.",
+      "validationError": "Name and admin user id are required.",
+      "updatedToast": "Group details updated.",
+      "updateError": "Unable to update group.",
+      "creating": "Creating...",
+      "createAction": "Create group",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "fields": {
+        "name": "Name",
+        "address": "Address",
+        "adminUserId": "Admin user id"
+      }
+    },
+    "polls": {
+      "label": "Administration",
+      "title": "Polls",
+      "subtitle": "Vote on neighborhood decisions by house.",
+      "addPoll": "Add poll",
+      "searchPlaceholder": "Search polls",
+      "statusAll": "All statuses",
+      "filter": "Filter",
+      "empty": "No polls found.",
+      "table": {
+        "title": "Title",
+        "status": "Status",
+        "action": "Action",
+        "view": "View"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "pollDetail": {
+      "statusLabel": "Status",
+      "edit": "Edit",
+      "results": "Results",
+      "participation": "Participation: {voted}/{total} ({percent}%)",
+      "table": {
+        "option": "Option",
+        "votes": "Votes"
+      }
+    },
+    "pollForm": {
+      "label": "Administration",
+      "createTitle": "Create poll",
+      "createSubtitle": "Start a new neighborhood poll.",
+      "editTitle": "Edit poll",
+      "editSubtitle": "Update poll details.",
+      "formTitle": "Create poll",
+      "editFormTitle": "Edit poll",
+      "titleRequired": "Title is required.",
+      "creating": "Creating...",
+      "createAction": "Create poll",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "savedToast": "Saved changes. Redirecting...",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "status": "Status"
+      },
+      "statusOptions": {
+        "draft": "draft",
+        "active": "active",
+        "closed": "closed"
+      }
+    },
+    "pollActions": {
+      "launch": "Launch poll",
+      "reset": "Reset to draft",
+      "close": "Close poll",
+      "reopen": "Re-open poll",
+      "cancel": "Cancel",
+      "launchTitle": "Launch poll",
+      "launchBody": "Launching a poll makes it active and locks the options. Continue?",
+      "launchConfirm": "Launch poll",
+      "launching": "Launching",
+      "resetTitle": "Reset poll to draft",
+      "resetBody": "This will remove all votes and move the poll back to draft. Continue?",
+      "resetConfirm": "Reset to draft",
+      "resetting": "Resetting",
+      "closeTitle": "Close poll",
+      "closeBody": "Closing a poll prevents further votes and edits. Continue?",
+      "closeConfirm": "Close poll",
+      "closing": "Closing",
+      "reopenTitle": "Re-open poll",
+      "reopenBody": "Re-opening a poll allows groups to update their votes. Continue?",
+      "reopenConfirm": "Re-open poll",
+      "reopening": "Re-opening"
+    },
+    "pollOptions": {
+      "title": "Options",
+      "add": "Add option",
+      "empty": "No options yet.",
+      "amount": "Amount: ${amount}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "addTitle": "Add poll option",
+      "editTitle": "Edit option",
+      "deleteTitle": "Delete option",
+      "deleteBody": "Are you sure you want to delete \"{label}\"?",
+      "cancel": "Cancel",
+      "saving": "Saving",
+      "save": "Save",
+      "deleting": "Deleting",
+      "fields": {
+        "label": "Label",
+        "description": "Description",
+        "amount": "Amount"
+      }
+    },
+    "fundraisingList": {
+      "label": "Administration",
+      "title": "Fundraising",
+      "subtitle": "Manage campaigns and track contributions.",
+      "addCampaign": "Add campaign",
+      "searchPlaceholder": "Search campaigns",
+      "statusAll": "All statuses",
+      "filter": "Filter",
+      "empty": "No campaigns found.",
+      "table": {
+        "title": "Title",
+        "status": "Status",
+        "goal": "Goal",
+        "perGroup": "Per Group",
+        "dueDate": "Due Date",
+        "action": "Action",
+        "view": "View",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "eventsList": {
+      "label": "Administration",
+      "title": "Events",
+      "subtitle": "Plan neighborhood gatherings and reminders.",
+      "addEvent": "Add event",
+      "searchPlaceholder": "Search events",
+      "filter": "Filter",
+      "empty": "No events found.",
+      "table": {
+        "title": "Title",
+        "starts": "Starts",
+        "location": "Location",
+        "action": "Action",
+        "view": "View",
+        "emptyLocation": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "postsList": {
+      "label": "Administration",
+      "title": "Posts",
+      "subtitle": "Publish neighborhood updates and announcements.",
+      "addPost": "Add post",
+      "searchPlaceholder": "Search posts",
+      "statusAll": "All statuses",
+      "filter": "Filter",
+      "empty": "No posts found.",
+      "table": {
+        "title": "Title",
+        "status": "Status",
+        "published": "Published",
+        "action": "Action",
+        "view": "View",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "campaignFormPage": {
+      "label": "Administration",
+      "createTitle": "Create campaign",
+      "createSubtitle": "Request neighborhood contributions.",
+      "editTitle": "Edit campaign",
+      "editSubtitle": "Update title, goal amount, and status."
+    },
+    "campaignForm": {
+      "createTitle": "Create campaign",
+      "editTitle": "Edit campaign",
+      "validationError": "Title and goal amount are required.",
+      "goalPlaceholder": "3000.00",
+      "creating": "Creating...",
+      "createAction": "Create campaign",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "fields": {
+        "title": "Title",
+        "goalAmount": "Goal amount",
+        "description": "Description",
+        "dueDate": "Due date",
+        "status": "Status"
+      },
+      "statusOptions": {
+        "open": "open",
+        "closed": "closed"
+      }
+    },
+    "campaignDetail": {
+      "statusLabel": "Status",
+      "perGroup": "Per group: {amount}",
+      "goal": "Goal: {amount}",
+      "edit": "Edit",
+      "contributions": "Contributions",
+      "participation": "Groups contributed: {contributed}/{total} ({percent}%)",
+      "totalContributed": "Total contributed: {amount}",
+      "completion": "Completion: {percent}%",
+      "submitContribution": "Submit contribution",
+      "filters": {
+        "all": "All ({count})",
+        "submitted": "Submitted ({count})",
+        "confirmed": "Confirmed ({count})",
+        "rejected": "Rejected ({count})"
+      },
+      "empty": {
+        "all": "No contributions submitted.",
+        "filtered": "No contributions match this status."
+      },
+      "methods": {
+        "cash": "cash",
+        "wire_transfer": "wire transfer"
+      },
+      "amountLabel": "Amount: {amount}",
+      "groupLabel": "Group:",
+      "submittedBy": "Submitted by:"
+    },
+    "contributionPage": {
+      "label": "Administration",
+      "title": "Submit contribution",
+      "perGroup": "Per group: {amount}",
+      "goal": "Goal: {amount}"
+    },
+    "contributionStatus": {
+      "trigger": "Update status",
+      "title": "Update contribution",
+      "subtitle": "Choose the new status for this contribution.",
+      "statusLabel": "Status",
+      "cancel": "Cancel",
+      "saving": "Saving",
+      "save": "Save",
+      "statuses": {
+        "submitted": "Submitted",
+        "confirmed": "Confirmed",
+        "rejected": "Rejected"
+      }
+    },
+    "contributionForm": {
+      "noGroup": "You are not assigned to a group.",
+      "amountRequired": "Contribution amount is required.",
+      "wireRequired": "Wire transfer details are required.",
+      "submitting": "Submitting",
+      "submit": "Submit contribution",
+      "fields": {
+        "group": "Group",
+        "method": "Method",
+        "amount": "Amount",
+        "reference": "Reference",
+        "date": "Date"
+      },
+      "methods": {
+        "cash": "Cash",
+        "wire_transfer": "Wire transfer"
+      }
+    },
+    "contributionDelete": {
+      "delete": "Delete",
+      "deleting": "Deleting"
+    },
+    "fundraisingActions": {
+      "confirm": "Confirm",
+      "confirming": "Confirming",
+      "reject": "Reject",
+      "rejecting": "Rejecting"
+    },
+    "eventFormPage": {
+      "label": "Administration",
+      "createTitle": "Create event",
+      "createSubtitle": "Publish a new neighborhood event.",
+      "editTitle": "Edit event",
+      "editSubtitle": "Update the event details before sharing them."
+    },
+    "eventForm": {
+      "createTitle": "Create event",
+      "editTitle": "Edit event",
+      "validationError": "Title and start time are required.",
+      "createdToast": "Event created.",
+      "updatedToast": "Event updated.",
+      "saveError": "Unable to save event.",
+      "creating": "Creating...",
+      "createAction": "Create event",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "locationPlaceholder": "Community hall",
+      "fields": {
+        "title": "Title",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "location": "Location",
+        "description": "Description"
+      }
+    },
+    "eventActions": {
+      "delete": "Delete",
+      "deleteTitle": "Delete event",
+      "deleteBody": "This will permanently remove the event from the calendar.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "deletedToast": "Event deleted."
+    },
+    "eventDetail": {
+      "edit": "Edit",
+      "location": "Location",
+      "description": "Description",
+      "tbd": "TBD",
+      "noDescription": "No description provided.",
+      "back": "Back to events"
+    },
+    "postFormPage": {
+      "label": "Administration",
+      "createTitle": "Create post",
+      "createSubtitle": "Draft a neighborhood update for residents.",
+      "editTitle": "Edit post",
+      "editSubtitle": "Update the content before publishing."
+    },
+    "postForm": {
+      "createTitle": "Create post",
+      "editTitle": "Edit post",
+      "validationError": "Title and content are required.",
+      "createdToast": "Post created.",
+      "updatedToast": "Post updated.",
+      "saveError": "Unable to save post.",
+      "creating": "Creating...",
+      "createAction": "Create post",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "fields": {
+        "title": "Title",
+        "status": "Status",
+        "content": "Content"
+      },
+      "statusOptions": {
+        "draft": "Draft",
+        "published": "Published"
+      }
+    },
+    "postActions": {
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "unpublish": "Unpublish",
+      "unpublishing": "Unpublishing...",
+      "delete": "Delete",
+      "deleteTitle": "Delete post",
+      "deleteBody": "This will permanently remove the post from the feed.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "publishedToast": "Post published.",
+      "unpublishedToast": "Post unpublished.",
+      "deletedToast": "Post deleted."
+    },
+    "postDetail": {
+      "statusLabel": "Status",
+      "publishedLabel": "Published",
+      "edit": "Edit",
+      "contentLabel": "Content",
+      "back": "Back to posts",
+      "emptyDate": "-"
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "active": "Active",
+    "closed": "Closed",
+    "open": "Open",
+    "published": "Published",
+    "submitted": "Submitted",
+    "confirmed": "Confirmed",
+    "rejected": "Rejected",
+    "inactive": "Inactive"
+  },
+  "dashboard": {
+    "overview": {
+      "label": "Neighborhood overview",
+      "subtitle": "Overview for this house group.",
+      "posts": {
+        "title": "Latest Posts",
+        "count": "{count} post{count, plural, one {} other {s}} published",
+        "viewAll": "View all posts",
+        "empty": "No posts yet.",
+        "by": "by {name}"
+      },
+      "events": {
+        "title": "Upcoming Events",
+        "count": "{count} event{count, plural, one {} other {s}} scheduled",
+        "viewAll": "View all events",
+        "empty": "No upcoming events yet.",
+        "by": "by {name}"
+      },
+      "polls": {
+        "title": "Active Polls",
+        "count": "{count} poll{count, plural, one {} other {s}} available",
+        "viewAll": "View all polls",
+        "empty": "No active polls yet.",
+        "by": "by {name}"
+      },
+      "fundraising": {
+        "title": "Active Campaigns",
+        "count": "{count} open campaign{count, plural, one {} other {s}}",
+        "viewAll": "View all campaigns",
+        "empty": "No active campaigns.",
+        "goal": "Goal: {amount}",
+        "perGroup": "({amount} per group)",
+        "due": "Due {date}"
+      },
+      "members": {
+        "title": "Group Members",
+        "count": "{count} member{count, plural, one {} other {s}} in this group",
+        "viewAll": "View all members",
+        "empty": "No members yet.",
+        "roles": {
+          "admin": "admin",
+          "user": "user"
+        }
+      }
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "members": "Members",
+      "polls": "Polls",
+      "fundraising": "Fundraising",
+      "events": "Events",
+      "posts": "Posts"
+    },
+    "membersPage": {
+      "label": "House roster",
+      "title": "{name} members",
+      "subtitle": "Manage residents in this house group."
+    },
+    "groupMembers": {
+      "title": "Members",
+      "add": "Add member",
+      "empty": "No members yet.",
+      "remove": "Remove",
+      "roles": {
+        "admin": "admin",
+        "user": "user"
+      },
+      "toasts": {
+        "added": "Member added to the group.",
+        "removed": "Member removed from the group."
+      },
+      "addDialog": {
+        "title": "Add group member",
+        "subtitle": "Invite a member by their email address.",
+        "emailRequired": "Email is required.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "member@email.com",
+        "cancel": "Cancel",
+        "add": "Add member",
+        "adding": "Adding"
+      },
+      "removeDialog": {
+        "title": "Remove member",
+        "body": "Remove {name} from this group?",
+        "cancel": "Cancel",
+        "remove": "Remove",
+        "removing": "Removing"
+      }
+    },
+    "pollsList": {
+      "label": "Neighborhood decisions",
+      "title": "Polls",
+      "subtitle": "Pending polls awaiting your vote.",
+      "searchPlaceholder": "Search polls",
+      "filter": "Filter",
+      "empty": "No active polls found.",
+      "table": {
+        "title": "Title",
+        "status": "Status",
+        "action": "Action",
+        "view": "View"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "eventsList": {
+      "label": "Neighborhood gatherings",
+      "title": "Events",
+      "subtitle": "Neighborhood gatherings and reminders.",
+      "searchPlaceholder": "Search events",
+      "filter": "Filter",
+      "empty": "No upcoming events yet.",
+      "table": {
+        "title": "Title",
+        "starts": "Starts",
+        "location": "Location",
+        "action": "Action",
+        "view": "View",
+        "emptyLocation": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "postsList": {
+      "label": "Neighborhood updates",
+      "title": "Posts",
+      "subtitle": "Neighborhood updates from the admin team.",
+      "searchPlaceholder": "Search posts",
+      "filter": "Filter",
+      "empty": "No posts yet.",
+      "table": {
+        "title": "Title",
+        "published": "Published",
+        "action": "Action",
+        "view": "View",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "fundraisingList": {
+      "label": "Community giving",
+      "title": "Fundraising",
+      "subtitle": "Active campaigns.",
+      "searchPlaceholder": "Search campaigns",
+      "filter": "Filter",
+      "empty": "No active campaigns found.",
+      "table": {
+        "title": "Title",
+        "goal": "Goal",
+        "groupAmount": "Your Group",
+        "dueDate": "Due Date",
+        "action": "Action",
+        "view": "View",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Page {page} of {total}",
+        "prev": "Prev",
+        "next": "Next"
+      }
+    },
+    "pollDetail": {
+      "statusLabel": "Status",
+      "optionsTitle": "Options",
+      "amount": "Amount: {amount}"
+    },
+    "pollVote": {
+      "unavailable": "Voting unavailable for this poll.",
+      "disabledError": "Voting is disabled for this poll.",
+      "optionsLabel": "Options",
+      "amount": "Amount: {amount}",
+      "alreadyVoted": "This group already voted. Submitting will overwrite the previous selection.",
+      "currentSelection": "Current selection: {label}.",
+      "submitting": "Submitting",
+      "submit": "Cast vote"
+    },
+    "eventDetail": {
+      "adminView": "Admin view",
+      "location": "Location",
+      "description": "Description",
+      "tbd": "TBD",
+      "noDescription": "No description provided.",
+      "back": "Back to events"
+    },
+    "postDetail": {
+      "adminView": "Admin view",
+      "published": "Published {date}",
+      "content": "Content",
+      "back": "Back to posts",
+      "emptyDate": "-"
+    },
+    "fundraisingDetail": {
+      "statusLabel": "Status",
+      "perGroup": "Per group: {amount}",
+      "goal": "Goal: {amount}",
+      "yourContributions": "Your contributions",
+      "submitContribution": "Submit contribution",
+      "totalContributed": "Total contributed: {amount}",
+      "empty": "No contributions submitted yet.",
+      "methods": {
+        "cash": "cash",
+        "wire_transfer": "wire transfer"
+      },
+      "amountLabel": "Amount: {amount}"
+    },
+    "contributionPage": {
+      "title": "Submit contribution",
+      "perGroup": "Per group: {amount}",
+      "goal": "Goal: {amount}"
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -22,6 +23,7 @@ export function PollOptionsManager({
   canEdit: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.pollOptions");
   const [addOpen, setAddOpen] = useState(false);
   const [editOption, setEditOption] = useState<PollOption | null>(null);
   const [deleteOption, setDeleteOption] = useState<PollOption | null>(null);
@@ -76,20 +78,20 @@ export function PollOptionsManager({
   return (
     <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Options</h2>
+        <h2 className="text-lg font-semibold">{t("title")}</h2>
         <button
           className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={openAdd}
           disabled={!canEdit}
         >
-          Add option
+          {t("add")}
         </button>
       </div>
 
       <div className="mt-4 grid gap-3">
         {sortedOptions.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No options yet.</p>
+          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (
           sortedOptions.map((option) => (
             <div
@@ -105,7 +107,7 @@ export function PollOptionsManager({
                 ) : null}
                 {option.amount ? (
                   <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                    Amount: ${option.amount}
+                    {t("amount", { amount: option.amount })}
                   </div>
                 ) : null}
               </div>
@@ -116,7 +118,7 @@ export function PollOptionsManager({
                   onClick={() => openEdit(option)}
                   disabled={!canEdit}
                 >
-                  Edit
+                  {t("edit")}
                 </button>
                 <button
                   className="rounded-full border border-rose-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
@@ -124,7 +126,7 @@ export function PollOptionsManager({
                   onClick={() => setDeleteOption(option)}
                   disabled={!canEdit}
                 >
-                  Delete
+                  {t("delete")}
                 </button>
               </div>
             </div>
@@ -136,11 +138,11 @@ export function PollOptionsManager({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Add poll option
+              {t("addTitle")}
             </h3>
             <div className="mt-4 grid gap-3">
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Label
+                {t("fields.label")}
                 <input
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={label}
@@ -149,7 +151,7 @@ export function PollOptionsManager({
                 />
               </label>
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Description
+                {t("fields.description")}
                 <textarea
                   className="mt-2 min-h-[80px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={description}
@@ -157,7 +159,7 @@ export function PollOptionsManager({
                 />
               </label>
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Amount
+                {t("fields.amount")}
                 <input
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={amount}
@@ -173,7 +175,7 @@ export function PollOptionsManager({
                 onClick={() => setAddOpen(false)}
                 disabled={addOption.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -188,7 +190,7 @@ export function PollOptionsManager({
                 }
                 disabled={!label.trim() || addOption.isPending}
               >
-                {addOption.isPending ? "Saving" : "Save"}
+                {addOption.isPending ? t("saving") : t("save")}
               </button>
             </div>
           </div>
@@ -199,11 +201,11 @@ export function PollOptionsManager({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Edit option
+              {t("editTitle")}
             </h3>
             <div className="mt-4 grid gap-3">
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Label
+                {t("fields.label")}
                 <input
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={label}
@@ -212,7 +214,7 @@ export function PollOptionsManager({
                 />
               </label>
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Description
+                {t("fields.description")}
                 <textarea
                   className="mt-2 min-h-[80px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={description}
@@ -220,7 +222,7 @@ export function PollOptionsManager({
                 />
               </label>
               <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Amount
+                {t("fields.amount")}
                 <input
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
                   value={amount}
@@ -236,7 +238,7 @@ export function PollOptionsManager({
                 onClick={() => setEditOption(null)}
                 disabled={updateOption.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -251,7 +253,7 @@ export function PollOptionsManager({
                 }
                 disabled={!label.trim() || updateOption.isPending}
               >
-                {updateOption.isPending ? "Saving" : "Save"}
+                {updateOption.isPending ? t("saving") : t("save")}
               </button>
             </div>
           </div>
@@ -262,10 +264,10 @@ export function PollOptionsManager({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Delete option
+              {t("deleteTitle")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Are you sure you want to delete &quot;{selectedLabel}&quot;?
+              {t("deleteBody", { label: selectedLabel })}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -274,7 +276,7 @@ export function PollOptionsManager({
                 onClick={() => setDeleteOption(null)}
                 disabled={removeOption.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
@@ -284,7 +286,7 @@ export function PollOptionsManager({
                 }
                 disabled={removeOption.isPending}
               >
-                {removeOption.isPending ? "Deleting" : "Delete"}
+                {removeOption.isPending ? t("deleting") : t("delete")}
               </button>
             </div>
           </div>

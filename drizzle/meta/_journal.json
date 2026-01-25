@@ -64,6 +64,13 @@
       "when": 1769100000000,
       "tag": "0008_rename_payment_to_fundraising",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1769275720729,
+      "tag": "0009_icy_malice",
+      "breakpoints": true
     }
   ]
 }

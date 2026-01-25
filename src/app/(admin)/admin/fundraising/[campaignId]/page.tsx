@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContributionStatusDialog } from "@/components/fundraising/contribution-status-dialog";
 import { getCampaignParticipation, getCampaignDetail } from "@/services/fundraising";
@@ -23,6 +24,19 @@ type AdminContribution = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatCurrency(amount: number, locale: string) {
+  return new Intl.NumberFormat(getDisplayLocale(locale), {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 function buildQuery(params: Record<string, string | undefined>) {
   const query = new URLSearchParams();
@@ -50,6 +64,9 @@ export default async function CampaignDetailPage({
 
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams);
+  const locale = await getLocale();
+  const t = await getTranslations("admin.campaignDetail");
+  const tStatus = await getTranslations("status");
   const rawStatus = resolvedSearchParams?.status;
   const statusFilter =
     typeof rawStatus === "string" &&
@@ -99,22 +116,26 @@ export default async function CampaignDetailPage({
             <p className="text-sm text-[color:var(--muted)]">{campaign.description}</p>
           ) : null}
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Status: {campaign.status}
+            {t("statusLabel")}: {tStatus(campaign.status)}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">
-            Per group: ${campaign.amount}
+            {t("perGroup", {
+              amount: formatCurrency(Number(campaign.amount), locale),
+            })}
           </span>
           <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
-            Goal: ${campaign.goalAmount}
+            {t("goal", {
+              amount: formatCurrency(Number(campaign.goalAmount), locale),
+            })}
           </span>
           {session.user.role === "admin" ? (
             <Link
               className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/admin/fundraising/${campaign.id}/edit`}
             >
-              Edit
+              {t("edit")}
             </Link>
           ) : null}
         </div>
@@ -123,15 +144,22 @@ export default async function CampaignDetailPage({
       {session.user.role === "admin" ? (
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Contributions</h2>
+            <h2 className="text-lg font-semibold">{t("contributions")}</h2>
             <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-              Groups contributed: {participation.contributingGroups}/
-              {participation.activeGroups} ({participationPercent}%)
+              {t("participation", {
+                contributed: participation.contributingGroups,
+                total: participation.activeGroups,
+                percent: participationPercent,
+              })}
             </div>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            <span>Total contributed: ${contributedTotal.toFixed(2)}</span>
-            <span>Completion: {completionPercent}%</span>
+            <span>
+              {t("totalContributed", {
+                amount: formatCurrency(contributedTotal, locale),
+              })}
+            </span>
+            <span>{t("completion", { percent: completionPercent })}</span>
           </div>
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             {campaign.status === "open" ? (
@@ -139,7 +167,7 @@ export default async function CampaignDetailPage({
                 className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
                 href={`/admin/fundraising/${campaign.id}/contribute`}
               >
-                Submit contribution
+                {t("submitContribution")}
               </Link>
             ) : null}
           </div>
@@ -152,7 +180,7 @@ export default async function CampaignDetailPage({
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({})}`}
             >
-              All ({contributionStats.total})
+              {t("filters.all", { count: contributionStats.total })}
             </Link>
             <Link
               className={`rounded-full border px-3 py-1 ${
@@ -162,7 +190,7 @@ export default async function CampaignDetailPage({
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "submitted" })}`}
             >
-              Submitted ({contributionStats.submitted})
+              {t("filters.submitted", { count: contributionStats.submitted })}
             </Link>
             <Link
               className={`rounded-full border px-3 py-1 ${
@@ -172,7 +200,7 @@ export default async function CampaignDetailPage({
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "confirmed" })}`}
             >
-              Confirmed ({contributionStats.confirmed})
+              {t("filters.confirmed", { count: contributionStats.confirmed })}
             </Link>
             <Link
               className={`rounded-full border px-3 py-1 ${
@@ -182,15 +210,13 @@ export default async function CampaignDetailPage({
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "rejected" })}`}
             >
-              Rejected ({contributionStats.rejected})
+              {t("filters.rejected", { count: contributionStats.rejected })}
             </Link>
           </div>
           <div className="mt-4 space-y-3">
             {contributions.length === 0 ? (
               <p className="text-sm text-[color:var(--muted)]">
-                {statusFilter
-                  ? "No contributions match this status."
-                  : "No contributions submitted."}
+                {statusFilter ? t("empty.filtered") : t("empty.all")}
               </p>
             ) : (
               contributions.map((contribution) => (
@@ -200,16 +226,18 @@ export default async function CampaignDetailPage({
                 >
                 <div>
                   <p className="font-medium text-[var(--foreground)]">
-                    {contribution.method.replace("_", " ")}
+                    {t(`methods.${contribution.method}`)}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Amount: ${contribution.amount}
+                    {t("amountLabel", {
+                      amount: formatCurrency(Number(contribution.amount), locale),
+                    })}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Status: {contribution.status}
+                    {t("statusLabel")}: {tStatus(contribution.status)}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Group:{" "}
+                    {t("groupLabel")}{" "}
                     <Link
                       className="text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                       href={`/admin/groups/${contribution.groupId}`}
@@ -218,7 +246,7 @@ export default async function CampaignDetailPage({
                     </Link>
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Submitted by:{" "}
+                    {t("submittedBy")}{" "}
                     {contribution.submittedByName || contribution.submittedByEmail}
                   </p>
                 </div>

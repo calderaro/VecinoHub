@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getSession } from "@/server/auth";
 import {
@@ -15,8 +16,12 @@ import {
 import { listUpcomingEvents, getEventsStats } from "@/services/events";
 import { listRecentPosts, listDraftPosts, getPostsStats } from "@/services/posts";
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-MX", {
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatCurrency(amount: number, locale: string) {
+  return new Intl.NumberFormat(getDisplayLocale(locale), {
     style: "currency",
     currency: "MXN",
     minimumFractionDigits: 0,
@@ -24,15 +29,15 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-function formatDate(date: Date | string) {
-  return new Date(date).toLocaleDateString("es-MX", {
+function formatDate(date: Date | string, locale: string) {
+  return new Date(date).toLocaleDateString(getDisplayLocale(locale), {
     month: "short",
     day: "numeric",
   });
 }
 
-function formatDateTime(date: Date | string) {
-  return new Date(date).toLocaleDateString("es-MX", {
+function formatDateTime(date: Date | string, locale: string) {
+  return new Date(date).toLocaleDateString(getDisplayLocale(locale), {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -51,6 +56,8 @@ export default async function AdminPage() {
     redirect("/");
   }
 
+  const locale = await getLocale();
+  const t = await getTranslations("admin.overview");
   const serviceContext = { user: session.user };
 
   const [
@@ -82,10 +89,12 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-        <h1 className="text-3xl font-semibold">Admin Overview</h1>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+          {t("label")}
+        </p>
+        <h1 className="text-3xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-[color:var(--muted)]">
-          Activity summary for polls, fundraising, events, and posts.
+          {t("subtitle")}
         </p>
       </header>
 
@@ -96,14 +105,14 @@ export default async function AdminPage() {
           className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Active Polls
+            {t("stats.activePolls")}
           </p>
           <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
             {pollsStats.active}
           </p>
           {pollsStats.drafts > 0 && (
             <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {pollsStats.drafts} draft{pollsStats.drafts !== 1 && "s"} pending
+              {t("stats.pollDrafts", { count: pollsStats.drafts })}
             </p>
           )}
         </Link>
@@ -113,15 +122,16 @@ export default async function AdminPage() {
           className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Open Campaigns
+            {t("stats.openCampaigns")}
           </p>
           <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
             {fundraisingStats.openCampaigns}
           </p>
           {fundraisingStats.pendingContributions > 0 && (
             <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {fundraisingStats.pendingContributions} contribution
-              {fundraisingStats.pendingContributions !== 1 && "s"} to review
+              {t("stats.pendingContributions", {
+                count: fundraisingStats.pendingContributions,
+              })}
             </p>
           )}
         </Link>
@@ -131,13 +141,13 @@ export default async function AdminPage() {
           className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Upcoming Events
+            {t("stats.upcomingEvents")}
           </p>
           <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
             {eventsStats.upcoming}
           </p>
           <p className="mt-1 text-xs text-[color:var(--muted)]">
-            {eventsStats.total} total
+            {t("stats.totalEvents", { count: eventsStats.total })}
           </p>
         </Link>
 
@@ -146,14 +156,14 @@ export default async function AdminPage() {
           className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Published Posts
+            {t("stats.publishedPosts")}
           </p>
           <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
             {postsStats.published}
           </p>
           {postsStats.drafts > 0 && (
             <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {postsStats.drafts} draft{postsStats.drafts !== 1 && "s"} to publish
+              {t("stats.postDrafts", { count: postsStats.drafts })}
             </p>
           )}
         </Link>
@@ -164,17 +174,17 @@ export default async function AdminPage() {
         {/* Polls Section */}
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Active Polls</h2>
+            <h2 className="text-lg font-semibold">{t("polls.title")}</h2>
             <Link
               href="/admin/polls/new"
               className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             >
-              + New poll
+              {t("polls.new")}
             </Link>
           </div>
           <ul className="mt-4 space-y-3 text-sm">
             {activePolls.length === 0 ? (
-              <li className="text-[color:var(--muted)]">No active polls.</li>
+              <li className="text-[color:var(--muted)]">{t("polls.empty")}</li>
             ) : (
               activePolls.slice(0, 5).map((poll) => (
                 <li
@@ -185,11 +195,14 @@ export default async function AdminPage() {
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-[var(--foreground)]">{poll.title}</p>
                       <span className="shrink-0 rounded-full border border-[rgba(102,185,165,0.4)] bg-[rgba(102,185,165,0.2)] px-2 py-0.5 text-xs text-[color:var(--accent-cool)]">
-                        {poll.participation}% participation
+                        {t("polls.participation", { percentage: poll.participation })}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-[color:var(--muted)]">
-                      {poll.groupsVoted} of {poll.totalGroups} groups voted
+                      {t("polls.groupsVoted", {
+                        voted: poll.groupsVoted,
+                        total: poll.totalGroups,
+                      })}
                     </p>
                   </Link>
                 </li>
@@ -199,7 +212,7 @@ export default async function AdminPage() {
           {draftPolls.length > 0 && (
             <div className="mt-4 border-t border-white/10 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                Drafts needing attention
+                {t("polls.draftsTitle")}
               </p>
               <ul className="space-y-2">
                 {draftPolls.slice(0, 3).map((poll) => (
@@ -220,17 +233,17 @@ export default async function AdminPage() {
         {/* Fundraising Section */}
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Fundraising Campaigns</h2>
+            <h2 className="text-lg font-semibold">{t("fundraising.title")}</h2>
             <Link
               href="/admin/fundraising/new"
               className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             >
-              + New campaign
+              {t("fundraising.new")}
             </Link>
           </div>
           <ul className="mt-4 space-y-3 text-sm">
             {openCampaigns.length === 0 ? (
-              <li className="text-[color:var(--muted)]">No open campaigns.</li>
+              <li className="text-[color:var(--muted)]">{t("fundraising.empty")}</li>
             ) : (
               openCampaigns.slice(0, 4).map((campaign) => (
                 <li
@@ -244,15 +257,19 @@ export default async function AdminPage() {
                       </p>
                       {campaign.pendingCount > 0 && (
                         <span className="shrink-0 rounded-full border border-[rgba(225,177,94,0.4)] bg-[rgba(225,177,94,0.2)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
-                          {campaign.pendingCount} pending
+                          {t("fundraising.pending", {
+                            count: campaign.pendingCount,
+                          })}
                         </span>
                       )}
                     </div>
                     <div className="mt-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-[color:var(--muted)]">
-                          {formatCurrency(campaign.collectedAmount)} of{" "}
-                          {formatCurrency(Number(campaign.goalAmount))}
+                          {t("fundraising.progress", {
+                            collected: formatCurrency(campaign.collectedAmount, locale),
+                            goal: formatCurrency(Number(campaign.goalAmount), locale),
+                          })}
                         </span>
                         <span className="text-[color:var(--accent)]">
                           {Math.round(campaign.progress)}%
@@ -267,7 +284,9 @@ export default async function AdminPage() {
                     </div>
                     {campaign.dueDate && (
                       <p className="mt-2 text-xs text-[color:var(--muted)]">
-                        Due: {formatDate(campaign.dueDate)}
+                        {t("fundraising.due", {
+                          date: formatDate(campaign.dueDate, locale),
+                        })}
                       </p>
                     )}
                   </Link>
@@ -278,7 +297,7 @@ export default async function AdminPage() {
           {pendingContributions.length > 0 && (
             <div className="mt-4 border-t border-white/10 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                Contributions to review
+                {t("fundraising.reviewTitle")}
               </p>
               <ul className="space-y-2">
                 {pendingContributions.slice(0, 4).map((c) => (
@@ -291,7 +310,7 @@ export default async function AdminPage() {
                         {c.groupName} — {c.campaignTitle}
                       </span>
                       <span className="text-[color:var(--accent)]">
-                        {formatCurrency(Number(c.amount))}
+                        {formatCurrency(Number(c.amount), locale)}
                       </span>
                     </Link>
                   </li>
@@ -304,17 +323,17 @@ export default async function AdminPage() {
         {/* Events Section */}
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Upcoming Events</h2>
+            <h2 className="text-lg font-semibold">{t("events.title")}</h2>
             <Link
               href="/admin/events/new"
               className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             >
-              + New event
+              {t("events.new")}
             </Link>
           </div>
           <ul className="mt-4 space-y-3 text-sm">
             {upcomingEvents.length === 0 ? (
-              <li className="text-[color:var(--muted)]">No upcoming events.</li>
+              <li className="text-[color:var(--muted)]">{t("events.empty")}</li>
             ) : (
               upcomingEvents.slice(0, 5).map((event) => (
                 <li
@@ -325,7 +344,7 @@ export default async function AdminPage() {
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-[var(--foreground)]">{event.title}</p>
                       <span className="shrink-0 text-xs text-[color:var(--accent)]">
-                        {formatDateTime(event.startsAt)}
+                        {formatDateTime(event.startsAt, locale)}
                       </span>
                     </div>
                     {event.location && (
@@ -343,17 +362,17 @@ export default async function AdminPage() {
         {/* Posts Section */}
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent Posts</h2>
+            <h2 className="text-lg font-semibold">{t("posts.title")}</h2>
             <Link
               href="/admin/posts/new"
               className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             >
-              + New post
+              {t("posts.new")}
             </Link>
           </div>
           <ul className="mt-4 space-y-3 text-sm">
             {recentPosts.length === 0 ? (
-              <li className="text-[color:var(--muted)]">No posts yet.</li>
+              <li className="text-[color:var(--muted)]">{t("posts.empty")}</li>
             ) : (
               recentPosts
                 .filter((p) => p.status === "published")
@@ -368,7 +387,7 @@ export default async function AdminPage() {
                         <p className="font-medium text-[var(--foreground)]">{post.title}</p>
                         {post.publishedAt && (
                           <span className="shrink-0 text-xs text-[color:var(--muted)]">
-                            {formatDate(post.publishedAt)}
+                            {formatDate(post.publishedAt, locale)}
                           </span>
                         )}
                       </div>
@@ -383,7 +402,7 @@ export default async function AdminPage() {
           {draftPosts.length > 0 && (
             <div className="mt-4 border-t border-white/10 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                Drafts to publish
+                {t("posts.draftsTitle")}
               </p>
               <ul className="space-y-2">
                 {draftPosts.slice(0, 3).map((post) => (

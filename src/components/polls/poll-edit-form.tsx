@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { useToast } from "@/components/ui/toast";
 import { trpc } from "@/lib/trpc";
@@ -18,6 +19,7 @@ export function PollEditForm({
   initialStatus: "draft" | "active" | "closed";
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.pollForm");
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [status, setStatus] = useState(initialStatus);
@@ -28,7 +30,7 @@ export function PollEditForm({
 
   const updatePoll = trpc.polls.update.useMutation({
     onSuccess: () => {
-      addToast("Saved changes. Redirecting...", "success");
+      addToast(t("savedToast"), "success");
       redirectTimeout.current = setTimeout(() => {
         router.push(`/admin/polls/${pollId}`);
       }, 800);
@@ -46,14 +48,14 @@ export function PollEditForm({
 
   return (
     <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
-      <h2 className="text-lg font-semibold">Edit poll</h2>
+      <h2 className="text-lg font-semibold">{t("editFormTitle")}</h2>
       <form
         className="mt-4 space-y-4"
         onSubmit={(event) => {
           event.preventDefault();
           setError(null);
           if (!isValid) {
-            setError("Title is required.");
+            setError(t("titleRequired"));
             return;
           }
           updatePoll.mutate({
@@ -65,7 +67,7 @@ export function PollEditForm({
         }}
       >
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -74,7 +76,7 @@ export function PollEditForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Description</span>
+          <span>{t("fields.description")}</span>
           <textarea
             className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={description}
@@ -82,7 +84,7 @@ export function PollEditForm({
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Status</span>
+          <span>{t("fields.status")}</span>
           <select
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={status}
@@ -90,9 +92,9 @@ export function PollEditForm({
               setStatus(event.target.value as "draft" | "active" | "closed")
             }
           >
-            <option value="draft">draft</option>
-            <option value="active">active</option>
-            <option value="closed">closed</option>
+            <option value="draft">{t("statusOptions.draft")}</option>
+            <option value="active">{t("statusOptions.active")}</option>
+            <option value="closed">{t("statusOptions.closed")}</option>
             </select>
           </label>
         {error ? (
@@ -106,7 +108,7 @@ export function PollEditForm({
           type="submit"
           disabled={!isValid || updatePoll.isPending}
         >
-          {updatePoll.isPending ? "Saving..." : "Save changes"}
+          {updatePoll.isPending ? t("saving") : t("saveChanges")}
         </button>
       </form>
 

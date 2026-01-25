@@ -1,0 +1,812 @@
+{
+  "auth": {
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Unete al espacio de tu vecindario.",
+      "fullName": "Nombre completo",
+      "email": "Correo",
+      "password": "Contrasena",
+      "creating": "Creando...",
+      "action": "Crear cuenta",
+      "existing": "Ya tienes cuenta?",
+      "signIn": "Iniciar sesion",
+      "errors": {
+        "createAccount": "No se pudo crear la cuenta.",
+        "registration": "No se pudo completar el registro."
+      }
+    },
+    "login": {
+      "title": "Iniciar sesion",
+      "subtitle": "Accede al panel del vecindario.",
+      "email": "Correo",
+      "password": "Contrasena",
+      "signingIn": "Ingresando...",
+      "action": "Iniciar sesion",
+      "newHere": "Eres nuevo aqui?",
+      "createAccount": "Crear cuenta",
+      "errors": {
+        "invalid": "Credenciales invalidas.",
+        "login": "No se pudo iniciar sesion."
+      }
+    }
+  },
+  "profile": {
+    "navLabel": "Perfil",
+    "title": "Ajustes de perfil",
+    "subtitle": "Configura un nombre publico y foto para la interfaz del vecindario.",
+    "usernameLabel": "Nombre de usuario",
+    "usernamePlaceholder": "tu.usuario",
+    "usernameHelp": "Usa 3-32 caracteres: letras, numeros, puntos, guiones bajos o guiones.",
+    "usernameError": "Ingresa un nombre de usuario valido antes de guardar.",
+    "photoLabel": "URL de foto de perfil",
+    "photoPlaceholder": "https://example.com/foto.jpg",
+    "photoError": "Ingresa una URL valida o deja el campo vacio.",
+    "languageLabel": "Idioma preferido",
+    "languageSpanish": "Espanol",
+    "languageEnglish": "Ingles",
+    "saving": "Guardando...",
+    "save": "Guardar perfil",
+    "validationError": "Corrige los campos antes de guardar.",
+    "updated": "Perfil actualizado.",
+    "updateError": "No se pudo actualizar el perfil."
+  },
+  "nav": {
+    "dashboard": "Panel"
+  },
+  "dashboard": {
+    "empty": {
+      "title": "Aun no tienes grupo",
+      "body": "Tu cuenta esta pendiente de asignacion. Espera a que un admin de grupo te agregue a una casa."
+    }
+  },
+  "userMenu": {
+    "defaultUser": "Usuario",
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "adminPanel": "Panel admin",
+    "switchGroup": "Cambiar grupo",
+    "groups": "Grupos",
+    "signingOut": "Cerrando sesion...",
+    "signOut": "Cerrar sesion"
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin",
+      "overview": "Resumen",
+      "users": "Usuarios",
+      "groups": "Grupos",
+      "polls": "Votaciones",
+      "fundraising": "Recaudacion",
+      "events": "Eventos",
+      "posts": "Publicaciones"
+    },
+    "overview": {
+      "label": "Administracion",
+      "title": "Resumen admin",
+      "subtitle": "Resumen de actividad de votaciones, recaudacion, eventos y publicaciones.",
+      "stats": {
+        "activePolls": "Votaciones activas",
+        "pollDrafts": "{count} borrador{count, plural, one {} other {es}} pendiente",
+        "openCampaigns": "Campanas abiertas",
+        "pendingContributions": "{count} aporte{count, plural, one {} other {s}} por revisar",
+        "upcomingEvents": "Eventos proximos",
+        "totalEvents": "{count} total",
+        "publishedPosts": "Publicaciones activas",
+        "postDrafts": "{count} borrador{count, plural, one {} other {es}} por publicar"
+      },
+      "polls": {
+        "title": "Votaciones activas",
+        "new": "+ Nueva votacion",
+        "empty": "No hay votaciones activas.",
+        "participation": "{percentage}% de participacion",
+        "groupsVoted": "{voted} de {total} grupos votaron",
+        "draftsTitle": "Borradores pendientes"
+      },
+      "fundraising": {
+        "title": "Campanas de recaudacion",
+        "new": "+ Nueva campana",
+        "empty": "No hay campanas abiertas.",
+        "pending": "{count} pendiente",
+        "progress": "{collected} de {goal}",
+        "due": "Vence: {date}",
+        "reviewTitle": "Aportes por revisar"
+      },
+      "events": {
+        "title": "Eventos proximos",
+        "new": "+ Nuevo evento",
+        "empty": "No hay eventos proximos."
+      },
+      "posts": {
+        "title": "Publicaciones recientes",
+        "new": "+ Nueva publicacion",
+        "empty": "No hay publicaciones.",
+        "draftsTitle": "Borradores por publicar"
+      }
+    },
+    "users": {
+      "label": "Administracion",
+      "title": "Usuarios",
+      "subtitle": "Administra roles y estado de acceso."
+    },
+    "usersTable": {
+      "title": "Usuarios",
+      "searchPlaceholder": "Buscar usuarios",
+      "filter": "Filtrar",
+      "empty": "No se encontraron usuarios.",
+      "roleLabel": "Rol",
+      "statusLabel": "Estado",
+      "roles": {
+        "all": "Todos los roles",
+        "user": "Usuario",
+        "admin": "Admin",
+        "userLower": "usuario",
+        "adminLower": "admin"
+      },
+      "statuses": {
+        "all": "Todos los estados",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "activeLower": "activo",
+        "inactiveLower": "inactivo"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "groups": {
+      "label": "Administracion",
+      "title": "Grupos",
+      "subtitle": "Casas que administras o donde participas.",
+      "addGroup": "Agregar grupo",
+      "searchPlaceholder": "Buscar grupos",
+      "filter": "Filtrar",
+      "empty": "No se encontraron grupos.",
+      "table": {
+        "name": "Nombre",
+        "address": "Direccion",
+        "admin": "Admin",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyAddress": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "groupDetail": {
+      "badge": {
+        "admin": "Admin del grupo",
+        "member": "Miembro"
+      },
+      "edit": "Editar",
+      "membersTitle": "Miembros"
+    },
+    "groupFormPage": {
+      "label": "Administracion",
+      "createTitle": "Crear grupo",
+      "createSubtitle": "Agrega un nuevo grupo de casas.",
+      "editTitle": "Editar grupo",
+      "editSubtitle": "Actualiza los detalles del grupo."
+    },
+    "groupForm": {
+      "createTitle": "Crear grupo",
+      "editTitle": "Editar grupo",
+      "nameRequired": "El nombre del grupo es obligatorio.",
+      "validationError": "Nombre y admin son obligatorios.",
+      "updatedToast": "Grupo actualizado.",
+      "updateError": "No se pudo actualizar el grupo.",
+      "creating": "Creando...",
+      "createAction": "Crear grupo",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "fields": {
+        "name": "Nombre",
+        "address": "Direccion",
+        "adminUserId": "Id del admin"
+      }
+    },
+    "polls": {
+      "label": "Administracion",
+      "title": "Votaciones",
+      "subtitle": "Vota decisiones del vecindario por casa.",
+      "addPoll": "Agregar votacion",
+      "searchPlaceholder": "Buscar votaciones",
+      "statusAll": "Todos los estados",
+      "filter": "Filtrar",
+      "empty": "No se encontraron votaciones.",
+      "table": {
+        "title": "Titulo",
+        "status": "Estado",
+        "action": "Accion",
+        "view": "Ver"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "pollDetail": {
+      "statusLabel": "Estado",
+      "edit": "Editar",
+      "results": "Resultados",
+      "participation": "Participacion: {voted}/{total} ({percent}%)",
+      "table": {
+        "option": "Opcion",
+        "votes": "Votos"
+      }
+    },
+    "pollForm": {
+      "label": "Administracion",
+      "createTitle": "Crear votacion",
+      "createSubtitle": "Inicia una nueva votacion del vecindario.",
+      "editTitle": "Editar votacion",
+      "editSubtitle": "Actualiza los detalles.",
+      "formTitle": "Crear votacion",
+      "editFormTitle": "Editar votacion",
+      "titleRequired": "El titulo es obligatorio.",
+      "creating": "Creando...",
+      "createAction": "Crear votacion",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "savedToast": "Cambios guardados. Redirigiendo...",
+      "fields": {
+        "title": "Titulo",
+        "description": "Descripcion",
+        "status": "Estado"
+      },
+      "statusOptions": {
+        "draft": "borrador",
+        "active": "activo",
+        "closed": "cerrado"
+      }
+    },
+    "pollActions": {
+      "launch": "Lanzar votacion",
+      "reset": "Volver a borrador",
+      "close": "Cerrar votacion",
+      "reopen": "Reabrir votacion",
+      "cancel": "Cancelar",
+      "launchTitle": "Lanzar votacion",
+      "launchBody": "Lanzar la votacion la activa y bloquea opciones. Continuar?",
+      "launchConfirm": "Lanzar votacion",
+      "launching": "Lanzando",
+      "resetTitle": "Restablecer a borrador",
+      "resetBody": "Esto elimina votos y vuelve a borrador. Continuar?",
+      "resetConfirm": "Volver a borrador",
+      "resetting": "Restableciendo",
+      "closeTitle": "Cerrar votacion",
+      "closeBody": "Cerrar la votacion evita mas votos y cambios. Continuar?",
+      "closeConfirm": "Cerrar votacion",
+      "closing": "Cerrando",
+      "reopenTitle": "Reabrir votacion",
+      "reopenBody": "Reabrir permite actualizar votos. Continuar?",
+      "reopenConfirm": "Reabrir votacion",
+      "reopening": "Reabriendo"
+    },
+    "pollOptions": {
+      "title": "Opciones",
+      "add": "Agregar opcion",
+      "empty": "Sin opciones.",
+      "amount": "Monto: ${amount}",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "addTitle": "Agregar opcion",
+      "editTitle": "Editar opcion",
+      "deleteTitle": "Eliminar opcion",
+      "deleteBody": "Seguro que deseas eliminar \"{label}\"?",
+      "cancel": "Cancelar",
+      "saving": "Guardando",
+      "save": "Guardar",
+      "deleting": "Eliminando",
+      "fields": {
+        "label": "Etiqueta",
+        "description": "Descripcion",
+        "amount": "Monto"
+      }
+    },
+    "fundraisingList": {
+      "label": "Administracion",
+      "title": "Recaudacion",
+      "subtitle": "Administra campanas y revisa aportes.",
+      "addCampaign": "Agregar campana",
+      "searchPlaceholder": "Buscar campanas",
+      "statusAll": "Todos los estados",
+      "filter": "Filtrar",
+      "empty": "No se encontraron campanas.",
+      "table": {
+        "title": "Titulo",
+        "status": "Estado",
+        "goal": "Meta",
+        "perGroup": "Por grupo",
+        "dueDate": "Vencimiento",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "eventsList": {
+      "label": "Administracion",
+      "title": "Eventos",
+      "subtitle": "Planea reuniones y recordatorios.",
+      "addEvent": "Agregar evento",
+      "searchPlaceholder": "Buscar eventos",
+      "filter": "Filtrar",
+      "empty": "No se encontraron eventos.",
+      "table": {
+        "title": "Titulo",
+        "starts": "Inicio",
+        "location": "Lugar",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyLocation": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "postsList": {
+      "label": "Administracion",
+      "title": "Publicaciones",
+      "subtitle": "Publica noticias y avisos del vecindario.",
+      "addPost": "Agregar publicacion",
+      "searchPlaceholder": "Buscar publicaciones",
+      "statusAll": "Todos los estados",
+      "filter": "Filtrar",
+      "empty": "No se encontraron publicaciones.",
+      "table": {
+        "title": "Titulo",
+        "status": "Estado",
+        "published": "Publicado",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "campaignFormPage": {
+      "label": "Administracion",
+      "createTitle": "Crear campana",
+      "createSubtitle": "Solicita aportes del vecindario.",
+      "editTitle": "Editar campana",
+      "editSubtitle": "Actualiza titulo, meta y estado."
+    },
+    "campaignForm": {
+      "createTitle": "Crear campana",
+      "editTitle": "Editar campana",
+      "validationError": "El titulo y la meta son obligatorios.",
+      "goalPlaceholder": "3000.00",
+      "creating": "Creando...",
+      "createAction": "Crear campana",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "fields": {
+        "title": "Titulo",
+        "goalAmount": "Meta",
+        "description": "Descripcion",
+        "dueDate": "Vencimiento",
+        "status": "Estado"
+      },
+      "statusOptions": {
+        "open": "abierto",
+        "closed": "cerrado"
+      }
+    },
+    "campaignDetail": {
+      "statusLabel": "Estado",
+      "perGroup": "Por grupo: {amount}",
+      "goal": "Meta: {amount}",
+      "edit": "Editar",
+      "contributions": "Aportes",
+      "participation": "Grupos aportaron: {contributed}/{total} ({percent}%)",
+      "totalContributed": "Total aportado: {amount}",
+      "completion": "Avance: {percent}%",
+      "submitContribution": "Enviar aporte",
+      "filters": {
+        "all": "Todos ({count})",
+        "submitted": "Enviados ({count})",
+        "confirmed": "Confirmados ({count})",
+        "rejected": "Rechazados ({count})"
+      },
+      "empty": {
+        "all": "No hay aportes enviados.",
+        "filtered": "No hay aportes con este estado."
+      },
+      "methods": {
+        "cash": "efectivo",
+        "wire_transfer": "transferencia"
+      },
+      "amountLabel": "Monto: {amount}",
+      "groupLabel": "Grupo:",
+      "submittedBy": "Enviado por:"
+    },
+    "contributionPage": {
+      "label": "Administracion",
+      "title": "Enviar aporte",
+      "perGroup": "Por grupo: {amount}",
+      "goal": "Meta: {amount}"
+    },
+    "contributionStatus": {
+      "trigger": "Actualizar estado",
+      "title": "Actualizar aporte",
+      "subtitle": "Elige el nuevo estado del aporte.",
+      "statusLabel": "Estado",
+      "cancel": "Cancelar",
+      "saving": "Guardando",
+      "save": "Guardar",
+      "statuses": {
+        "submitted": "Enviado",
+        "confirmed": "Confirmado",
+        "rejected": "Rechazado"
+      }
+    },
+    "contributionForm": {
+      "noGroup": "No estas asignado a un grupo.",
+      "amountRequired": "El monto del aporte es obligatorio.",
+      "wireRequired": "Faltan datos de la transferencia.",
+      "submitting": "Enviando",
+      "submit": "Enviar aporte",
+      "fields": {
+        "group": "Grupo",
+        "method": "Metodo",
+        "amount": "Monto",
+        "reference": "Referencia",
+        "date": "Fecha"
+      },
+      "methods": {
+        "cash": "Efectivo",
+        "wire_transfer": "Transferencia"
+      }
+    },
+    "contributionDelete": {
+      "delete": "Eliminar",
+      "deleting": "Eliminando"
+    },
+    "fundraisingActions": {
+      "confirm": "Confirmar",
+      "confirming": "Confirmando",
+      "reject": "Rechazar",
+      "rejecting": "Rechazando"
+    },
+    "eventFormPage": {
+      "label": "Administracion",
+      "createTitle": "Crear evento",
+      "createSubtitle": "Publica un nuevo evento del vecindario.",
+      "editTitle": "Editar evento",
+      "editSubtitle": "Actualiza los detalles antes de compartir."
+    },
+    "eventForm": {
+      "createTitle": "Crear evento",
+      "editTitle": "Editar evento",
+      "validationError": "El titulo y la fecha de inicio son obligatorios.",
+      "createdToast": "Evento creado.",
+      "updatedToast": "Evento actualizado.",
+      "saveError": "No se pudo guardar el evento.",
+      "creating": "Creando...",
+      "createAction": "Crear evento",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "locationPlaceholder": "Salon comunitario",
+      "fields": {
+        "title": "Titulo",
+        "startTime": "Inicio",
+        "endTime": "Fin",
+        "location": "Lugar",
+        "description": "Descripcion"
+      }
+    },
+    "eventActions": {
+      "delete": "Eliminar",
+      "deleteTitle": "Eliminar evento",
+      "deleteBody": "Esto eliminara el evento del calendario.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "deletedToast": "Evento eliminado."
+    },
+    "eventDetail": {
+      "edit": "Editar",
+      "location": "Lugar",
+      "description": "Descripcion",
+      "tbd": "Por definir",
+      "noDescription": "Sin descripcion.",
+      "back": "Volver a eventos"
+    },
+    "postFormPage": {
+      "label": "Administracion",
+      "createTitle": "Crear publicacion",
+      "createSubtitle": "Redacta una actualizacion para residentes.",
+      "editTitle": "Editar publicacion",
+      "editSubtitle": "Actualiza el contenido antes de publicar."
+    },
+    "postForm": {
+      "createTitle": "Crear publicacion",
+      "editTitle": "Editar publicacion",
+      "validationError": "El titulo y el contenido son obligatorios.",
+      "createdToast": "Publicacion creada.",
+      "updatedToast": "Publicacion actualizada.",
+      "saveError": "No se pudo guardar la publicacion.",
+      "creating": "Creando...",
+      "createAction": "Crear publicacion",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "fields": {
+        "title": "Titulo",
+        "status": "Estado",
+        "content": "Contenido"
+      },
+      "statusOptions": {
+        "draft": "Borrador",
+        "published": "Publicado"
+      }
+    },
+    "postActions": {
+      "publish": "Publicar",
+      "publishing": "Publicando...",
+      "unpublish": "Despublicar",
+      "unpublishing": "Despublicando...",
+      "delete": "Eliminar",
+      "deleteTitle": "Eliminar publicacion",
+      "deleteBody": "Esto eliminara la publicacion del feed.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "publishedToast": "Publicacion publicada.",
+      "unpublishedToast": "Publicacion despublicada.",
+      "deletedToast": "Publicacion eliminada."
+    },
+    "postDetail": {
+      "statusLabel": "Estado",
+      "publishedLabel": "Publicado",
+      "edit": "Editar",
+      "contentLabel": "Contenido",
+      "back": "Volver a publicaciones",
+      "emptyDate": "-"
+    }
+  },
+  "status": {
+    "draft": "Borrador",
+    "active": "Activo",
+    "closed": "Cerrado",
+    "open": "Abierto",
+    "published": "Publicado",
+    "submitted": "Enviado",
+    "confirmed": "Confirmado",
+    "rejected": "Rechazado",
+    "inactive": "Inactivo"
+  },
+  "dashboard": {
+    "overview": {
+      "label": "Resumen del vecindario",
+      "subtitle": "Resumen del grupo de casas.",
+      "posts": {
+        "title": "Ultimas publicaciones",
+        "count": "{count} publicacion{count, plural, one {} other {es}} publicada",
+        "viewAll": "Ver publicaciones",
+        "empty": "Aun no hay publicaciones.",
+        "by": "por {name}"
+      },
+      "events": {
+        "title": "Eventos proximos",
+        "count": "{count} evento{count, plural, one {} other {s}} programado",
+        "viewAll": "Ver eventos",
+        "empty": "No hay eventos proximos.",
+        "by": "por {name}"
+      },
+      "polls": {
+        "title": "Votaciones activas",
+        "count": "{count} votacion{count, plural, one {} other {es}} disponible",
+        "viewAll": "Ver votaciones",
+        "empty": "No hay votaciones activas.",
+        "by": "por {name}"
+      },
+      "fundraising": {
+        "title": "Campanas activas",
+        "count": "{count} campana{count, plural, one {} other {s}} abierta",
+        "viewAll": "Ver campanas",
+        "empty": "No hay campanas activas.",
+        "goal": "Meta: {amount}",
+        "perGroup": "({amount} por grupo)",
+        "due": "Vence {date}"
+      },
+      "members": {
+        "title": "Miembros del grupo",
+        "count": "{count} miembro{count, plural, one {} other {s}} en este grupo",
+        "viewAll": "Ver miembros",
+        "empty": "Aun no hay miembros.",
+        "roles": {
+          "admin": "admin",
+          "user": "usuario"
+        }
+      }
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "members": "Miembros",
+      "polls": "Votaciones",
+      "fundraising": "Recaudacion",
+      "events": "Eventos",
+      "posts": "Publicaciones"
+    },
+    "membersPage": {
+      "label": "Padron de casa",
+      "title": "Miembros de {name}",
+      "subtitle": "Administra residentes del grupo."
+    },
+    "groupMembers": {
+      "title": "Miembros",
+      "add": "Agregar miembro",
+      "empty": "Aun no hay miembros.",
+      "remove": "Eliminar",
+      "roles": {
+        "admin": "admin",
+        "user": "usuario"
+      },
+      "toasts": {
+        "added": "Miembro agregado al grupo.",
+        "removed": "Miembro eliminado del grupo."
+      },
+      "addDialog": {
+        "title": "Agregar miembro",
+        "subtitle": "Invita por correo.",
+        "emailRequired": "El correo es obligatorio.",
+        "emailLabel": "Correo",
+        "emailPlaceholder": "miembro@email.com",
+        "cancel": "Cancelar",
+        "add": "Agregar",
+        "adding": "Agregando"
+      },
+      "removeDialog": {
+        "title": "Eliminar miembro",
+        "body": "Eliminar a {name} del grupo?",
+        "cancel": "Cancelar",
+        "remove": "Eliminar",
+        "removing": "Eliminando"
+      }
+    },
+    "pollsList": {
+      "label": "Decisiones del vecindario",
+      "title": "Votaciones",
+      "subtitle": "Votaciones pendientes de tu voto.",
+      "searchPlaceholder": "Buscar votaciones",
+      "filter": "Filtrar",
+      "empty": "No hay votaciones activas.",
+      "table": {
+        "title": "Titulo",
+        "status": "Estado",
+        "action": "Accion",
+        "view": "Ver"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "eventsList": {
+      "label": "Reuniones del vecindario",
+      "title": "Eventos",
+      "subtitle": "Reuniones y recordatorios.",
+      "searchPlaceholder": "Buscar eventos",
+      "filter": "Filtrar",
+      "empty": "No hay eventos proximos.",
+      "table": {
+        "title": "Titulo",
+        "starts": "Inicio",
+        "location": "Lugar",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyLocation": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "postsList": {
+      "label": "Actualizaciones del vecindario",
+      "title": "Publicaciones",
+      "subtitle": "Avisos del equipo admin.",
+      "searchPlaceholder": "Buscar publicaciones",
+      "filter": "Filtrar",
+      "empty": "No hay publicaciones.",
+      "table": {
+        "title": "Titulo",
+        "published": "Publicado",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "fundraisingList": {
+      "label": "Aportes comunitarios",
+      "title": "Recaudacion",
+      "subtitle": "Campanas activas.",
+      "searchPlaceholder": "Buscar campanas",
+      "filter": "Filtrar",
+      "empty": "No hay campanas activas.",
+      "table": {
+        "title": "Titulo",
+        "goal": "Meta",
+        "groupAmount": "Tu grupo",
+        "dueDate": "Vencimiento",
+        "action": "Accion",
+        "view": "Ver",
+        "emptyDate": "-"
+      },
+      "pagination": {
+        "pageOf": "Pagina {page} de {total}",
+        "prev": "Anterior",
+        "next": "Siguiente"
+      }
+    },
+    "pollDetail": {
+      "statusLabel": "Estado",
+      "optionsTitle": "Opciones",
+      "amount": "Monto: {amount}"
+    },
+    "pollVote": {
+      "unavailable": "La votacion no esta disponible.",
+      "disabledError": "La votacion esta deshabilitada.",
+      "optionsLabel": "Opciones",
+      "amount": "Monto: {amount}",
+      "alreadyVoted": "Este grupo ya voto. Se reemplazara la seleccion anterior.",
+      "currentSelection": "Seleccion actual: {label}.",
+      "submitting": "Enviando",
+      "submit": "Enviar voto"
+    },
+    "eventDetail": {
+      "adminView": "Vista admin",
+      "location": "Lugar",
+      "description": "Descripcion",
+      "tbd": "Por definir",
+      "noDescription": "Sin descripcion.",
+      "back": "Volver a eventos"
+    },
+    "postDetail": {
+      "adminView": "Vista admin",
+      "published": "Publicado {date}",
+      "content": "Contenido",
+      "back": "Volver a publicaciones",
+      "emptyDate": "-"
+    },
+    "fundraisingDetail": {
+      "statusLabel": "Estado",
+      "perGroup": "Por grupo: {amount}",
+      "goal": "Meta: {amount}",
+      "yourContributions": "Tus aportes",
+      "submitContribution": "Enviar aporte",
+      "totalContributed": "Total aportado: {amount}",
+      "empty": "Aun no hay aportes.",
+      "methods": {
+        "cash": "efectivo",
+        "wire_transfer": "transferencia"
+      },
+      "amountLabel": "Monto: {amount}"
+    },
+    "contributionPage": {
+      "title": "Enviar aporte",
+      "perGroup": "Por grupo: {amount}",
+      "goal": "Meta: {amount}"
+    }
+  }
+}

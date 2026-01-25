@@ -1,10 +1,24 @@
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContributionDeleteButton } from "@/components/fundraising/contribution-delete-button";
 import Link from "next/link";
 
 import { getCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
+
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatCurrency(amount: number, locale: string) {
+  return new Intl.NumberFormat(getDisplayLocale(locale), {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 export default async function NeighborCampaignDetailPage({
   params,
@@ -29,6 +43,9 @@ export default async function NeighborCampaignDetailPage({
     (total, contribution) => total + Number(contribution.amount ?? 0),
     0
   );
+  const locale = await getLocale();
+  const t = await getTranslations("dashboard.fundraisingDetail");
+  const tStatus = await getTranslations("status");
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
@@ -38,30 +55,30 @@ export default async function NeighborCampaignDetailPage({
           <p className="text-sm text-[color:var(--muted)]">{campaign.description}</p>
         ) : null}
         <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          <span>Status: {campaign.status}</span>
-          <span>Per group: ${campaign.amount}</span>
-          <span>Goal: ${campaign.goalAmount}</span>
+          <span>{t("statusLabel")}: {tStatus(campaign.status)}</span>
+          <span>{t("perGroup", { amount: formatCurrency(Number(campaign.amount), locale) })}</span>
+          <span>{t("goal", { amount: formatCurrency(Number(campaign.goalAmount), locale) })}</span>
         </div>
       </header>
 
       <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Your contributions</h2>
+          <h2 className="text-lg font-semibold">{t("yourContributions")}</h2>
           {campaign.status === "open" ? (
             <Link
               className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}/contribute`}
             >
-              Submit contribution
+              {t("submitContribution")}
             </Link>
           ) : null}
         </div>
         <p className="mt-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          Total contributed: ${contributedTotal.toFixed(2)}
+          {t("totalContributed", { amount: formatCurrency(contributedTotal, locale) })}
         </p>
         <div className="mt-4 space-y-3">
           {contributions.length === 0 ? (
-            <p className="text-sm text-[color:var(--muted)]">No contributions submitted yet.</p>
+            <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
           ) : (
             contributions.map((contribution) => (
               <div
@@ -70,13 +87,15 @@ export default async function NeighborCampaignDetailPage({
               >
                 <div>
                   <p className="font-medium text-[var(--foreground)]">
-                    {contribution.method.replace("_", " ")}
+                    {t(`methods.${contribution.method}`)}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Amount: ${contribution.amount}
+                    {t("amountLabel", {
+                      amount: formatCurrency(Number(contribution.amount), locale),
+                    })}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">
-                    Status: {contribution.status}
+                    {t("statusLabel")}: {tStatus(contribution.status)}
                   </p>
                 </div>
                 {campaign.status === "open" ? (

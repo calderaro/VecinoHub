@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContributionForm } from "@/components/fundraising/contribution-form";
 import { listUserGroups } from "@/services/groups";
@@ -29,15 +30,23 @@ export default async function NeighborContributionPage({
   }
 
   const groups = await listUserGroups(serviceContext);
+  const locale = await getLocale();
+  const t = await getTranslations("dashboard.contributionPage");
+  const formatCurrency = new Intl.NumberFormat(locale === "en" ? "en-US" : "es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold">Submit contribution</h1>
+        <h1 className="text-3xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-[color:var(--muted)]">{campaign.title}</p>
         <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          <span>Per group: ${campaign.amount}</span>
-          <span>Goal: ${campaign.goalAmount}</span>
+          <span>{t("perGroup", { amount: formatCurrency.format(Number(campaign.amount)) })}</span>
+          <span>{t("goal", { amount: formatCurrency.format(Number(campaign.goalAmount)) })}</span>
         </div>
       </header>
 

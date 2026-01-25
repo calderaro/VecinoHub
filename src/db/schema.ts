@@ -39,6 +39,7 @@ export const users = pgTable(
     name: text("name").notNull(),
     username: text("username"),
     image: text("image"),
+    preferredLanguage: text("preferred_language").notNull().default("es"),
     role: roleEnum("role").notNull().default("user"),
     status: userStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true })

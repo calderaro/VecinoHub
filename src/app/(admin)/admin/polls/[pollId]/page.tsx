@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { PollAdminActions } from "@/components/polls/poll-admin-actions";
 import { PollOptionsManager } from "@/components/polls/poll-options-manager";
@@ -38,6 +39,8 @@ export default async function PollDetailPage({
           (participation.votedGroups / participation.activeGroups) * 100
         )
       : 0;
+  const t = await getTranslations("admin.pollDetail");
+  const tStatus = await getTranslations("status");
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
@@ -48,7 +51,7 @@ export default async function PollDetailPage({
             <p className="text-sm text-[color:var(--muted)]">{poll.description}</p>
           ) : null}
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Status: {poll.status}
+            {t("statusLabel")}: {tStatus(poll.status)}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -57,7 +60,7 @@ export default async function PollDetailPage({
               className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
               href={`/admin/polls/${poll.id}/edit`}
             >
-              Edit
+              {t("edit")}
             </Link>
           ) : null}
           {session.user.role === "admin" ? (
@@ -80,11 +83,14 @@ export default async function PollDetailPage({
       {session.user.role === "admin" ? (
         <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Results</h2>
+            <h2 className="text-lg font-semibold">{t("results")}</h2>
             {participation ? (
               <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                Participation: {participation.votedGroups}/
-                {participation.activeGroups} ({participationPercent}%)
+                {t("participation", {
+                  voted: participation.votedGroups,
+                  total: participation.activeGroups,
+                  percent: participationPercent,
+                })}
               </div>
             ) : null}
           </div>
@@ -92,8 +98,8 @@ export default async function PollDetailPage({
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                 <tr>
-                  <th className="py-2">Option</th>
-                  <th className="py-2">Votes</th>
+                  <th className="py-2">{t("table.option")}</th>
+                  <th className="py-2">{t("table.votes")}</th>
                 </tr>
               </thead>
               <tbody className="text-[color:var(--foreground)]">

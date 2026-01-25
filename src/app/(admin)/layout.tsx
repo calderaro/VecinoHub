@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { UserMenu } from "@/components/user-menu";
 import { listUserGroups } from "@/services/groups";
@@ -21,6 +22,7 @@ export default async function AdminLayout({
   }
 
   const groups = await listUserGroups({ user: session.user });
+  const t = await getTranslations("admin.nav");
 
   return (
     <div className="min-h-screen text-[var(--foreground)]">
@@ -31,30 +33,30 @@ export default async function AdminLayout({
               VecinoHub
             </span>
             <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
-              Admin
+              {t("label")}
             </span>
           </Link>
           <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin">
-              Overview
+              {t("overview")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/users">
-              Users
+              {t("users")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/groups">
-              Groups
+              {t("groups")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/polls">
-              Polls
+              {t("polls")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/fundraising">
-              Fundraising
+              {t("fundraising")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/events">
-              Events
+              {t("events")}
             </Link>
             <Link className="hover:text-[color:var(--accent-strong)]" href="/admin/posts">
-              Posts
+              {t("posts")}
             </Link>
           </nav>
           <UserMenu

@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { EventAdminActions } from "@/components/events/event-admin-actions";
 import { getEventById } from "@/services/events";
 import { getSession } from "@/server/auth";
 
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat("en-US", {
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatDate(value: Date, locale: string) {
+  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
     dateStyle: "full",
     timeStyle: "short",
   }).format(value);
@@ -29,6 +34,8 @@ export default async function AdminEventDetailPage({
 
   const resolvedParams = await Promise.resolve(params);
   const event = await getEventById({ user: session.user }, resolvedParams);
+  const locale = await getLocale();
+  const t = await getTranslations("admin.eventDetail");
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12">
@@ -36,8 +43,8 @@ export default async function AdminEventDetailPage({
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">{event.title}</h1>
           <p className="text-sm text-[color:var(--muted)]">
-            {formatDate(event.startsAt)}
-            {event.endsAt ? ` - ${formatDate(event.endsAt)}` : ""}
+            {formatDate(event.startsAt, locale)}
+            {event.endsAt ? ` - ${formatDate(event.endsAt, locale)}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -45,7 +52,7 @@ export default async function AdminEventDetailPage({
             className="rounded-full border border-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             href={`/admin/events/${event.id}/edit`}
           >
-            Edit
+            {t("edit")}
           </Link>
           <EventAdminActions eventId={event.id} />
         </div>
@@ -55,16 +62,16 @@ export default async function AdminEventDetailPage({
         <div className="grid gap-4 text-sm text-[color:var(--foreground)]">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-              Location
+              {t("location")}
             </p>
-            <p className="mt-1">{event.location ?? "TBD"}</p>
+            <p className="mt-1">{event.location ?? t("tbd")}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-              Description
+              {t("description")}
             </p>
             <p className="mt-1 text-[color:var(--muted-strong)]">
-              {event.description || "No description provided."}
+              {event.description || t("noDescription")}
             </p>
           </div>
         </div>
@@ -74,7 +81,7 @@ export default async function AdminEventDetailPage({
         className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] hover:text-[color:var(--accent)]"
         href="/admin/events"
       >
-        Back to events
+        {t("back")}
       </Link>
     </div>
   );

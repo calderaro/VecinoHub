@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -13,6 +14,7 @@ export function PollAdminActions({
   status: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.pollActions");
   const [open, setOpen] = useState(false);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [launchOpen, setLaunchOpen] = useState(false);
@@ -52,7 +54,7 @@ export function PollAdminActions({
           onClick={() => setLaunchOpen(true)}
           disabled={launchPoll.isPending}
         >
-          Launch poll
+          {t("launch")}
         </button>
       ) : null}
       {status !== "draft" ? (
@@ -62,7 +64,7 @@ export function PollAdminActions({
           onClick={() => setResetOpen(true)}
           disabled={resetPoll.isPending}
         >
-          Reset to draft
+          {t("reset")}
         </button>
       ) : null}
       {status !== "closed" ? (
@@ -72,7 +74,7 @@ export function PollAdminActions({
           onClick={() => setOpen(true)}
           disabled={closePoll.isPending}
         >
-          Close poll
+          {t("close")}
         </button>
       ) : (
         <button
@@ -81,7 +83,7 @@ export function PollAdminActions({
           onClick={() => setReopenOpen(true)}
           disabled={reopenPoll.isPending}
         >
-          Re-open poll
+          {t("reopen")}
         </button>
       )}
 
@@ -89,10 +91,10 @@ export function PollAdminActions({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Launch poll
+              {t("launchTitle")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Launching a poll makes it active and locks the options. Continue?
+              {t("launchBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -101,7 +103,7 @@ export function PollAdminActions({
                 onClick={() => setLaunchOpen(false)}
                 disabled={launchPoll.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -109,7 +111,7 @@ export function PollAdminActions({
                 onClick={() => launchPoll.mutate({ pollId, status: "active" })}
                 disabled={launchPoll.isPending}
               >
-                {launchPoll.isPending ? "Launching" : "Launch poll"}
+                {launchPoll.isPending ? t("launching") : t("launchConfirm")}
               </button>
             </div>
           </div>
@@ -120,10 +122,10 @@ export function PollAdminActions({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Reset poll to draft
+              {t("resetTitle")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              This will remove all votes and move the poll back to draft. Continue?
+              {t("resetBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -132,7 +134,7 @@ export function PollAdminActions({
                 onClick={() => setResetOpen(false)}
                 disabled={resetPoll.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -140,7 +142,7 @@ export function PollAdminActions({
                 onClick={() => resetPoll.mutate({ pollId })}
                 disabled={resetPoll.isPending}
               >
-                {resetPoll.isPending ? "Resetting" : "Reset to draft"}
+                {resetPoll.isPending ? t("resetting") : t("resetConfirm")}
               </button>
             </div>
           </div>
@@ -151,10 +153,10 @@ export function PollAdminActions({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Close poll
+              {t("closeTitle")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Closing a poll prevents further votes and edits. Continue?
+              {t("closeBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -163,7 +165,7 @@ export function PollAdminActions({
                 onClick={() => setOpen(false)}
                 disabled={closePoll.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
@@ -171,7 +173,7 @@ export function PollAdminActions({
                 onClick={() => closePoll.mutate({ pollId })}
                 disabled={closePoll.isPending}
               >
-                {closePoll.isPending ? "Closing" : "Close poll"}
+                {closePoll.isPending ? t("closing") : t("closeConfirm")}
               </button>
             </div>
           </div>
@@ -182,10 +184,10 @@ export function PollAdminActions({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Re-open poll
+              {t("reopenTitle")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
-              Re-opening a poll allows groups to update their votes. Continue?
+              {t("reopenBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -194,7 +196,7 @@ export function PollAdminActions({
                 onClick={() => setReopenOpen(false)}
                 disabled={reopenPoll.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -202,7 +204,7 @@ export function PollAdminActions({
                 onClick={() => reopenPoll.mutate({ pollId })}
                 disabled={reopenPoll.isPending}
               >
-                {reopenPoll.isPending ? "Re-opening" : "Re-open poll"}
+                {reopenPoll.isPending ? t("reopening") : t("reopenConfirm")}
               </button>
             </div>
           </div>

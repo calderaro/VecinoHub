@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth.login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,13 +29,13 @@ export default function LoginPage() {
       });
 
       if (!data?.user) {
-        setError("Invalid credentials.");
+        setError(t("errors.invalid"));
         return;
       }
 
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed.");
+      setError(err instanceof Error ? err.message : t("errors.login"));
     } finally {
       setIsSubmitting(false);
     }
@@ -43,16 +45,16 @@ export default function LoginPage() {
     <div className="flex flex-col gap-6">
       <div className="space-y-3">
         <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">VecinoHub</p>
-        <h1 className="text-3xl font-semibold text-[var(--foreground)]">Sign in</h1>
+        <h1 className="text-3xl font-semibold text-[var(--foreground)]">{t("title")}</h1>
         <p className="text-sm text-[color:var(--muted)]">
-          Access your neighborhood dashboard.
+          {t("subtitle")}
         </p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label className="text-sm text-[color:var(--muted-strong)]" htmlFor="email">
-            Email
+            {t("email")}
           </label>
           <input
             className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
@@ -65,7 +67,7 @@ export default function LoginPage() {
         </div>
         <div className="space-y-2">
           <label className="text-sm text-[color:var(--muted-strong)]" htmlFor="password">
-            Password
+            {t("password")}
           </label>
           <input
             className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
@@ -88,14 +90,14 @@ export default function LoginPage() {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Signing in..." : "Sign in"}
+          {isSubmitting ? t("signingIn") : t("action")}
         </button>
       </form>
 
       <p className="text-sm text-[color:var(--muted)]">
-        New here?{" "}
+        {t("newHere")}{" "}
         <Link className="text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]" href="/register">
-          Create an account
+          {t("createAccount")}
         </Link>
       </p>
     </div>

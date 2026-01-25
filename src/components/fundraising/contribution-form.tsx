@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -20,6 +21,7 @@ export function ContributionForm({
   initialGroupId?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.contributionForm");
   const [method, setMethod] = useState<"cash" | "wire_transfer">("cash");
   const [groupId, setGroupId] = useState(
     initialGroupId ?? groups[0]?.id ?? ""
@@ -46,7 +48,7 @@ export function ContributionForm({
   if (groups.length === 0) {
     return (
       <p className="text-sm text-[color:var(--muted)]">
-        You are not assigned to a group.
+        {t("noGroup")}
       </p>
     );
   }
@@ -58,11 +60,11 @@ export function ContributionForm({
         event.preventDefault();
         setError(null);
         if (!amountReady) {
-          setError("Contribution amount is required.");
+          setError(t("amountRequired"));
           return;
         }
         if (!wireReady) {
-          setError("Wire transfer details are required.");
+          setError(t("wireRequired"));
           return;
         }
         submitContribution.mutate({
@@ -80,7 +82,7 @@ export function ContributionForm({
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          Group
+          {t("fields.group")}
           <select
             className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={groupId}
@@ -94,19 +96,19 @@ export function ContributionForm({
           </select>
         </label>
         <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          Method
+          {t("fields.method")}
           <select
             className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={method}
             onChange={(event) => setMethod(event.target.value as "cash" | "wire_transfer")}
           >
-            <option value="cash">Cash</option>
-            <option value="wire_transfer">Wire transfer</option>
+            <option value="cash">{t("methods.cash")}</option>
+            <option value="wire_transfer">{t("methods.wire_transfer")}</option>
           </select>
         </label>
       </div>
       <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-        Amount
+        {t("fields.amount")}
         <input
           className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
           value={amount}
@@ -119,7 +121,7 @@ export function ContributionForm({
       {method === "wire_transfer" ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Reference
+            {t("fields.reference")}
             <input
               className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
               value={wireReference}
@@ -128,7 +130,7 @@ export function ContributionForm({
             />
           </label>
           <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            Date
+            {t("fields.date")}
             <input
               className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
               type="date"
@@ -151,7 +153,7 @@ export function ContributionForm({
         type="submit"
         disabled={!amountReady || !wireReady || submitContribution.isPending}
       >
-        {submitContribution.isPending ? "Submitting" : "Submit contribution"}
+        {submitContribution.isPending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

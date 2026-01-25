@@ -1,10 +1,32 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { listCampaignsPaged } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
+
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatCurrency(amount: number, locale: string) {
+  return new Intl.NumberFormat(getDisplayLocale(locale), {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDate(value: Date | string, locale: string) {
+  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 function buildQuery(params: Record<string, string | undefined>) {
   const entries = Object.entries(params).filter(([, value]) => value);
@@ -53,15 +75,20 @@ export default async function FundraisingPage({
   );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const locale = await getLocale();
+  const t = await getTranslations("admin.fundraisingList");
+  const tStatus = await getTranslations("status");
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-          <h1 className="text-3xl font-semibold">Fundraising</h1>
+          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+            {t("label")}
+          </p>
+          <h1 className="text-3xl font-semibold">{t("title")}</h1>
           <p className="text-sm text-[color:var(--muted)]">
-            Manage campaigns and track contributions.
+            {t("subtitle")}
           </p>
         </div>
         {session.user.role === "admin" ? (
@@ -69,7 +96,7 @@ export default async function FundraisingPage({
             className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
             href="/admin/fundraising/new"
           >
-            Add campaign
+            {t("addCampaign")}
           </Link>
         ) : null}
       </header>
@@ -78,7 +105,7 @@ export default async function FundraisingPage({
         <input
           className="min-w-[220px] flex-1 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
           name="q"
-          placeholder="Search campaigns"
+          placeholder={t("searchPlaceholder")}
           defaultValue={query}
         />
         <select
@@ -86,32 +113,32 @@ export default async function FundraisingPage({
           name="status"
           defaultValue={status}
         >
-          <option value="">All statuses</option>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
+          <option value="">{t("statusAll")}</option>
+          <option value="open">{tStatus("open")}</option>
+          <option value="closed">{tStatus("closed")}</option>
         </select>
         <button
           className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           type="submit"
         >
-          Filter
+          {t("filter")}
         </button>
       </form>
 
       <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         {campaigns.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No campaigns found.</p>
+          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                 <tr>
-                  <th className="py-2">Title</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2">Goal</th>
-                  <th className="py-2">Per Group</th>
-                  <th className="py-2">Due Date</th>
-                  <th className="py-2 text-right">Action</th>
+                  <th className="py-2">{t("table.title")}</th>
+                  <th className="py-2">{t("table.status")}</th>
+                  <th className="py-2">{t("table.goal")}</th>
+                  <th className="py-2">{t("table.perGroup")}</th>
+                  <th className="py-2">{t("table.dueDate")}</th>
+                  <th className="py-2 text-right">{t("table.action")}</th>
                 </tr>
               </thead>
               <tbody className="text-[color:var(--foreground)]">
@@ -126,30 +153,26 @@ export default async function FundraisingPage({
                             : "border-white/15 bg-white/5 text-[color:var(--muted)]"
                         }`}
                       >
-                        {campaign.status}
+                        {tStatus(campaign.status)}
                       </span>
                     </td>
                     <td className="py-3 font-medium text-[color:var(--accent)]">
-                      ${Number(campaign.goalAmount).toLocaleString()}
+                      {formatCurrency(Number(campaign.goalAmount), locale)}
                     </td>
                     <td className="py-3 text-[color:var(--muted)]">
-                      ${Number(campaign.amount).toLocaleString()}
+                      {formatCurrency(Number(campaign.amount), locale)}
                     </td>
                     <td className="py-3 text-[color:var(--muted)]">
                       {campaign.dueDate
-                        ? new Intl.DateTimeFormat("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          }).format(new Date(campaign.dueDate))
-                        : "—"}
+                        ? formatDate(campaign.dueDate, locale)
+                        : t("table.emptyDate")}
                     </td>
                     <td className="py-3 text-right">
                       <Link
                         className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                         href={`/admin/fundraising/${campaign.id}`}
                       >
-                        View
+                        {t("table.view")}
                       </Link>
                     </td>
                   </tr>
@@ -161,16 +184,14 @@ export default async function FundraisingPage({
       </div>
 
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-        <span>
-          Page {page} of {totalPages}
-        </span>
+        <span>{t("pagination.pageOf", { page, total: totalPages })}</span>
         <div className="flex items-center gap-3">
           {page > 1 ? (
             <Link
               className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin/fundraising${buildQuery({ q: query || undefined, status: status || undefined, page: String(page - 1) })}`}
             >
-              Prev
+              {t("pagination.prev")}
             </Link>
           ) : null}
           {page < totalPages ? (
@@ -178,7 +199,7 @@ export default async function FundraisingPage({
               className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin/fundraising${buildQuery({ q: query || undefined, status: status || undefined, page: String(page + 1) })}`}
             >
-              Next
+              {t("pagination.next")}
             </Link>
           ) : null}
         </div>

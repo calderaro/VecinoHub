@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
@@ -26,6 +27,7 @@ export function PollVoteForm({
   existingVote?: { optionId: string } | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("dashboard.pollVote");
   const [optionId, setOptionId] = useState(
     existingVote?.optionId ?? options[0]?.id ?? ""
   );
@@ -43,7 +45,7 @@ export function PollVoteForm({
   if (!groupId || options.length === 0) {
     return (
       <p className="text-sm text-[color:var(--muted)]">
-        Voting unavailable for this poll.
+        {t("unavailable")}
       </p>
     );
   }
@@ -55,7 +57,7 @@ export function PollVoteForm({
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Voting is disabled for this poll.");
+          setError(t("disabledError"));
           return;
         }
         vote.mutate({ pollId, groupId, optionId });
@@ -63,7 +65,7 @@ export function PollVoteForm({
     >
       <div className="space-y-2">
         <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-          Options
+          {t("optionsLabel")}
         </p>
         <div className="space-y-2">
           {options.map((option) => (
@@ -92,7 +94,7 @@ export function PollVoteForm({
                 ) : null}
                 {option.amount ? (
                   <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                    Amount: ${option.amount}
+                    {t("amount", { amount: option.amount })}
                   </div>
                 ) : null}
               </div>
@@ -108,11 +110,10 @@ export function PollVoteForm({
       ) : null}
       {existingVote ? (
         <p className="rounded-2xl border border-[rgba(225,177,94,0.4)] bg-[rgba(225,177,94,0.12)] px-3 py-2 text-xs text-[color:var(--accent-strong)]">
-          This group already voted. Submitting will overwrite the previous
-          selection.
+          {t("alreadyVoted")}
           {existingOption ? (
             <span className="ml-2 text-[color:var(--foreground)]">
-              Current selection: {existingOption.label}.
+              {t("currentSelection", { label: existingOption.label })}
             </span>
           ) : null}
         </p>
@@ -123,7 +124,7 @@ export function PollVoteForm({
         type="submit"
         disabled={!isValid || vote.isPending}
       >
-        {vote.isPending ? "Submitting" : "Cast vote"}
+        {vote.isPending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

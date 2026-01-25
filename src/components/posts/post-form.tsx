@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
@@ -21,6 +22,7 @@ export function PostForm({
 }: PostFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
+  const t = useTranslations("admin.postForm");
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [status, setStatus] = useState<"draft" | "published">("draft");
@@ -38,7 +40,7 @@ export function PostForm({
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Title and content are required.");
+          setError(t("validationError"));
           return;
         }
         try {
@@ -56,7 +58,7 @@ export function PostForm({
             });
           }
           addToast(
-            mode === "create" ? "Post created." : "Post updated.",
+            mode === "create" ? t("createdToast") : t("updatedToast"),
             "success"
           );
           if (mode === "create") {
@@ -66,17 +68,17 @@ export function PostForm({
           }
         } catch (err) {
           const message =
-            err instanceof Error ? err.message : "Unable to save post.";
+            err instanceof Error ? err.message : t("saveError");
           setError(message);
         }
       }}
     >
       <h2 className="text-lg font-semibold">
-        {mode === "create" ? "Create post" : "Edit post"}
+        {mode === "create" ? t("createTitle") : t("editTitle")}
       </h2>
       <div className="mt-4 space-y-4">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -86,7 +88,7 @@ export function PostForm({
         </label>
         {mode === "create" ? (
           <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-            <span>Status</span>
+            <span>{t("fields.status")}</span>
             <select
               className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
               value={status}
@@ -94,13 +96,13 @@ export function PostForm({
                 setStatus(event.target.value as "draft" | "published")
               }
             >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              <option value="draft">{t("statusOptions.draft")}</option>
+              <option value="published">{t("statusOptions.published")}</option>
             </select>
           </label>
         ) : null}
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Content</span>
+          <span>{t("fields.content")}</span>
           <textarea
             className="min-h-[220px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={content}
@@ -123,11 +125,11 @@ export function PostForm({
       >
         {mode === "create"
           ? createPost.isPending
-            ? "Creating..."
-            : "Create post"
+            ? t("creating")
+            : t("createAction")
           : updatePost.isPending
-            ? "Saving..."
-            : "Save changes"}
+            ? t("saving")
+            : t("saveChanges")}
       </button>
     </form>
   );

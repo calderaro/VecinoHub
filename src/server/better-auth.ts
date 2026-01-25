@@ -36,6 +36,11 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      preferredLanguage: {
+        type: "string",
+        required: true,
+        defaultValue: "es",
+      },
       role: {
         type: "string",
         required: true,

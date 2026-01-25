@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
 export function CampaignForm() {
   const router = useRouter();
+  const t = useTranslations("admin.campaignForm");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [goalAmount, setGoalAmount] = useState("");
@@ -33,7 +35,7 @@ export function CampaignForm() {
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Title and goal amount are required.");
+          setError(t("validationError"));
           return;
         }
         createCampaign.mutate({
@@ -44,10 +46,10 @@ export function CampaignForm() {
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Create campaign</h2>
+      <h2 className="text-lg font-semibold">{t("createTitle")}</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -56,17 +58,17 @@ export function CampaignForm() {
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Goal amount</span>
+          <span>{t("fields.goalAmount")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={goalAmount}
             onChange={(event) => setGoalAmount(event.target.value)}
-            placeholder="3000.00"
+            placeholder={t("goalPlaceholder")}
             required
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)] sm:col-span-2">
-          <span>Description</span>
+          <span>{t("fields.description")}</span>
           <textarea
             className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={description}
@@ -74,7 +76,7 @@ export function CampaignForm() {
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Due date</span>
+          <span>{t("fields.dueDate")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             type="date"
@@ -95,7 +97,7 @@ export function CampaignForm() {
         type="submit"
         disabled={!isValid || createCampaign.isPending}
       >
-        {createCampaign.isPending ? "Creating..." : "Create campaign"}
+        {createCampaign.isPending ? t("creating") : t("createAction")}
       </button>
     </form>
   );

@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function AppNav({ basePath }: { basePath: string }) {
   const pathname = usePathname();
+  const t = useTranslations("dashboard.nav");
   const navLinks = [
-    { href: `${basePath}`, label: "Dashboard" },
-    { href: `${basePath}/members`, label: "Members" },
-    { href: `${basePath}/polls`, label: "Polls" },
-    { href: `${basePath}/fundraising`, label: "Fundraising" },
-    { href: `${basePath}/events`, label: "Events" },
-    { href: `${basePath}/posts`, label: "Posts" },
+    { href: `${basePath}`, label: t("dashboard") },
+    { href: `${basePath}/members`, label: t("members") },
+    { href: `${basePath}/polls`, label: t("polls") },
+    { href: `${basePath}/fundraising`, label: t("fundraising") },
+    { href: `${basePath}/events`, label: t("events") },
+    { href: `${basePath}/posts`, label: t("posts") },
   ];
 
   return (

@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 
 export function PollCreateForm() {
   const router = useRouter();
+  const t = useTranslations("admin.pollForm");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function PollCreateForm() {
         event.preventDefault();
         setError(null);
         if (!isValid) {
-          setError("Title is required.");
+          setError(t("titleRequired"));
           return;
         }
         createPoll.mutate({
@@ -37,10 +39,10 @@ export function PollCreateForm() {
         });
       }}
     >
-      <h2 className="text-lg font-semibold">Create poll</h2>
+      <h2 className="text-lg font-semibold">{t("formTitle")}</h2>
       <div className="mt-4 space-y-4">
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Title</span>
+          <span>{t("fields.title")}</span>
           <input
             className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={title}
@@ -49,7 +51,7 @@ export function PollCreateForm() {
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
-          <span>Description</span>
+          <span>{t("fields.description")}</span>
           <textarea
             className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
             value={description}
@@ -69,7 +71,7 @@ export function PollCreateForm() {
         type="submit"
         disabled={!isValid || createPoll.isPending}
       >
-        {createPoll.isPending ? "Creating..." : "Create poll"}
+        {createPoll.isPending ? t("creating") : t("createAction")}
       </button>
     </form>
   );

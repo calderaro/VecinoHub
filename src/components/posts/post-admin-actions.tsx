@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
@@ -15,11 +16,12 @@ export function PostAdminActions({
 }) {
   const router = useRouter();
   const { addToast } = useToast();
+  const t = useTranslations("admin.postActions");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const publish = trpc.posts.publish.useMutation({
     onSuccess: () => {
-      addToast("Post published.", "success");
+      addToast(t("publishedToast"), "success");
       router.refresh();
     },
     onError: (err) => addToast(err.message, "error"),
@@ -27,7 +29,7 @@ export function PostAdminActions({
 
   const unpublish = trpc.posts.unpublish.useMutation({
     onSuccess: () => {
-      addToast("Post unpublished.", "success");
+      addToast(t("unpublishedToast"), "success");
       router.refresh();
     },
     onError: (err) => addToast(err.message, "error"),
@@ -35,7 +37,7 @@ export function PostAdminActions({
 
   const remove = trpc.posts.remove.useMutation({
     onSuccess: () => {
-      addToast("Post deleted.", "success");
+      addToast(t("deletedToast"), "success");
       router.push("/admin/posts");
       router.refresh();
     },
@@ -51,7 +53,7 @@ export function PostAdminActions({
           onClick={() => unpublish.mutate({ postId })}
           disabled={unpublish.isPending}
         >
-          {unpublish.isPending ? "Unpublishing..." : "Unpublish"}
+          {unpublish.isPending ? t("unpublishing") : t("unpublish")}
         </button>
       ) : (
         <button
@@ -60,7 +62,7 @@ export function PostAdminActions({
           onClick={() => publish.mutate({ postId })}
           disabled={publish.isPending}
         >
-          {publish.isPending ? "Publishing..." : "Publish"}
+          {publish.isPending ? t("publishing") : t("publish")}
         </button>
       )}
       <button
@@ -68,16 +70,16 @@ export function PostAdminActions({
         type="button"
         onClick={() => setConfirmOpen(true)}
       >
-        Delete
+        {t("delete")}
       </button>
       {confirmOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              Delete post
+              {t("deleteTitle")}
             </h3>
             <p className="mt-1 text-sm text-[color:var(--muted)]">
-              This will permanently remove the post from the feed.
+              {t("deleteBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -86,7 +88,7 @@ export function PostAdminActions({
                 onClick={() => setConfirmOpen(false)}
                 disabled={remove.isPending}
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
@@ -94,7 +96,7 @@ export function PostAdminActions({
                 onClick={() => remove.mutate({ postId })}
                 disabled={remove.isPending}
               >
-                {remove.isPending ? "Deleting..." : "Delete"}
+                {remove.isPending ? t("deleting") : t("delete")}
               </button>
             </div>
           </div>

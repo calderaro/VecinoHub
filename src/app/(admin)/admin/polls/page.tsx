@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { listPollsPaged } from "@/services/polls";
 import { getSession } from "@/server/auth";
@@ -56,15 +57,19 @@ export default async function PollsPage({
   );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const t = await getTranslations("admin.polls");
+  const tStatus = await getTranslations("status");
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Administration</p>
-          <h1 className="text-3xl font-semibold">Polls</h1>
+          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+            {t("label")}
+          </p>
+          <h1 className="text-3xl font-semibold">{t("title")}</h1>
           <p className="text-sm text-[color:var(--muted)]">
-            Vote on neighborhood decisions by house.
+            {t("subtitle")}
           </p>
         </div>
         {session.user.role === "admin" ? (
@@ -72,7 +77,7 @@ export default async function PollsPage({
             className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
             href="/admin/polls/new"
           >
-            Add poll
+            {t("addPoll")}
           </Link>
         ) : null}
       </header>
@@ -81,7 +86,7 @@ export default async function PollsPage({
         <input
           className="min-w-[220px] flex-1 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
           name="q"
-          placeholder="Search polls"
+          placeholder={t("searchPlaceholder")}
           defaultValue={query}
         />
         {session.user.role === "admin" ? (
@@ -90,31 +95,31 @@ export default async function PollsPage({
             name="status"
             defaultValue={status}
           >
-            <option value="">All statuses</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="closed">Closed</option>
+            <option value="">{t("statusAll")}</option>
+            <option value="draft">{tStatus("draft")}</option>
+            <option value="active">{tStatus("active")}</option>
+            <option value="closed">{tStatus("closed")}</option>
           </select>
         ) : null}
         <button
           className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           type="submit"
         >
-          Filter
+          {t("filter")}
         </button>
       </form>
 
       <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
         {polls.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">No polls found.</p>
+          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                 <tr>
-                  <th className="py-2">Title</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2 text-right">Action</th>
+                  <th className="py-2">{t("table.title")}</th>
+                  <th className="py-2">{t("table.status")}</th>
+                  <th className="py-2 text-right">{t("table.action")}</th>
                 </tr>
               </thead>
               <tbody className="text-[color:var(--foreground)]">
@@ -122,14 +127,14 @@ export default async function PollsPage({
                   <tr key={poll.id} className="border-t border-white/10">
                     <td className="py-3 font-medium">{poll.title}</td>
                     <td className="py-3 text-[color:var(--muted)] capitalize">
-                      {poll.status}
+                      {tStatus(poll.status)}
                     </td>
                     <td className="py-3 text-right">
                       <Link
                         className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                         href={`/admin/polls/${poll.id}`}
                       >
-                        View
+                        {t("table.view")}
                       </Link>
                     </td>
                   </tr>
@@ -141,16 +146,14 @@ export default async function PollsPage({
       </div>
 
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-        <span>
-          Page {page} of {totalPages}
-        </span>
+        <span>{t("pagination.pageOf", { page, total: totalPages })}</span>
         <div className="flex items-center gap-3">
           {page > 1 ? (
             <Link
               className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin/polls${buildQuery({ q: query || undefined, status: status || undefined, page: String(page - 1) })}`}
             >
-              Prev
+              {t("pagination.prev")}
             </Link>
           ) : null}
           {page < totalPages ? (
@@ -158,7 +161,7 @@ export default async function PollsPage({
               className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               href={`/admin/polls${buildQuery({ q: query || undefined, status: status || undefined, page: String(page + 1) })}`}
             >
-              Next
+              {t("pagination.next")}
             </Link>
           ) : null}
         </div>

@@ -6,6 +6,7 @@ import {
   updateUserRole,
   updateUserStatus,
 } from "@/services/users";
+import { preferredLanguageSchema } from "@/services/validators";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getServiceContext, handleServiceError } from "../service";
@@ -44,10 +45,17 @@ export const usersRouter = createTRPCRouter({
         .object({
           username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9._-]+$/).optional(),
           image: z.string().url().max(2048).nullable().optional(),
+          preferredLanguage: preferredLanguageSchema.optional(),
         })
-        .refine((data) => data.username !== undefined || data.image !== undefined, {
-          message: "Profile updates require a username or image.",
-        })
+        .refine(
+          (data) =>
+            data.username !== undefined ||
+            data.image !== undefined ||
+            data.preferredLanguage !== undefined,
+          {
+            message: "Profile updates require a username, image, or language preference.",
+          }
+        )
     )
     .mutation(async ({ ctx, input }) => {
       try {
