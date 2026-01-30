@@ -87,22 +87,31 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
+    <div
+      className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12"
+      data-testid="admin-overview-root"
+    >
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
           {t("label")}
         </p>
-        <h1 className="text-3xl font-semibold">{t("title")}</h1>
+        <h1 className="text-3xl font-semibold" data-testid="admin-overview-title">
+          {t("title")}
+        </h1>
         <p className="text-sm text-[color:var(--muted)]">
           {t("subtitle")}
         </p>
       </header>
 
       {/* Stats Cards */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        data-testid="admin-overview-stats"
+      >
         <Link
           href="/admin/polls"
-          className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
+          data-testid="admin-overview-stats-polls"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("stats.activePolls")}
@@ -119,7 +128,8 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/fundraising"
-          className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
+          data-testid="admin-overview-stats-fundraising"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("stats.openCampaigns")}
@@ -138,7 +148,8 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/events"
-          className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
+          data-testid="admin-overview-stats-events"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("stats.upcomingEvents")}
@@ -153,7 +164,8 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/posts"
-          className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-[color:var(--accent)]"
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
+          data-testid="admin-overview-stats-posts"
         >
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("stats.publishedPosts")}
@@ -172,7 +184,10 @@ export default async function AdminPage() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Polls Section */}
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          data-testid="admin-overview-polls"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t("polls.title")}</h2>
             <Link
@@ -189,12 +204,12 @@ export default async function AdminPage() {
               activePolls.slice(0, 5).map((poll) => (
                 <li
                   key={poll.id}
-                  className="rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-4 py-3"
+                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
                 >
                   <Link href={`/admin/polls/${poll.id}`}>
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-[var(--foreground)]">{poll.title}</p>
-                      <span className="shrink-0 rounded-full border border-[rgba(102,185,165,0.4)] bg-[rgba(102,185,165,0.2)] px-2 py-0.5 text-xs text-[color:var(--accent-cool)]">
+                      <span className="shrink-0 rounded-full border border-[color:var(--accent)] bg-[color:var(--surface)] px-2 py-0.5 text-xs text-[color:var(--accent)]">
                         {t("polls.participation", { percentage: poll.participation })}
                       </span>
                     </div>
@@ -210,7 +225,7 @@ export default async function AdminPage() {
             )}
           </ul>
           {draftPolls.length > 0 && (
-            <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
                 {t("polls.draftsTitle")}
               </p>
@@ -231,7 +246,10 @@ export default async function AdminPage() {
         </section>
 
         {/* Fundraising Section */}
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          data-testid="admin-overview-fundraising"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t("fundraising.title")}</h2>
             <Link
@@ -248,15 +266,15 @@ export default async function AdminPage() {
               openCampaigns.slice(0, 4).map((campaign) => (
                 <li
                   key={campaign.id}
-                  className="rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-4 py-3"
+                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
                 >
                   <Link href={`/admin/fundraising/${campaign.id}`}>
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-[var(--foreground)]">
                         {campaign.title}
                       </p>
-                      {campaign.pendingCount > 0 && (
-                        <span className="shrink-0 rounded-full border border-[rgba(225,177,94,0.4)] bg-[rgba(225,177,94,0.2)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
+                        {campaign.pendingCount > 0 && (
+                        <span className="shrink-0 rounded-full border border-[color:var(--accent-strong)] bg-[color:var(--surface)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
                           {t("fundraising.pending", {
                             count: campaign.pendingCount,
                           })}
@@ -275,7 +293,7 @@ export default async function AdminPage() {
                           {Math.round(campaign.progress)}%
                         </span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[color:var(--stroke)]">
                         <div
                           className="h-full rounded-full bg-[color:var(--accent)] transition-all"
                           style={{ width: `${campaign.progress}%` }}
@@ -295,7 +313,7 @@ export default async function AdminPage() {
             )}
           </ul>
           {pendingContributions.length > 0 && (
-            <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
                 {t("fundraising.reviewTitle")}
               </p>
@@ -321,7 +339,10 @@ export default async function AdminPage() {
         </section>
 
         {/* Events Section */}
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          data-testid="admin-overview-events"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t("events.title")}</h2>
             <Link
@@ -338,7 +359,7 @@ export default async function AdminPage() {
               upcomingEvents.slice(0, 5).map((event) => (
                 <li
                   key={event.id}
-                  className="rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-4 py-3"
+                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
                 >
                   <Link href={`/admin/events/${event.id}`}>
                     <div className="flex items-start justify-between gap-2">
@@ -360,7 +381,10 @@ export default async function AdminPage() {
         </section>
 
         {/* Posts Section */}
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section
+          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          data-testid="admin-overview-posts"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t("posts.title")}</h2>
             <Link
@@ -380,7 +404,7 @@ export default async function AdminPage() {
                 .map((post) => (
                   <li
                     key={post.id}
-                    className="rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-4 py-3"
+                    className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
                   >
                     <Link href={`/admin/posts/${post.id}`}>
                       <div className="flex items-start justify-between gap-2">
@@ -400,7 +424,7 @@ export default async function AdminPage() {
             )}
           </ul>
           {draftPosts.length > 0 && (
-            <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
                 {t("posts.draftsTitle")}
               </p>

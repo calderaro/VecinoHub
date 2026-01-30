@@ -64,7 +64,8 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(18,26,26,0.6)] px-3 py-1.5 text-sm text-[var(--foreground)] shadow-[0_12px_30px_rgba(0,0,0,0.25)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+        data-testid="user-menu-trigger"
+        className="flex items-center gap-2 rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-3 py-1.5 text-sm text-[var(--foreground)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
       >
         {user.image ? (
           <Image
@@ -77,7 +78,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             unoptimized
           />
         ) : (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(102,185,165,0.2)] text-xs font-medium uppercase text-[color:var(--muted-strong)]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--surface-strong)] text-xs font-medium uppercase text-[color:var(--muted-strong)]">
             {displayName.charAt(0)}
           </div>
         )}
@@ -105,13 +106,13 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+        <div className="absolute right-0 top-full z-50 mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
           <div className="py-1">
             {selectedGroupId && (
               <Link
                 href={`/dashboard/${selectedGroupId}`}
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -128,7 +129,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -145,7 +146,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--accent)] transition hover:bg-white/5 hover:text-[color:var(--accent-strong)]"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--accent)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -167,7 +168,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
           </div>
 
           {groups && groups.length > 0 && (
-            <div className="border-t border-white/10 py-1">
+            <div className="border-t border-[color:var(--stroke)] py-1">
               <p className="px-4 py-2 text-xs uppercase tracking-wider text-[color:var(--muted)]">
                 {selectedGroupId ? t("switchGroup") : t("groups")}
               </p>
@@ -179,7 +180,7 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
                     setIsOpen(false);
                     router.push(`/dashboard/${group.id}`);
                   }}
-                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition hover:bg-white/5 ${
+                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition hover:bg-[color:var(--surface)] ${
                     selectedGroupId && group.id === selectedGroupId
                       ? "text-[color:var(--accent)]"
                       : "text-[color:var(--muted-strong)] hover:text-[color:var(--accent-strong)]"
@@ -204,12 +205,13 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
             </div>
           )}
 
-          <div className="border-t border-white/10 py-1">
+          <div className="border-t border-[color:var(--stroke)] py-1">
             <button
               type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-white/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+              data-testid="user-menu-signout"
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

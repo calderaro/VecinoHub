@@ -134,7 +134,13 @@ const submitContributionSchema = z
     campaignId: idSchema,
     groupId: idSchema,
     method: contributionMethodSchema,
-    amount: z.string().min(1),
+    amount: z
+      .string()
+      .trim()
+      .refine((value) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0;
+      }, "Amount must be a positive number"),
     wireReference: z.string().min(1).optional(),
     wireDate: z.date().optional(),
     wireAmount: z.string().min(1).optional(),
@@ -154,7 +160,12 @@ export async function submitContribution(
   ctx: ServiceContext,
   input: z.input<typeof submitContributionSchema>
 ) {
-  const parsed = submitContributionSchema.parse(input);
+  const parsedResult = submitContributionSchema.safeParse(input);
+  if (!parsedResult.success) {
+    const message = parsedResult.error.issues[0]?.message ?? "Invalid contribution";
+    throw new ServiceError(message, "INVALID");
+  }
+  const parsed = parsedResult.data;
   await requireGroupMember(ctx, parsed.groupId);
 
   const campaign = await db

@@ -120,19 +120,19 @@ export default async function CampaignDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">
+          <span className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)]">
             {t("perGroup", {
               amount: formatCurrency(Number(campaign.amount), locale),
             })}
           </span>
-          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
+          <span className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)]">
             {t("goal", {
               amount: formatCurrency(Number(campaign.goalAmount), locale),
             })}
           </span>
           {session.user.role === "admin" ? (
             <Link
-              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
+              className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
               href={`/admin/fundraising/${campaign.id}/edit`}
             >
               {t("edit")}
@@ -142,7 +142,7 @@ export default async function CampaignDetailPage({
       </header>
 
       {session.user.role === "admin" ? (
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">{t("contributions")}</h2>
             <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
@@ -164,7 +164,7 @@ export default async function CampaignDetailPage({
           <div className="mt-3 flex flex-wrap justify-end gap-2">
             {campaign.status === "open" ? (
               <Link
-                className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
+                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
                 href={`/admin/fundraising/${campaign.id}/contribute`}
               >
                 {t("submitContribution")}
@@ -173,40 +173,40 @@ export default async function CampaignDetailPage({
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             <Link
-              className={`rounded-full border px-3 py-1 ${
+              className={`rounded-full border px-3 py-1 transition ${
                 !statusFilter
-                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
+                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
+                  : "border-[color:var(--stroke)] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({})}`}
             >
               {t("filters.all", { count: contributionStats.total })}
             </Link>
             <Link
-              className={`rounded-full border px-3 py-1 ${
+              className={`rounded-full border px-3 py-1 transition ${
                 statusFilter === "submitted"
-                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
+                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
+                  : "border-[color:var(--stroke)] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "submitted" })}`}
             >
               {t("filters.submitted", { count: contributionStats.submitted })}
             </Link>
             <Link
-              className={`rounded-full border px-3 py-1 ${
+              className={`rounded-full border px-3 py-1 transition ${
                 statusFilter === "confirmed"
-                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
+                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
+                  : "border-[color:var(--stroke)] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "confirmed" })}`}
             >
               {t("filters.confirmed", { count: contributionStats.confirmed })}
             </Link>
             <Link
-              className={`rounded-full border px-3 py-1 ${
+              className={`rounded-full border px-3 py-1 transition ${
                 statusFilter === "rejected"
-                  ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                  : "border-white/15 text-[color:var(--muted-strong)] hover:border-white/30"
+                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
+                  : "border-[color:var(--stroke)] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
               }`}
               href={`/admin/fundraising/${campaign.id}${buildQuery({ status: "rejected" })}`}
             >
@@ -222,7 +222,7 @@ export default async function CampaignDetailPage({
               contributions.map((contribution) => (
                 <div
                   key={contribution.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-3 py-2 text-sm text-[color:var(--muted-strong)]"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[color:var(--muted-strong)]"
                 >
                 <div>
                   <p className="font-medium text-[var(--foreground)]">

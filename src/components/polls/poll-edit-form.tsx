@@ -47,7 +47,7 @@ export function PollEditForm({
   }, []);
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+    <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
       <h2 className="text-lg font-semibold">{t("editFormTitle")}</h2>
       <form
         className="mt-4 space-y-4"
@@ -69,7 +69,8 @@ export function PollEditForm({
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
           <span>{t("fields.title")}</span>
           <input
-            className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            data-testid="poll-edit-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             required
@@ -78,7 +79,8 @@ export function PollEditForm({
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
           <span>{t("fields.description")}</span>
           <textarea
-            className="min-h-[96px] w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="min-h-[96px] w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            data-testid="poll-edit-description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
@@ -86,7 +88,8 @@ export function PollEditForm({
         <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
           <span>{t("fields.status")}</span>
           <select
-            className="w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            data-testid="poll-edit-status"
             value={status}
             onChange={(event) =>
               setStatus(event.target.value as "draft" | "active" | "closed")
@@ -104,9 +107,10 @@ export function PollEditForm({
         ) : null}
 
         <button
-          className="mt-4 rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-4 rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
           disabled={!isValid || updatePoll.isPending}
+          data-testid="poll-edit-submit"
         >
           {updatePoll.isPending ? t("saving") : t("saveChanges")}
         </button>

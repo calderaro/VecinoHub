@@ -458,9 +458,12 @@
     "contributionForm": {
       "noGroup": "You are not assigned to a group.",
       "amountRequired": "Contribution amount is required.",
+      "amountInvalid": "Contribution amount must be a positive number.",
       "wireRequired": "Wire transfer details are required.",
       "submitting": "Submitting",
       "submit": "Submit contribution",
+      "submittedToast": "Contribution submitted.",
+      "submitError": "Unable to submit contribution.",
       "fields": {
         "group": "Group",
         "method": "Method",

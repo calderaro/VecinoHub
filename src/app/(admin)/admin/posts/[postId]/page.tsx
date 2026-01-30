@@ -55,7 +55,7 @@ export default async function AdminPostDetailPage({
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            className="rounded-full border border-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             href={`/admin/posts/${post.id}/edit`}
           >
             {t("edit")}
@@ -64,7 +64,7 @@ export default async function AdminPostDetailPage({
         </div>
       </header>
 
-      <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
         <div className="space-y-3 text-sm text-[color:var(--foreground)]">
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("contentLabel")}

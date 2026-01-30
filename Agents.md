@@ -101,6 +101,7 @@ to project docs. If guidance conflicts, use the priority order below.
 ## UI and UX expectations
 - Match screens and SSR/CSR split in docs/SCREENS.md.
 - Respect MVP scope and roles in docs/PRD.md.
+- Always add test ids when adding or changing UI.
 
 ## Documentation touchpoints
 - Update docs/API.md when router inputs/outputs or endpoints change.
@@ -108,6 +109,7 @@ to project docs. If guidance conflicts, use the priority order below.
 - Update docs/PERMISSIONS.md when access rules change.
 - Update docs/SCREENS.md when a screen flow or UI contract changes.
 - Update docs/QA.md with new or modified manual checks.
+- Update docs/PLAYWRIGHT_TEST_RUNS.md after any UI updates.
 
 ## QA checklist
 - Use docs/QA.md for flows you touch.

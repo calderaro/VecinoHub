@@ -73,8 +73,8 @@ export function PollVoteForm({
               key={option.id}
               className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-3 py-2 text-sm ${
                 optionId === option.id
-                  ? "border-[rgba(225,177,94,0.6)] bg-[rgba(225,177,94,0.15)] text-[color:var(--foreground)]"
-                  : "border-white/10 bg-[rgba(18,26,26,0.5)] text-[color:var(--muted-strong)]"
+                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--foreground)]"
+                  : "border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-[color:var(--muted-strong)]"
               }`}
             >
               <input
@@ -109,7 +109,7 @@ export function PollVoteForm({
         </p>
       ) : null}
       {existingVote ? (
-        <p className="rounded-2xl border border-[rgba(225,177,94,0.4)] bg-[rgba(225,177,94,0.12)] px-3 py-2 text-xs text-[color:var(--accent-strong)]">
+        <p className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[color:var(--accent)]">
           {t("alreadyVoted")}
           {existingOption ? (
             <span className="ml-2 text-[color:var(--foreground)]">
@@ -120,7 +120,7 @@ export function PollVoteForm({
       ) : null}
 
       <button
-        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={!isValid || vote.isPending}
       >

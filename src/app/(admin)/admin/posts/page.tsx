@@ -85,8 +85,9 @@ export default async function AdminPostsPage({
         </div>
         {session.user.role === "admin" ? (
           <Link
-            className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
+            className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
             href="/admin/posts/new"
+            data-testid="admin-posts-add"
           >
             {t("addPost")}
           </Link>
@@ -95,15 +96,17 @@ export default async function AdminPostsPage({
 
       <form className="flex flex-wrap gap-3" method="get">
         <input
-          className="min-w-[220px] flex-1 rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+          className="min-w-[220px] flex-1 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
           name="q"
+          data-testid="admin-posts-search"
           placeholder={t("searchPlaceholder")}
           defaultValue={query}
         />
         {session.user.role === "admin" ? (
           <select
-            className="rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             name="status"
+            data-testid="admin-posts-status"
             defaultValue={status}
           >
             <option value="">{t("statusAll")}</option>
@@ -112,19 +115,20 @@ export default async function AdminPostsPage({
           </select>
         ) : null}
         <button
-          className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+          className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           type="submit"
+          data-testid="admin-posts-filter"
         >
           {t("filter")}
         </button>
       </form>
 
-      <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
         {posts.length === 0 ? (
           <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm" data-testid="admin-posts-table">
               <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
                 <tr>
                   <th className="py-2">{t("table.title")}</th>
@@ -135,7 +139,11 @@ export default async function AdminPostsPage({
               </thead>
               <tbody className="text-[color:var(--foreground)]">
                 {posts.map((post) => (
-                  <tr key={post.id} className="border-t border-white/10">
+                  <tr
+                    key={post.id}
+                    className="border-t border-[color:var(--stroke)]"
+                    data-testid={`admin-posts-row-${post.id}`}
+                  >
                     <td className="py-3 font-medium">{post.title}</td>
                     <td className="py-3 text-[color:var(--muted)] capitalize">
                       {tStatus(post.status)}
@@ -166,7 +174,7 @@ export default async function AdminPostsPage({
         <div className="flex items-center gap-3">
           {page > 1 ? (
             <Link
-              className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
+              className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
               href={`/admin/posts${buildQuery({
                 q: query || undefined,
                 status: status || undefined,
@@ -178,7 +186,7 @@ export default async function AdminPostsPage({
           ) : null}
           {page < totalPages ? (
             <Link
-              className="rounded-full border border-white/10 px-3 py-1 text-[color:var(--muted-strong)] hover:border-[color:var(--accent)]"
+              className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
               href={`/admin/posts${buildQuery({
                 q: query || undefined,
                 status: status || undefined,

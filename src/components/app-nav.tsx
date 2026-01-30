@@ -8,12 +8,20 @@ export function AppNav({ basePath }: { basePath: string }) {
   const pathname = usePathname();
   const t = useTranslations("dashboard.nav");
   const navLinks = [
-    { href: `${basePath}`, label: t("dashboard") },
-    { href: `${basePath}/members`, label: t("members") },
-    { href: `${basePath}/polls`, label: t("polls") },
-    { href: `${basePath}/fundraising`, label: t("fundraising") },
-    { href: `${basePath}/events`, label: t("events") },
-    { href: `${basePath}/posts`, label: t("posts") },
+    { href: `${basePath}`, label: t("dashboard"), testId: "nav-dashboard" },
+    {
+      href: `${basePath}/members`,
+      label: t("members"),
+      testId: "nav-members",
+    },
+    { href: `${basePath}/polls`, label: t("polls"), testId: "nav-polls" },
+    {
+      href: `${basePath}/fundraising`,
+      label: t("fundraising"),
+      testId: "nav-fundraising",
+    },
+    { href: `${basePath}/events`, label: t("events"), testId: "nav-events" },
+    { href: `${basePath}/posts`, label: t("posts"), testId: "nav-posts" },
   ];
 
   return (
@@ -24,6 +32,7 @@ export function AppNav({ basePath }: { basePath: string }) {
           <Link
             key={link.href}
             href={link.href}
+            data-testid={link.testId}
             className={
               isActive
                 ? "text-[color:var(--accent)]"

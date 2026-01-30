@@ -56,12 +56,17 @@ export default async function AdminUsersPage({
   const t = await getTranslations("admin.users");
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
+    <div
+      className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12"
+      data-testid="admin-users-root"
+    >
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
           {t("label")}
         </p>
-        <h1 className="text-3xl font-semibold">{t("title")}</h1>
+        <h1 className="text-3xl font-semibold" data-testid="admin-users-title">
+          {t("title")}
+        </h1>
         <p className="text-sm text-[color:var(--muted)]">
           {t("subtitle")}
         </p>

@@ -50,11 +50,12 @@ export default async function NeighborContributionPage({
         </div>
       </header>
 
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
         <ContributionForm
           campaignId={campaign.id}
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}
           initialGroupId={resolvedParams.groupId}
+          redirectTo={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`}
         />
       </section>
     </div>

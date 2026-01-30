@@ -28,12 +28,13 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
         className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200"
         type="button"
         onClick={() => setConfirmOpen(true)}
+        data-testid="event-admin-delete"
       >
         {t("delete")}
       </button>
       {confirmOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[color:var(--surface-strong)] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
               {t("deleteTitle")}
             </h3>
@@ -42,8 +43,9 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] hover:border-white/30"
+                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
                 type="button"
+                data-testid="event-admin-delete-cancel"
                 onClick={() => setConfirmOpen(false)}
                 disabled={removeEvent.isPending}
               >
@@ -52,6 +54,7 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
               <button
                 className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
+                data-testid="event-admin-delete-confirm"
                 onClick={() => removeEvent.mutate({ eventId })}
                 disabled={removeEvent.isPending}
               >

@@ -26,7 +26,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen text-[var(--foreground)]">
-      <header className="border-b border-white/10 bg-[rgba(10,16,16,0.78)] backdrop-blur">
+      <header className="border-b border-[color:var(--stroke)] bg-[color:var(--surface)]">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6">
           <Link href="/admin" className="group flex flex-col">
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-strong)] transition group-hover:text-[color:var(--accent)]">

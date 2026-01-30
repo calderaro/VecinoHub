@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Fraunces, JetBrains_Mono, Onest } from "next/font/google";
+import { JetBrains_Mono, Onest } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -11,12 +11,6 @@ const onest = Onest({
   variable: "--font-onest",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -43,10 +37,7 @@ export default async function RootLayout({
   const messages = (await import(`../messages/${locale}.json`)).default;
 
   return (
-    <html
-      lang={locale}
-      className={`${onest.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
-    >
+      <html lang={locale} className={`${onest.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>

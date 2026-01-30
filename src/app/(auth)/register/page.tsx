@@ -73,9 +73,10 @@ export default function RegisterPage() {
             {t("fullName")}
           </label>
           <input
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             id="name"
             name="name"
+            data-testid="auth-register-name"
             type="text"
             autoComplete="name"
             required
@@ -86,9 +87,10 @@ export default function RegisterPage() {
             {t("email")}
           </label>
           <input
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             id="email"
             name="email"
+            data-testid="auth-register-email"
             type="email"
             autoComplete="email"
             required
@@ -99,9 +101,10 @@ export default function RegisterPage() {
             {t("password")}
           </label>
           <input
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             id="password"
             name="password"
+            data-testid="auth-register-password"
             type="password"
             autoComplete="new-password"
             required
@@ -109,15 +112,19 @@ export default function RegisterPage() {
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs text-rose-200">
+          <p
+            className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs text-rose-200"
+            data-testid="auth-register-error"
+          >
             {error}
           </p>
         ) : null}
 
         <button
-          className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-3 text-sm font-semibold text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-3 text-sm font-semibold text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
           disabled={isSubmitting}
+          data-testid="auth-register-submit"
         >
           {isSubmitting ? t("creating") : t("action")}
         </button>

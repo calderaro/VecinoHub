@@ -18,7 +18,7 @@ export default async function DashboardIndexPage() {
     return (
       <div className="min-h-screen text-[var(--foreground)]">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-20">
-          <div className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-10 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+          <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-10 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
             <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
               VecinoHub
             </p>

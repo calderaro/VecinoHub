@@ -72,19 +72,27 @@ export default async function DashboardPage({
   const tStatus = await getTranslations("status");
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
+    <div
+      className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12"
+      data-testid="dashboard-overview-root"
+    >
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
           {t("label")}
         </p>
-        <h1 className="text-3xl font-semibold">{group.name}</h1>
+        <h1 className="text-3xl font-semibold" data-testid="dashboard-overview-title">
+          {group.name}
+        </h1>
         <p className="text-sm text-[color:var(--muted)]">
           {t("subtitle")}
         </p>
       </header>
 
       {/* Posts Section */}
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-overview-posts"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -96,7 +104,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/posts`}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             {t("posts.viewAll")}
           </Link>
@@ -105,7 +113,7 @@ export default async function DashboardPage({
         {posts.items.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--muted)]">{t("posts.empty")}</p>
         ) : (
-          <ul className="mt-6 divide-y divide-white/10">
+          <ul className="mt-6 divide-y divide-[color:var(--stroke)]">
             {posts.items.map((post) => (
               <li key={post.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -129,7 +137,7 @@ export default async function DashboardPage({
                     </p>
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[color:var(--muted)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -144,7 +152,10 @@ export default async function DashboardPage({
       </section>
 
       {/* Events Section */}
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-overview-events"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -156,7 +167,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/events`}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             {t("events.viewAll")}
           </Link>
@@ -167,7 +178,7 @@ export default async function DashboardPage({
             {t("events.empty")}
           </p>
         ) : (
-          <ul className="mt-6 divide-y divide-white/10">
+          <ul className="mt-6 divide-y divide-[color:var(--stroke)]">
             {events.items.map((event) => (
               <li key={event.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -193,7 +204,7 @@ export default async function DashboardPage({
                     )}
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[color:var(--muted)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -208,7 +219,10 @@ export default async function DashboardPage({
       </section>
 
       {/* Polls Section */}
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-overview-polls"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -220,7 +234,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/polls`}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             {t("polls.viewAll")}
           </Link>
@@ -229,7 +243,7 @@ export default async function DashboardPage({
         {polls.items.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--muted)]">{t("polls.empty")}</p>
         ) : (
-          <ul className="mt-6 divide-y divide-white/10">
+          <ul className="mt-6 divide-y divide-[color:var(--stroke)]">
             {polls.items.map((poll) => (
               <li key={poll.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -248,10 +262,10 @@ export default async function DashboardPage({
                     <p className="mt-2 text-xs text-[color:var(--muted)]">
                       <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${
                         poll.status === "active"
-                          ? "border-[rgba(102,185,165,0.45)] bg-[rgba(102,185,165,0.2)] text-[color:var(--accent-cool)]"
+                          ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
                           : poll.status === "draft"
-                          ? "border-white/15 bg-white/5 text-[color:var(--muted)]"
-                          : "border-rose-500/40 bg-rose-500/15 text-rose-200"
+                          ? "border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-[color:var(--muted)]"
+                          : "border-rose-500/40 bg-rose-500/10 text-rose-200"
                       }`}>
                         {tStatus(poll.status)}
                       </span>
@@ -263,7 +277,7 @@ export default async function DashboardPage({
                     </p>
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[color:var(--muted)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -278,7 +292,10 @@ export default async function DashboardPage({
       </section>
 
       {/* Fundraising Section */}
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-overview-fundraising"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -290,7 +307,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/fundraising`}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             {t("fundraising.viewAll")}
           </Link>
@@ -301,7 +318,7 @@ export default async function DashboardPage({
             {t("fundraising.empty")}
           </p>
         ) : (
-          <ul className="mt-6 divide-y divide-white/10">
+          <ul className="mt-6 divide-y divide-[color:var(--stroke)]">
             {campaigns.items.map((campaign) => (
               <li key={campaign.id} className="py-4 first:pt-0 last:pb-0">
                 <Link
@@ -333,7 +350,7 @@ export default async function DashboardPage({
                     )}
                   </div>
                   <svg
-                    className="mt-1 h-5 w-5 flex-shrink-0 text-[rgba(245,239,228,0.4)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
+                    className="mt-1 h-5 w-5 flex-shrink-0 text-[color:var(--muted)] transition group-hover:translate-x-1 group-hover:text-[color:var(--accent-strong)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -348,7 +365,10 @@ export default async function DashboardPage({
       </section>
 
       {/* Members Section */}
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-overview-members"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
@@ -360,7 +380,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href={`/dashboard/${resolvedParams.groupId}/members`}
-            className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             {t("members.viewAll")}
           </Link>
@@ -369,11 +389,11 @@ export default async function DashboardPage({
         {members.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--muted)]">{t("members.empty")}</p>
         ) : (
-          <ul className="mt-6 divide-y divide-white/10">
+          <ul className="mt-6 divide-y divide-[color:var(--stroke)]">
             {members.slice(0, 5).map((member) => (
               <li key={member.id} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(225,177,94,0.18)] text-sm font-medium text-[color:var(--muted-strong)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-strong)] text-sm font-medium text-[color:var(--muted-strong)]">
                     {member.name?.charAt(0).toUpperCase() || member.email.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -386,8 +406,8 @@ export default async function DashboardPage({
                   </div>
                   <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${
                     member.role === "admin"
-                      ? "border-[rgba(225,177,94,0.5)] bg-[rgba(225,177,94,0.2)] text-[color:var(--accent)]"
-                      : "border-white/10 bg-white/5 text-[color:var(--muted)]"
+                      ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--accent)]"
+                      : "border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-[color:var(--muted)]"
                   }`}>
                     {t(`members.roles.${member.role}`)}
                   </span>

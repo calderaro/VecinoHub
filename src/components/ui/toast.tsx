@@ -57,10 +57,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={toast.id}
             className={`rounded-xl border px-4 py-3 text-sm shadow-lg ${
               toast.variant === "success"
-                ? "border-[rgba(225,177,94,0.5)] bg-[rgba(225,177,94,0.15)] text-[color:var(--foreground)]"
+                ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--foreground)]"
                 : toast.variant === "error"
                   ? "border-rose-300/50 bg-rose-400/10 text-rose-100"
-                  : "border-white/10 bg-[color:var(--surface-strong)] text-[var(--foreground)]"
+                  : "border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-[var(--foreground)]"
             }`}
           >
             {toast.message}

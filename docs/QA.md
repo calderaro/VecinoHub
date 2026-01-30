@@ -27,3 +27,9 @@
 - Non-admin cannot access admin routes
 - User cannot edit groups they do not belong to
 - User cannot vote for a group they do not belong to
+
+## UI Visual
+- Backgrounds are solid (no gradients) on auth, dashboard, and admin pages
+- Cards, tables, and list rows use solid surfaces with consistent borders
+- Buttons and inputs show clear focus/hover states without glow/blur
+- Modals and dialogs use solid surfaces and match main palette

@@ -41,13 +41,13 @@ export default async function NeighborPollDetailPage({
         </p>
       </header>
 
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
         <h2 className="text-lg font-semibold">{t("optionsTitle")}</h2>
         <div className="mt-4 grid gap-3">
           {poll.options.map((option) => (
             <div
               key={option.id}
-              className="rounded-2xl border border-white/10 bg-[rgba(18,26,26,0.5)] px-3 py-2 text-sm text-[color:var(--foreground)]"
+              className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[color:var(--foreground)]"
             >
               <div className="font-medium">{option.label}</div>
               {option.description ? (

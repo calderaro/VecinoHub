@@ -42,7 +42,10 @@ export default async function MembersPage({
         </p>
       </header>
 
-      <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+      <section
+        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        data-testid="dashboard-members-list"
+      >
         <GroupMembers
           groupId={group.id}
           members={members}

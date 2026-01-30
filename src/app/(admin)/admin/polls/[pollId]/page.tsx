@@ -57,7 +57,7 @@ export default async function PollDetailPage({
         <div className="flex flex-wrap gap-3">
           {session.user.role === "admin" && poll.status === "draft" ? (
             <Link
-              className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] hover:border-[color:var(--accent)]"
+              className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
               href={`/admin/polls/${poll.id}/edit`}
             >
               {t("edit")}
@@ -81,7 +81,7 @@ export default async function PollDetailPage({
       />
 
       {session.user.role === "admin" ? (
-        <section className="rounded-[28px] border border-white/10 bg-[color:var(--surface)] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">{t("results")}</h2>
             {participation ? (
@@ -104,7 +104,11 @@ export default async function PollDetailPage({
               </thead>
               <tbody className="text-[color:var(--foreground)]">
                 {results.map((result) => (
-                  <tr key={result.id} className="border-t border-white/10">
+                  <tr
+                    key={result.id}
+                    className="border-t border-[color:var(--stroke)]"
+                    data-testid={`admin-poll-results-row-${result.id}`}
+                  >
                     <td className="py-3 font-medium">{result.label}</td>
                     <td className="py-3 text-[color:var(--muted)]">
                       {participation && participation.activeGroups > 0

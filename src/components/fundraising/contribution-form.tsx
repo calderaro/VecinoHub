@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
+import { useToast } from "@/components/ui/toast";
 
 type GroupOption = {
   id: string;
@@ -15,12 +16,15 @@ export function ContributionForm({
   campaignId,
   groups,
   initialGroupId,
+  redirectTo,
 }: {
   campaignId: string;
   groups: GroupOption[];
   initialGroupId?: string;
+  redirectTo?: string;
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const t = useTranslations("admin.contributionForm");
   const [method, setMethod] = useState<"cash" | "wire_transfer">("cash");
   const [groupId, setGroupId] = useState(
@@ -30,7 +34,9 @@ export function ContributionForm({
   const [wireReference, setWireReference] = useState("");
   const [wireDate, setWireDate] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const amountReady = amount.trim().length > 0;
+  const amountValue = Number(amount);
+  const amountFilled = amount.trim().length > 0;
+  const amountValid = Number.isFinite(amountValue) && amountValue > 0;
   const wireReady =
     method === "cash" ||
     (wireReference.trim().length > 0 && wireDate.trim().length > 0);
@@ -40,9 +46,18 @@ export function ContributionForm({
       setAmount("");
       setWireReference("");
       setWireDate("");
-      router.refresh();
+      addToast(t("submittedToast"), "success");
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        router.refresh();
+      }
     },
-    onError: (err) => setError(err.message),
+    onError: (err) => {
+      const message = err?.message ?? t("submitError");
+      setError(message);
+      addToast(message, "error");
+    },
   });
 
   if (groups.length === 0) {
@@ -55,12 +70,16 @@ export function ContributionForm({
 
   return (
     <form
-      className="mt-4 grid gap-3"
+      className="mx-auto mt-4 grid w-full max-w-2xl gap-3"
       onSubmit={(event) => {
         event.preventDefault();
         setError(null);
-        if (!amountReady) {
+        if (!amountFilled) {
           setError(t("amountRequired"));
+          return;
+        }
+        if (!amountValid) {
+          setError(t("amountInvalid"));
           return;
         }
         if (!wireReady) {
@@ -84,9 +103,13 @@ export function ContributionForm({
         <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
           {t("fields.group")}
           <select
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             value={groupId}
-            onChange={(event) => setGroupId(event.target.value)}
+            data-testid="contribution-form-group"
+            onChange={(event) => {
+              setError(null);
+              setGroupId(event.target.value);
+            }}
           >
             {groups.map((group) => (
               <option key={group.id} value={group.id}>
@@ -98,9 +121,13 @@ export function ContributionForm({
         <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
           {t("fields.method")}
           <select
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+            className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
             value={method}
-            onChange={(event) => setMethod(event.target.value as "cash" | "wire_transfer")}
+            data-testid="contribution-form-method"
+            onChange={(event) => {
+              setError(null);
+              setMethod(event.target.value as "cash" | "wire_transfer");
+            }}
           >
             <option value="cash">{t("methods.cash")}</option>
             <option value="wire_transfer">{t("methods.wire_transfer")}</option>
@@ -110,9 +137,13 @@ export function ContributionForm({
       <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
         {t("fields.amount")}
         <input
-          className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+          className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+          data-testid="contribution-form-amount"
           value={amount}
-          onChange={(event) => setAmount(event.target.value)}
+          onChange={(event) => {
+            setError(null);
+            setAmount(event.target.value);
+          }}
           inputMode="decimal"
           required
         />
@@ -123,19 +154,27 @@ export function ContributionForm({
           <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("fields.reference")}
             <input
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+              className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+              data-testid="contribution-form-reference"
               value={wireReference}
-              onChange={(event) => setWireReference(event.target.value)}
+              onChange={(event) => {
+                setError(null);
+                setWireReference(event.target.value);
+              }}
               required={method === "wire_transfer"}
             />
           </label>
           <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("fields.date")}
             <input
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(102,185,165,0.35)] focus:border-[color:var(--accent-cool)] focus:ring-2"
+              className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
               type="date"
+              data-testid="contribution-form-date"
               value={wireDate}
-              onChange={(event) => setWireDate(event.target.value)}
+              onChange={(event) => {
+                setError(null);
+                setWireDate(event.target.value);
+              }}
               required={method === "wire_transfer"}
             />
           </label>
@@ -149,9 +188,10 @@ export function ContributionForm({
       ) : null}
 
       <button
-        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#2a1b05] shadow-[0_18px_40px_rgba(225,177,94,0.25)] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        disabled={!amountReady || !wireReady || submitContribution.isPending}
+        disabled={!amountFilled || !wireReady || submitContribution.isPending}
+        data-testid="contribution-form-submit"
       >
         {submitContribution.isPending ? t("submitting") : t("submit")}
       </button>
