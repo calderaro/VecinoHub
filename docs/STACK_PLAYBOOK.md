@@ -23,6 +23,12 @@ repo so they can be replicated consistently in other projects.
 ### Client Data + Forms
 - TanStack React Query for client fetching.
 - React Hook Form for client forms.
+- `framer-motion` is allowed when needed for client-side UI animation.
+- `lucide-react` is allowed for iconography.
+- `date-fns` is allowed for date parsing, formatting, and calculations.
+
+### Email
+- `nodemailer` is allowed for transactional/system email delivery from server-side code.
 
 ### Tooling
 - ESLint.
@@ -98,6 +104,7 @@ Source of truth: `docs/PERMISSIONS.md`.
 - CSR only for interactive forms and actions.
 - Client fetching must use React Query.
 - Client forms must use React Hook Form.
+- Animation can use `framer-motion` in client components; keep motion optional, accessible, and non-blocking.
 
 Source of truth: `docs/SCREENS.md` and `docs/RULES.md`.
 

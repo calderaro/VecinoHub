@@ -62,7 +62,7 @@ export function ContributionForm({
 
   if (groups.length === 0) {
     return (
-      <p className="text-sm text-[color:var(--muted)]">
+      <p className="text-sm text-stone-500">
         {t("noGroup")}
       </p>
     );
@@ -100,10 +100,10 @@ export function ContributionForm({
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+        <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
           {t("fields.group")}
           <select
-            className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
             value={groupId}
             data-testid="contribution-form-group"
             onChange={(event) => {
@@ -118,10 +118,10 @@ export function ContributionForm({
             ))}
           </select>
         </label>
-        <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+        <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
           {t("fields.method")}
           <select
-            className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
             value={method}
             data-testid="contribution-form-method"
             onChange={(event) => {
@@ -134,10 +134,10 @@ export function ContributionForm({
           </select>
         </label>
       </div>
-      <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+      <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
         {t("fields.amount")}
         <input
-          className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+          className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
           data-testid="contribution-form-amount"
           value={amount}
           onChange={(event) => {
@@ -151,10 +151,10 @@ export function ContributionForm({
 
       {method === "wire_transfer" ? (
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+          <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
             {t("fields.reference")}
             <input
-              className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
               data-testid="contribution-form-reference"
               value={wireReference}
               onChange={(event) => {
@@ -164,10 +164,10 @@ export function ContributionForm({
               required={method === "wire_transfer"}
             />
           </label>
-          <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+          <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
             {t("fields.date")}
             <input
-              className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
               type="date"
               data-testid="contribution-form-date"
               value={wireDate}
@@ -182,13 +182,13 @@ export function ContributionForm({
       ) : null}
 
       {error ? (
-        <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+        <p className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-red-700">
           {error}
         </p>
       ) : null}
 
       <button
-        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={!amountFilled || !wireReady || submitContribution.isPending}
         data-testid="contribution-form-submit"

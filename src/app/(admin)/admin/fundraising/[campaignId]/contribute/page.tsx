@@ -42,14 +42,14 @@ export default async function AdminContributionPage({
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-6 py-8">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+        <p className="text-xs uppercase tracking-[0.35em] text-stone-500">
           {t("label")}
         </p>
-        <h1 className="text-3xl font-semibold">{t("title")}</h1>
-        <p className="text-sm text-[color:var(--muted)]">{campaign.title}</p>
-        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+        <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
+        <p className="text-sm text-stone-500">{campaign.title}</p>
+        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.3em] text-stone-500">
           <span>
             {t("perGroup", {
               amount: formatCurrency.format(Number(campaign.amount)),
@@ -63,7 +63,7 @@ export default async function AdminContributionPage({
         </div>
       </header>
 
-      <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         <ContributionForm
           campaignId={campaign.id}
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}

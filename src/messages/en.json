@@ -1,5 +1,26 @@
 {
   "auth": {
+    "combined": {
+      "tabLabel": "Authentication options",
+      "tabs": {
+        "signIn": "Sign in",
+        "signUp": "Create account"
+      },
+      "social": {
+        "google": "Continue with Google",
+        "facebook": "Continue with Facebook"
+      },
+      "divider": "or continue with email",
+      "forgotPassword": "Forgot password?",
+      "socialUnavailable": "Social login is not enabled yet in this environment.",
+      "otpUnavailable": "OTP email verification and password reset are not enabled yet in this environment.",
+      "otpBypassed": "Email verification is currently bypassed. Your account is active immediately.",
+      "footer": {
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?"
+      },
+      "legal": "VecinoHub · Privacy · Terms"
+    },
     "register": {
       "title": "Create account",
       "subtitle": "Join your neighborhood workspace.",
@@ -32,6 +53,8 @@
   },
   "profile": {
     "navLabel": "Profile",
+    "back": "Back to dashboard",
+    "eyebrow": "Account",
     "title": "Profile settings",
     "subtitle": "Set a public username and profile photo for the neighborhood UI.",
     "usernameLabel": "Username",
@@ -52,12 +75,6 @@
   },
   "nav": {
     "dashboard": "Dashboard"
-  },
-  "dashboard": {
-    "empty": {
-      "title": "No group assigned yet",
-      "body": "Your account is pending group assignment. Please wait for a group admin to add you to a house."
-    }
   },
   "userMenu": {
     "defaultUser": "User",
@@ -82,55 +99,72 @@
     },
     "overview": {
       "label": "Administration",
-      "title": "Admin Overview",
+      "title": "Overview",
       "subtitle": "Activity summary for polls, fundraising, events, and posts.",
-      "stats": {
-        "activePolls": "Active Polls",
-        "pollDrafts": "{count} draft{count, plural, one {} other {s}} pending",
-        "openCampaigns": "Open Campaigns",
-        "pendingContributions": "{count} contribution{count, plural, one {} other {s}} to review",
-        "upcomingEvents": "Upcoming Events",
-        "totalEvents": "{count} total",
-        "publishedPosts": "Published Posts",
-        "postDrafts": "{count} draft{count, plural, one {} other {s}} to publish"
+      "quickCreate": "Quick Create",
+      "viewAll": "View all",
+      "kpi": {
+        "polls": {
+          "active": "Active",
+          "draft": "Draft",
+          "closed": "Closed"
+        },
+        "fundraising": {
+          "open": "Open",
+          "paused": "Paused",
+          "pending": "Pending"
+        },
+        "events": {
+          "upcoming": "Upcoming",
+          "done": "Done",
+          "canceled": "Canceled"
+        },
+        "posts": {
+          "published": "Published",
+          "draft": "Draft",
+          "hidden": "Hidden"
+        },
+        "users": {
+          "active": "Active",
+          "suspended": "Suspended",
+          "pending": "Pending"
+        },
+        "groups": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "total": "Total"
+        }
       },
       "polls": {
         "title": "Active Polls",
-        "new": "+ New poll",
         "empty": "No active polls.",
-        "participation": "{percentage}% participation",
-        "groupsVoted": "{voted} of {total} groups voted",
-        "draftsTitle": "Drafts needing attention"
+        "votes": "{count} vote{count, plural, one {} other {s}}"
       },
       "fundraising": {
-        "title": "Fundraising Campaigns",
-        "new": "+ New campaign",
+        "title": "Open Campaigns",
         "empty": "No open campaigns.",
         "pending": "{count} pending",
         "progress": "{collected} of {goal}",
-        "due": "Due: {date}",
-        "reviewTitle": "Contributions to review"
+        "pendingReview": "{count} pending review",
+        "allReviewed": "All reviewed"
       },
       "events": {
         "title": "Upcoming Events",
-        "new": "+ New event",
         "empty": "No upcoming events."
       },
       "posts": {
         "title": "Recent Posts",
-        "new": "+ New post",
-        "empty": "No posts yet.",
-        "draftsTitle": "Drafts to publish"
+        "empty": "No posts yet."
       }
     },
     "users": {
       "label": "Administration",
       "title": "Users",
-      "subtitle": "Manage roles and access status."
+      "subtitle": "Manage access and account permissions."
     },
     "usersTable": {
       "title": "Users",
-      "searchPlaceholder": "Search users",
+      "searchPlaceholder": "Search by name or email...",
       "filter": "Filter",
       "empty": "No users found.",
       "roleLabel": "Role",
@@ -153,6 +187,50 @@
         "pageOf": "Page {page} of {total}",
         "prev": "Prev",
         "next": "Next"
+      }
+    },
+    "userDetail": {
+      "back": "Back to users",
+      "label": "Platform User",
+      "edit": "Edit",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "membershipsTitle": "Group memberships",
+      "noMemberships": "This user is not assigned to any groups.",
+      "stats": {
+        "totalMemberships": "Total memberships",
+        "activeMemberships": "Active memberships",
+        "managedGroups": "Groups managed"
+      }
+    },
+    "userActions": {
+      "makeAdmin": "Make admin",
+      "makeUser": "Set as user",
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "saving": "Saving...",
+      "roleUpdated": "Role updated.",
+      "statusUpdated": "Status updated."
+    },
+    "userForm": {
+      "title": "Edit user access",
+      "subtitle": "Update role and account status.",
+      "updatedToast": "User access updated.",
+      "saveError": "Unable to update this user.",
+      "saveErrorTitle": "Failed to save user",
+      "accountSection": "Account details",
+      "permissionsSection": "Permissions",
+      "previewTitle": "Access preview",
+      "notSet": "Not set",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "username": "Username",
+        "role": "Role",
+        "status": "Status"
       }
     },
     "groups": {
@@ -183,7 +261,20 @@
         "member": "Member"
       },
       "edit": "Edit",
-      "membersTitle": "Members"
+      "membersTitle": "Members",
+      "back": "Back to groups",
+      "groupLabel": "Neighborhood Group",
+      "adminLabel": "Admin:",
+      "createdLabel": "Created",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "stats": {
+        "members": "Members",
+        "activeMembers": "Active members",
+        "inactiveMembers": "Inactive members"
+      }
     },
     "groupFormPage": {
       "label": "Administration",
@@ -207,6 +298,26 @@
         "name": "Name",
         "address": "Address",
         "adminUserId": "Admin user id"
+      },
+      "createdToast": "Group created.",
+      "saveErrorTitle": "Failed to save group",
+      "cancel": "Cancel",
+      "namePlaceholder": "e.g. Building A Residents",
+      "addressPlaceholder": "Street, building, apartment references",
+      "adminPlaceholder": "Admin user id (UUID)",
+      "adminHint": "Assign the user who will manage members and settings.",
+      "preview": {
+        "newGroup": "New Group",
+        "noAddress": "No address provided",
+        "status": "Status",
+        "active": "Active",
+        "notAssigned": "Not assigned"
+      },
+      "tips": {
+        "title": "Tips",
+        "name": "Use a recognizable group name for residents.",
+        "owner": "Confirm the admin user id before saving ownership.",
+        "address": "Add location details to help residents identify the group."
       }
     },
     "polls": {
@@ -238,6 +349,15 @@
       "table": {
         "option": "Option",
         "votes": "Votes"
+      },
+      "back": "Back to polls",
+      "pollLabel": "Platform Poll",
+      "createdBy": "by",
+      "startedLabel": "Started",
+      "stats": {
+        "participants": "Participants",
+        "options": "Options",
+        "participationRate": "Participation"
       }
     },
     "pollForm": {
@@ -263,6 +383,34 @@
         "draft": "draft",
         "active": "active",
         "closed": "closed"
+      },
+      "optionsRequired": "Add at least two options.",
+      "createdToast": "Poll created.",
+      "updatedToast": "Poll updated.",
+      "saveError": "Unable to save poll right now.",
+      "saveErrorTitle": "Failed to save poll",
+      "cancel": "Cancel",
+      "titlePlaceholder": "e.g. Should we approve the annual maintenance budget?",
+      "descriptionPlaceholder": "Add context so residents can make an informed vote.",
+      "optionsTitle": "Poll options",
+      "addOption": "Add option",
+      "optionLabel": "Option {index}",
+      "optionFields": {
+        "label": "Option label",
+        "description": "Description (optional)",
+        "amount": "Amount hint (optional)"
+      },
+      "optionsHint": "You can add more options now, and edit options later while the poll is in draft.",
+      "preview": {
+        "title": "Poll preview",
+        "questionFallback": "New Poll Question",
+        "optionsCount": "Options"
+      },
+      "tips": {
+        "title": "Tips",
+        "question": "Write a clear question residents can answer quickly.",
+        "options": "Provide balanced options so results are meaningful.",
+        "status": "Use draft while editing, then launch when ready for votes."
       }
     },
     "pollActions": {
@@ -405,6 +553,24 @@
       "statusOptions": {
         "open": "open",
         "closed": "closed"
+      },
+      "createdToast": "Campaign created.",
+      "updatedToast": "Campaign updated.",
+      "saveError": "Unable to save campaign right now.",
+      "saveErrorTitle": "Failed to save campaign",
+      "cancel": "Cancel",
+      "descriptionPlaceholder": "Explain what this campaign will fund and why it matters.",
+      "preview": {
+        "newCampaign": "New Campaign",
+        "fundraisingCampaign": "Fundraising campaign",
+        "noDueDate": "No due date",
+        "progress": "{raised} raised of {goal}"
+      },
+      "tips": {
+        "title": "Tips",
+        "goal": "Set a realistic goal based on current project estimates.",
+        "description": "Use a clear description so residents understand the purpose.",
+        "dueDate": "Use a due date to create urgency and improve participation."
       }
     },
     "campaignDetail": {
@@ -433,7 +599,17 @@
       },
       "amountLabel": "Amount: {amount}",
       "groupLabel": "Group:",
-      "submittedBy": "Submitted by:"
+      "submittedBy": "Submitted by:",
+      "back": "Back to fundraising",
+      "campaignLabel": "Fundraising Campaign",
+      "createdBy": "by",
+      "dueLabel": "Due",
+      "stats": {
+        "goal": "Goal",
+        "raised": "Raised",
+        "contributions": "Contributions",
+        "pending": "Pending"
+      }
     },
     "contributionPage": {
       "label": "Administration",
@@ -578,6 +754,22 @@
       "contentLabel": "Content",
       "back": "Back to posts",
       "emptyDate": "-"
+    },
+    "campaignActions": {
+      "close": "Close campaign",
+      "closeTitle": "Close campaign",
+      "closeBody": "This campaign will stop accepting new contributions. Existing contributions are preserved.",
+      "cancel": "Cancel",
+      "closing": "Closing...",
+      "closedToast": "Campaign closed."
+    },
+    "groupActions": {
+      "delete": "Delete group",
+      "deleteTitle": "Delete group",
+      "deleteBody": "This action permanently deletes the group and related memberships.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "deletedToast": "Group deleted."
     }
   },
   "status": {
@@ -592,6 +784,12 @@
     "inactive": "Inactive"
   },
   "dashboard": {
+    "empty": {
+      "title": "No group assigned yet",
+      "body": "Your account is pending group assignment. Please wait for a group admin to add you to a house.",
+      "status": "Waiting for admin assignment",
+      "help": "If you believe this is an error, please contact your building administrator."
+    },
     "overview": {
       "label": "Neighborhood overview",
       "subtitle": "Overview for this house group.",
@@ -600,6 +798,7 @@
         "count": "{count} post{count, plural, one {} other {s}} published",
         "viewAll": "View all posts",
         "empty": "No posts yet.",
+        "emptyHint": "Community posts and announcements will appear here.",
         "by": "by {name}"
       },
       "events": {
@@ -607,6 +806,7 @@
         "count": "{count} event{count, plural, one {} other {s}} scheduled",
         "viewAll": "View all events",
         "empty": "No upcoming events yet.",
+        "emptyHint": "Events and community gatherings will appear here.",
         "by": "by {name}"
       },
       "polls": {
@@ -614,6 +814,7 @@
         "count": "{count} poll{count, plural, one {} other {s}} available",
         "viewAll": "View all polls",
         "empty": "No active polls yet.",
+        "emptyHint": "Community polls and votes will appear here.",
         "by": "by {name}"
       },
       "fundraising": {
@@ -621,6 +822,7 @@
         "count": "{count} open campaign{count, plural, one {} other {s}}",
         "viewAll": "View all campaigns",
         "empty": "No active campaigns.",
+        "emptyHint": "Fundraising campaigns will appear here.",
         "goal": "Goal: {amount}",
         "perGroup": "({amount} per group)",
         "due": "Due {date}"
@@ -630,6 +832,7 @@
         "count": "{count} member{count, plural, one {} other {s}} in this group",
         "viewAll": "View all members",
         "empty": "No members yet.",
+        "emptyHint": "Group members will appear here once assigned.",
         "roles": {
           "admin": "admin",
           "user": "user"

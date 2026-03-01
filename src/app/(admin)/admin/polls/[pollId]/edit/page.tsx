@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 
-import { PollEditForm } from "@/components/polls/poll-edit-form";
+import { PollForm } from "@/components/polls/poll-form";
 import { getPollWithOptions } from "@/services/polls";
 import { getSession } from "@/server/auth";
 
@@ -29,24 +28,19 @@ export default async function PollEditPage({
     redirect(`/admin/polls/${poll.id}`);
   }
 
-  const t = await getTranslations("admin.pollForm");
-
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-          {t("label")}
-        </p>
-        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
-        <p className="text-sm text-[color:var(--muted)]">{t("editSubtitle")}</p>
-      </header>
-
-      <PollEditForm
-        pollId={poll.id}
-        initialTitle={poll.title}
-        initialDescription={poll.description}
-        initialStatus={poll.status}
-      />
-    </div>
+    <PollForm
+      mode="edit"
+      pollId={poll.id}
+      initialTitle={poll.title}
+      initialDescription={poll.description}
+      initialStatus={poll.status}
+      initialOptions={poll.options.map((option) => ({
+        id: option.id,
+        label: option.label,
+        description: option.description,
+        amount: option.amount,
+      }))}
+    />
   );
 }

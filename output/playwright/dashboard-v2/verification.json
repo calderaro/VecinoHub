@@ -1,0 +1,8 @@
+{
+  "unauthRedirect": true,
+  "noGroupState": true,
+  "overviewSections": true,
+  "userMenuActions": true,
+  "sectionLinks": true,
+  "responsiveShots": true
+}

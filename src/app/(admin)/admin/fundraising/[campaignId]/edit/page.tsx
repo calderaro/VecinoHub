@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 
-import { CampaignEditForm } from "@/components/fundraising/campaign-edit-form";
+import { CampaignForm } from "@/components/fundraising/campaign-form";
 import { getCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
@@ -24,27 +23,26 @@ export default async function CampaignEditPage({
   const campaign = await getCampaignDetail({ user: session.user }, {
     campaignId: resolvedParams.campaignId,
   });
-  const t = await getTranslations("admin.campaignFormPage");
+  const campaignWithContributions = campaign as typeof campaign & {
+    contributions?: Array<{ amount: string; status: "submitted" | "confirmed" | "rejected" }>;
+  };
+  const confirmedRaisedAmount = (campaignWithContributions.contributions ?? []).reduce((sum, contribution) => {
+    if (contribution.status !== "confirmed") {
+      return sum;
+    }
+    return sum + Number(contribution.amount ?? 0);
+  }, 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-          {t("label")}
-        </p>
-        <h1 className="text-3xl font-semibold">{t("editTitle")}</h1>
-        <p className="text-sm text-[color:var(--muted)]">
-          {t("editSubtitle")}
-        </p>
-      </header>
-
-      <CampaignEditForm
-        campaignId={campaign.id}
-        initialTitle={campaign.title}
-        initialDescription={campaign.description}
-        initialGoalAmount={campaign.goalAmount}
-        initialStatus={campaign.status}
-      />
-    </div>
+    <CampaignForm
+      mode="edit"
+      campaignId={campaign.id}
+      initialTitle={campaign.title}
+      initialDescription={campaign.description}
+      initialGoalAmount={campaign.goalAmount}
+      initialDueDate={campaign.dueDate}
+      initialStatus={campaign.status}
+      initialRaisedAmount={confirmedRaisedAmount}
+    />
   );
 }

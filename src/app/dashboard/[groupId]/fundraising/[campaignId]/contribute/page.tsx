@@ -50,7 +50,7 @@ export default async function NeighborContributionPage({
         </div>
       </header>
 
-      <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <section className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">
         <ContributionForm
           campaignId={campaign.id}
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}

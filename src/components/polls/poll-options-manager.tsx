@@ -76,11 +76,11 @@ export function PollOptionsManager({
   };
 
   return (
-    <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">{t("title")}</h2>
         <button
-          className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-stone-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={openAdd}
           disabled={!canEdit}
@@ -92,29 +92,29 @@ export function PollOptionsManager({
 
       <div className="mt-4 grid gap-3" data-testid="poll-options-list">
         {sortedOptions.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
+          <p className="text-sm text-stone-500">{t("empty")}</p>
         ) : (
           sortedOptions.map((option) => (
             <div
               key={option.id}
-              className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[color:var(--foreground)]"
+              className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900"
             >
               <div className="space-y-1">
                 <div className="font-medium">{option.label}</div>
                 {option.description ? (
-                  <div className="text-xs text-[color:var(--muted)]">
+                  <div className="text-xs text-stone-500">
                     {option.description}
                   </div>
                 ) : null}
                 {option.amount ? (
-                  <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+                  <div className="text-sm text-stone-500">
                     {t("amount", { amount: option.amount })}
                   </div>
                 ) : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-stone-700 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                   type="button"
                   onClick={() => openEdit(option)}
                   disabled={!canEdit}
@@ -122,7 +122,7 @@ export function PollOptionsManager({
                   {t("edit")}
                 </button>
                 <button
-                  className="rounded-full border border-rose-300 px-3 py-1 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-lg border border-rose-300 px-3 py-1 text-sm text-red-700 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                   type="button"
                   onClick={() => setDeleteOption(option)}
                   disabled={!canEdit}
@@ -136,33 +136,33 @@ export function PollOptionsManager({
       </div>
 
       {addOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("addTitle")}
             </h3>
             <div className="mt-4 grid gap-3">
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.label")}
                 <input
-                  className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   required
                 />
               </label>
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.description")}
                 <textarea
-                  className="mt-2 min-h-[80px] w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 min-h-[80px] w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                 />
               </label>
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.amount")}
                 <input
-                  className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   inputMode="decimal"
@@ -171,7 +171,7 @@ export function PollOptionsManager({
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setAddOpen(false)}
                 disabled={addOption.isPending}
@@ -180,7 +180,7 @@ export function PollOptionsManager({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-options-save"
                 onClick={() =>
@@ -201,33 +201,33 @@ export function PollOptionsManager({
       ) : null}
 
       {editOption ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("editTitle")}
             </h3>
             <div className="mt-4 grid gap-3">
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.label")}
                 <input
-                  className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   required
                 />
               </label>
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.description")}
                 <textarea
-                  className="mt-2 min-h-[80px] w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 min-h-[80px] w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                 />
               </label>
-              <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+              <label className="space-y-2 text-sm text-stone-500">
                 {t("fields.amount")}
                 <input
-                  className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   inputMode="decimal"
@@ -236,7 +236,7 @@ export function PollOptionsManager({
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setEditOption(null)}
                 disabled={updateOption.isPending}
@@ -245,7 +245,7 @@ export function PollOptionsManager({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-options-save"
                 onClick={() =>
@@ -266,17 +266,17 @@ export function PollOptionsManager({
       ) : null}
 
       {deleteOption ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("deleteTitle")}
             </h3>
-            <p className="mt-2 text-sm text-[color:var(--muted)]">
+            <p className="mt-2 text-sm text-stone-500">
               {t("deleteBody", { label: selectedLabel })}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setDeleteOption(null)}
                 disabled={removeOption.isPending}
@@ -284,7 +284,7 @@ export function PollOptionsManager({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-rose-300 px-4 py-2 text-sm text-red-700 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 onClick={() =>
                   removeOption.mutate({ optionId: deleteOption.id })

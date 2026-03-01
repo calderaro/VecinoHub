@@ -420,6 +420,33 @@ export async function listPollsPaged(
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
 
+const pollVoteCountsSchema = z.object({
+  pollIds: z.array(idSchema).max(200),
+});
+
+export async function getPollVoteCounts(
+  ctx: ServiceContext,
+  input: z.input<typeof pollVoteCountsSchema>
+) {
+  requireAdmin(ctx);
+  const { pollIds } = pollVoteCountsSchema.parse(input);
+
+  if (pollIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await db
+    .select({
+      pollId: votes.pollId,
+      total: count(),
+    })
+    .from(votes)
+    .where(inArray(votes.pollId, pollIds))
+    .groupBy(votes.pollId);
+
+  return new Map(rows.map((row) => [row.pollId, Number(row.total)]));
+}
+
 export async function listPollsWithOptions(ctx: ServiceContext) {
   const pollList = await listPolls(ctx);
   const pollIds = pollList.map((poll) => poll.id);
@@ -446,17 +473,25 @@ export async function getPollWithOptions(
   input: z.input<typeof getPollSchema>
 ) {
   const { pollId } = getPollSchema.parse(input);
-  const poll = await db
-    .select()
+  const pollRows = await db
+    .select({
+      poll: polls,
+      creatorName: users.name,
+    })
     .from(polls)
+    .leftJoin(users, eq(polls.createdBy, users.id))
     .where(eq(polls.id, pollId))
     .limit(1);
 
-  if (!poll[0]) {
+  if (!pollRows[0]) {
     throw new ServiceError("Poll not found", "NOT_FOUND");
   }
+  const poll = {
+    ...pollRows[0].poll,
+    creatorName: pollRows[0].creatorName,
+  };
 
-  if (ctx.user.role !== "admin" && poll[0].status !== "active") {
+  if (ctx.user.role !== "admin" && poll.status !== "active") {
     throw new ServiceError("Poll not available", "FORBIDDEN");
   }
 
@@ -465,7 +500,7 @@ export async function getPollWithOptions(
     .from(pollOptions)
     .where(eq(pollOptions.pollId, pollId));
 
-  return { ...poll[0], options };
+  return { ...poll, options };
 }
 
 export async function getPollResults(

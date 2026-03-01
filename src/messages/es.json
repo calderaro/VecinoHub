@@ -1,5 +1,26 @@
 {
   "auth": {
+    "combined": {
+      "tabLabel": "Opciones de autenticación",
+      "tabs": {
+        "signIn": "Iniciar sesión",
+        "signUp": "Crear cuenta"
+      },
+      "social": {
+        "google": "Continuar con Google",
+        "facebook": "Continuar con Facebook"
+      },
+      "divider": "o continúa con correo",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "socialUnavailable": "El inicio con redes sociales aún no está habilitado en este entorno.",
+      "otpUnavailable": "La verificación OTP por correo y el restablecimiento de contraseña aún no están habilitados en este entorno.",
+      "otpBypassed": "La verificación por correo está desactivada temporalmente. Tu cuenta queda activa de inmediato.",
+      "footer": {
+        "noAccount": "¿No tienes cuenta?",
+        "hasAccount": "¿Ya tienes cuenta?"
+      },
+      "legal": "VecinoHub · Privacidad · Términos"
+    },
     "register": {
       "title": "Crear cuenta",
       "subtitle": "Únete al espacio de tu vecindario.",
@@ -32,6 +53,8 @@
   },
   "profile": {
     "navLabel": "Perfil",
+    "back": "Volver al panel",
+    "eyebrow": "Cuenta",
     "title": "Ajustes de perfil",
     "subtitle": "Configura un nombre público y foto para la interfaz del vecindario.",
     "usernameLabel": "Nombre de usuario",
@@ -52,12 +75,6 @@
   },
   "nav": {
     "dashboard": "Panel"
-  },
-  "dashboard": {
-    "empty": {
-      "title": "Aún no tienes grupo",
-      "body": "Tu cuenta está pendiente de asignación. Espera a que un admin de grupo te agregue a una casa."
-    }
   },
   "userMenu": {
     "defaultUser": "Usuario",
@@ -82,55 +99,72 @@
     },
     "overview": {
       "label": "Administración",
-      "title": "Resumen admin",
+      "title": "Resumen",
       "subtitle": "Resumen de actividad de votaciones, recaudación, eventos y publicaciones.",
-      "stats": {
-        "activePolls": "Votaciones activas",
-        "pollDrafts": "{count} borrador{count, plural, one {} other {es}} pendiente",
-        "openCampaigns": "Campañas abiertas",
-        "pendingContributions": "{count} aporte{count, plural, one {} other {s}} por revisar",
-        "upcomingEvents": "Eventos próximos",
-        "totalEvents": "{count} total",
-        "publishedPosts": "Publicaciones activas",
-        "postDrafts": "{count} borrador{count, plural, one {} other {es}} por publicar"
+      "quickCreate": "Crear rápido",
+      "viewAll": "Ver todo",
+      "kpi": {
+        "polls": {
+          "active": "Activo",
+          "draft": "Borrador",
+          "closed": "Cerrado"
+        },
+        "fundraising": {
+          "open": "Abierto",
+          "paused": "Pausado",
+          "pending": "Pendiente"
+        },
+        "events": {
+          "upcoming": "Próximos",
+          "done": "Finalizado",
+          "canceled": "Cancelado"
+        },
+        "posts": {
+          "published": "Publicado",
+          "draft": "Borrador",
+          "hidden": "Oculto"
+        },
+        "users": {
+          "active": "Activo",
+          "suspended": "Suspendido",
+          "pending": "Pendiente"
+        },
+        "groups": {
+          "active": "Activo",
+          "inactive": "Inactivo",
+          "total": "Total"
+        }
       },
       "polls": {
         "title": "Votaciones activas",
-        "new": "+ Nueva votación",
         "empty": "No hay votaciones activas.",
-        "participation": "{percentage}% de participación",
-        "groupsVoted": "{voted} de {total} grupos votaron",
-        "draftsTitle": "Borradores pendientes"
+        "votes": "{count} voto{count, plural, one {} other {s}}"
       },
       "fundraising": {
-        "title": "Campañas de recaudación",
-        "new": "+ Nueva campaña",
+        "title": "Campañas abiertas",
         "empty": "No hay campañas abiertas.",
         "pending": "{count} pendiente",
         "progress": "{collected} de {goal}",
-        "due": "Vence: {date}",
-        "reviewTitle": "Aportes por revisar"
+        "pendingReview": "{count} pendiente por revisar",
+        "allReviewed": "Todo revisado"
       },
       "events": {
         "title": "Eventos próximos",
-        "new": "+ Nuevo evento",
         "empty": "No hay eventos próximos."
       },
       "posts": {
         "title": "Publicaciones recientes",
-        "new": "+ Nueva publicación",
-        "empty": "No hay publicaciones.",
-        "draftsTitle": "Borradores por publicar"
+        "empty": "No hay publicaciones."
       }
     },
     "users": {
       "label": "Administración",
       "title": "Usuarios",
-      "subtitle": "Administra roles y estado de acceso."
+      "subtitle": "Administra accesos y permisos de cuenta."
     },
     "usersTable": {
       "title": "Usuarios",
-      "searchPlaceholder": "Buscar usuarios",
+      "searchPlaceholder": "Buscar por nombre o correo...",
       "filter": "Filtrar",
       "empty": "No se encontraron usuarios.",
       "roleLabel": "Rol",
@@ -153,6 +187,50 @@
         "pageOf": "Página {page} de {total}",
         "prev": "Anterior",
         "next": "Siguiente"
+      }
+    },
+    "userDetail": {
+      "back": "Volver a usuarios",
+      "label": "Usuario de la plataforma",
+      "edit": "Editar",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado",
+      "membershipsTitle": "Membresías en grupos",
+      "noMemberships": "Este usuario no está asignado a ningún grupo.",
+      "stats": {
+        "totalMemberships": "Membresías totales",
+        "activeMemberships": "Membresías activas",
+        "managedGroups": "Grupos administrados"
+      }
+    },
+    "userActions": {
+      "makeAdmin": "Hacer admin",
+      "makeUser": "Asignar como usuario",
+      "deactivate": "Desactivar",
+      "activate": "Activar",
+      "saving": "Guardando...",
+      "roleUpdated": "Rol actualizado.",
+      "statusUpdated": "Estado actualizado."
+    },
+    "userForm": {
+      "title": "Editar acceso del usuario",
+      "subtitle": "Actualiza rol y estado de la cuenta.",
+      "updatedToast": "Acceso del usuario actualizado.",
+      "saveError": "No se pudo actualizar este usuario.",
+      "saveErrorTitle": "No se pudo guardar el usuario",
+      "accountSection": "Detalles de cuenta",
+      "permissionsSection": "Permisos",
+      "previewTitle": "Vista previa de acceso",
+      "notSet": "Sin definir",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "fields": {
+        "name": "Nombre",
+        "email": "Correo",
+        "username": "Usuario",
+        "role": "Rol",
+        "status": "Estado"
       }
     },
     "groups": {
@@ -183,7 +261,20 @@
         "member": "Miembro"
       },
       "edit": "Editar",
-      "membersTitle": "Miembros"
+      "membersTitle": "Miembros",
+      "back": "Volver a grupos",
+      "groupLabel": "Grupo vecinal",
+      "adminLabel": "Admin:",
+      "createdLabel": "Creado",
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "stats": {
+        "members": "Miembros",
+        "activeMembers": "Miembros activos",
+        "inactiveMembers": "Miembros inactivos"
+      }
     },
     "groupFormPage": {
       "label": "Administración",
@@ -207,6 +298,26 @@
         "name": "Nombre",
         "address": "Dirección",
         "adminUserId": "Id del admin"
+      },
+      "createdToast": "Grupo creado.",
+      "saveErrorTitle": "No se pudo guardar el grupo",
+      "cancel": "Cancelar",
+      "namePlaceholder": "ej. Residentes Torre A",
+      "addressPlaceholder": "Calle, edificio y referencias del grupo",
+      "adminPlaceholder": "Id del usuario administrador (UUID)",
+      "adminHint": "Asigna el usuario que administrará miembros y configuración.",
+      "preview": {
+        "newGroup": "Nuevo grupo",
+        "noAddress": "Sin dirección registrada",
+        "status": "Estado",
+        "active": "Activo",
+        "notAssigned": "Sin asignar"
+      },
+      "tips": {
+        "title": "Sugerencias",
+        "name": "Usa un nombre de grupo fácil de identificar para residentes.",
+        "owner": "Confirma el id del administrador antes de guardar la asignación.",
+        "address": "Agrega detalles de ubicación para identificar mejor el grupo."
       }
     },
     "polls": {
@@ -238,6 +349,15 @@
       "table": {
         "option": "Opción",
         "votes": "Votos"
+      },
+      "back": "Volver a votaciones",
+      "pollLabel": "Votación de la plataforma",
+      "createdBy": "por",
+      "startedLabel": "Inició",
+      "stats": {
+        "participants": "Participantes",
+        "options": "Opciones",
+        "participationRate": "Participación"
       }
     },
     "pollForm": {
@@ -263,6 +383,34 @@
         "draft": "borrador",
         "active": "activo",
         "closed": "cerrado"
+      },
+      "optionsRequired": "Agrega al menos dos opciones.",
+      "createdToast": "Votación creada.",
+      "updatedToast": "Votación actualizada.",
+      "saveError": "No se pudo guardar la votación en este momento.",
+      "saveErrorTitle": "No se pudo guardar la votación",
+      "cancel": "Cancelar",
+      "titlePlaceholder": "ej. ¿Debemos aprobar el presupuesto anual de mantenimiento?",
+      "descriptionPlaceholder": "Agrega contexto para que los residentes voten con información clara.",
+      "optionsTitle": "Opciones de votación",
+      "addOption": "Agregar opción",
+      "optionLabel": "Opción {index}",
+      "optionFields": {
+        "label": "Etiqueta de opción",
+        "description": "Descripción (opcional)",
+        "amount": "Referencia de monto (opcional)"
+      },
+      "optionsHint": "Puedes agregar más opciones ahora y editarlas después mientras la votación esté en borrador.",
+      "preview": {
+        "title": "Vista previa",
+        "questionFallback": "Nueva pregunta de votación",
+        "optionsCount": "Opciones"
+      },
+      "tips": {
+        "title": "Sugerencias",
+        "question": "Escribe una pregunta clara que los residentes puedan responder rápido.",
+        "options": "Incluye opciones balanceadas para obtener resultados útiles.",
+        "status": "Usa borrador mientras editas y activa cuando esté lista para votar."
       }
     },
     "pollActions": {
@@ -405,6 +553,24 @@
       "statusOptions": {
         "open": "abierto",
         "closed": "cerrado"
+      },
+      "createdToast": "Campaña creada.",
+      "updatedToast": "Campaña actualizada.",
+      "saveError": "No se pudo guardar la campaña en este momento.",
+      "saveErrorTitle": "No se pudo guardar la campaña",
+      "cancel": "Cancelar",
+      "descriptionPlaceholder": "Explica qué financiará esta campaña y por qué es importante.",
+      "preview": {
+        "newCampaign": "Nueva campaña",
+        "fundraisingCampaign": "Campaña de recaudación",
+        "noDueDate": "Sin fecha límite",
+        "progress": "{raised} recaudado de {goal}"
+      },
+      "tips": {
+        "title": "Sugerencias",
+        "goal": "Define una meta realista según el costo estimado del proyecto.",
+        "description": "Usa una descripción clara para que los residentes entiendan el propósito.",
+        "dueDate": "Agrega una fecha límite para crear urgencia y mejorar la participación."
       }
     },
     "campaignDetail": {
@@ -433,7 +599,17 @@
       },
       "amountLabel": "Monto: {amount}",
       "groupLabel": "Grupo:",
-      "submittedBy": "Enviado por:"
+      "submittedBy": "Enviado por:",
+      "back": "Volver a recaudación",
+      "campaignLabel": "Campaña de recaudación",
+      "createdBy": "por",
+      "dueLabel": "Vence",
+      "stats": {
+        "goal": "Meta",
+        "raised": "Recaudado",
+        "contributions": "Aportes",
+        "pending": "Pendientes"
+      }
     },
     "contributionPage": {
       "label": "Administración",
@@ -578,6 +754,22 @@
       "contentLabel": "Contenido",
       "back": "Volver a publicaciones",
       "emptyDate": "-"
+    },
+    "campaignActions": {
+      "close": "Cerrar campaña",
+      "closeTitle": "Cerrar campaña",
+      "closeBody": "Esta campaña dejará de aceptar nuevos aportes. Los aportes existentes se conservarán.",
+      "cancel": "Cancelar",
+      "closing": "Cerrando...",
+      "closedToast": "Campaña cerrada."
+    },
+    "groupActions": {
+      "delete": "Eliminar grupo",
+      "deleteTitle": "Eliminar grupo",
+      "deleteBody": "Esta acción elimina permanentemente el grupo y sus membresías asociadas.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "deletedToast": "Grupo eliminado."
     }
   },
   "status": {
@@ -592,6 +784,12 @@
     "inactive": "Inactivo"
   },
   "dashboard": {
+    "empty": {
+      "title": "Aún no tienes grupo",
+      "body": "Tu cuenta está pendiente de asignación. Espera a que un admin de grupo te agregue a una casa.",
+      "status": "Esperando asignación del admin",
+      "help": "Si crees que esto es un error, contacta al administrador del edificio."
+    },
     "overview": {
       "label": "Resumen del vecindario",
       "subtitle": "Resumen del grupo de casas.",
@@ -600,6 +798,7 @@
         "count": "{count} publicación{count, plural, one {} other {es}} publicada",
         "viewAll": "Ver publicaciones",
         "empty": "Aún no hay publicaciones.",
+        "emptyHint": "Las publicaciones y avisos de la comunidad aparecerán aquí.",
         "by": "por {name}"
       },
       "events": {
@@ -607,6 +806,7 @@
         "count": "{count} evento{count, plural, one {} other {s}} programado",
         "viewAll": "Ver eventos",
         "empty": "No hay eventos próximos.",
+        "emptyHint": "Los eventos y reuniones de la comunidad aparecerán aquí.",
         "by": "por {name}"
       },
       "polls": {
@@ -614,6 +814,7 @@
         "count": "{count} votación{count, plural, one {} other {es}} disponible",
         "viewAll": "Ver votaciones",
         "empty": "No hay votaciones activas.",
+        "emptyHint": "Las votaciones y decisiones de la comunidad aparecerán aquí.",
         "by": "por {name}"
       },
       "fundraising": {
@@ -621,6 +822,7 @@
         "count": "{count} campaña{count, plural, one {} other {s}} abierta",
         "viewAll": "Ver campañas",
         "empty": "No hay campañas activas.",
+        "emptyHint": "Las campañas de recaudación aparecerán aquí.",
         "goal": "Meta: {amount}",
         "perGroup": "({amount} por grupo)",
         "due": "Vence {date}"
@@ -630,6 +832,7 @@
         "count": "{count} miembro{count, plural, one {} other {s}} en este grupo",
         "viewAll": "Ver miembros",
         "empty": "Aún no hay miembros.",
+        "emptyHint": "Los miembros del grupo aparecerán aquí cuando sean asignados.",
         "roles": {
           "admin": "admin",
           "user": "usuario"

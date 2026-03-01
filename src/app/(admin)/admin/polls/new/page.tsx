@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 
-import { PollCreateForm } from "@/components/polls/poll-create-form";
+import { PollForm } from "@/components/polls/poll-form";
 import { getSession } from "@/server/auth";
 
 export default async function NewPollPage() {
@@ -15,19 +14,5 @@ export default async function NewPollPage() {
     redirect("/admin/polls");
   }
 
-  const t = await getTranslations("admin.pollForm");
-
-  return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-12">
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-          {t("label")}
-        </p>
-        <h1 className="text-3xl font-semibold">{t("createTitle")}</h1>
-        <p className="text-sm text-[color:var(--muted)]">{t("createSubtitle")}</p>
-      </header>
-
-      <PollCreateForm />
-    </div>
-  );
+  return <PollForm mode="create" />;
 }

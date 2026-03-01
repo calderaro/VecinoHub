@@ -7,6 +7,10 @@
 - Pages read pattern: server components/pages call services directly for SSR; avoid unnecessary client fetching.
 - Client data fetching must use React Query.
 - Client forms must use React Hook Form.
+- UI animation may use `framer-motion` when needed in client components.
+- Icons may use `lucide-react` in UI components.
+- Dates/times may use `date-fns` for formatting and date arithmetic.
+- Email delivery may use `nodemailer` for server-side transactional messages.
 
 ## Request Flow
 1) SSR page loads.
@@ -41,3 +45,4 @@
 - Prefer SSR for read-heavy pages.
 - Use pagination for list endpoints.
 - Avoid N+1 queries by batching in services.
+- Keep animations lightweight and avoid introducing motion that blocks data rendering or interaction.

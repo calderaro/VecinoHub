@@ -91,7 +91,7 @@ export default async function NeighborFundraisingPage({
 
       <form className="flex flex-wrap gap-3" method="get">
         <input
-          className="min-w-[220px] flex-1 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+          className="min-w-[220px] flex-1 rounded-2xl border border-[color:var(--stroke)] bg-stone-50 px-4 py-2 text-sm text-stone-900 outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
           name="q"
           data-testid="dashboard-fundraising-search"
           placeholder={t("searchPlaceholder")}
@@ -106,7 +106,7 @@ export default async function NeighborFundraisingPage({
         </button>
       </form>
 
-      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <div className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">
         {campaigns.length === 0 ? (
           <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
         ) : (

@@ -1,59 +1,80 @@
 # Screens and UI Map
 
+## Global Visual Baseline
+- Design source: `/Users/angel/Downloads/vecinohub-redesign`
+- App-wide style direction: `stone` light surfaces, `teal` primary actions, rounded `xl` cards, low-elevation shadows.
+- Shared utilities live in:
+  - `src/app/globals.css` (`vh-v3-*`, `dashboard-v2-*`)
+  - `src/components/ui-v3/*`
+
 ## Auth
-- Login
-- Register
-- SSR: no
-- CSR: yes
+- Route `/login`
+  - Combined tabbed sign-in/sign-up shell.
+  - Social and OTP/reset actions are UI-visible but disabled when feature flags are off.
+  - CSR-only form logic (Better Auth client + tRPC profile language update on signup).
+- Route `/register`
+  - Redirects to `/login?tab=signup`.
 
-## Dashboard
-- Summary widgets: groups, polls, active campaigns
-- Summary widgets: upcoming events, latest posts
-- SSR: yes (services)
+## Dashboard (Resident)
+- Route `/dashboard`
+  - Unauthenticated users redirect to `/login`.
+  - Users without groups see waiting/no-group state.
+  - Users with groups redirect to `/dashboard/{firstGroupId}`.
+- Route `/dashboard/[groupId]`
+  - Sticky 56px header with user menu actions.
+  - Overview cards: posts, events, polls, fundraising, members.
 
-## Groups
-- List groups (admin)
-- Group detail: members, admin, membership actions
-- SSR: yes (services)
-- CSR: minimal (member add/remove forms)
-
-## Polls
-- Poll list and details
-- Admin poll detail: options manager (add/edit/delete), launch/close/re-open/reset
-- Vote form per group (neighbor only)
-- Results summary with participation (admin)
-- SSR: yes for lists and details
-- CSR: vote form only, option management dialogs
-
-## Fundraising
-- Campaigns list
-- Submit contribution (cash or wire transfer) via separate contribution page
-- Multiple contributions per group, per-contribution amount
-- Admin contribution status updates + filters
-- SSR: yes for lists and detail
-- CSR: contribution and confirm actions
+## Resident Modules
+- `/dashboard/[groupId]/members`
+  - Group roster with add/remove member dialogs (permission-gated).
+- `/dashboard/[groupId]/events`
+- `/dashboard/[groupId]/events/[eventId]`
+- `/dashboard/[groupId]/posts`
+- `/dashboard/[groupId]/posts/[postId]`
+- `/dashboard/[groupId]/polls`
+- `/dashboard/[groupId]/polls/[pollId]`
+- `/dashboard/[groupId]/fundraising`
+- `/dashboard/[groupId]/fundraising/[campaignId]`
+- `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
 
 ## Profile
-- Update username and profile photo
-- SSR: yes (current profile)
-- CSR: yes (photo URL + save)
+- Route `/profile`
+  - Sticky header + account intro.
+  - Editable profile card (username, image URL, language).
 
-## Events
-- Events list and details
-- Admin create/edit/delete
-- SSR: yes for lists and detail
-- CSR: admin forms
+## Admin Shell
+- All `/admin/*` routes share:
+  - Left sidebar (desktop), topbar with user menu, mobile horizontal nav chips.
+  - Server-side admin guard remains enforced in layout.
 
-## News/Posts
-- Posts list and details
-- Admin create/edit/publish/unpublish
-- SSR: yes for lists and detail
-- CSR: admin editor
+## Admin Routes
+- `/admin` (overview)
+- `/admin/users`
+- `/admin/users/[userId]`
+- `/admin/users/[userId]/edit`
+- `/admin/groups`
+- `/admin/groups/new`
+- `/admin/groups/[groupId]`
+- `/admin/groups/[groupId]/edit`
+- `/admin/polls`
+- `/admin/polls/new`
+- `/admin/polls/[pollId]`
+- `/admin/polls/[pollId]/edit`
+- `/admin/fundraising`
+- `/admin/fundraising/new`
+- `/admin/fundraising/[campaignId]`
+- `/admin/fundraising/[campaignId]/edit`
+- `/admin/fundraising/[campaignId]/contribute`
+- `/admin/events`
+- `/admin/events/new`
+- `/admin/events/[eventId]`
+- `/admin/events/[eventId]/edit`
+- `/admin/posts`
+- `/admin/posts/new`
+- `/admin/posts/[postId]`
+- `/admin/posts/[postId]/edit`
 
-## Admin Panel
-- Users list, role edits, status
-- Group management
-- Poll management
-- Campaign management
-- Events management
-- Posts management
+## Rendering Contract
+- SSR-first reads from services on all list/detail pages.
+- Mutations stay in client components through tRPC mutation hooks.
+- Permission checks remain server-side in services/layouts/pages.

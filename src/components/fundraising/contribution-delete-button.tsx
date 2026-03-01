@@ -18,7 +18,7 @@ export function ContributionDeleteButton({
 
   return (
     <button
-      className="rounded-full border border-rose-400/60 px-3 py-1 text-xs uppercase tracking-[0.2em] text-rose-200 transition hover:border-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-rose-400/60 px-3 py-1 text-xs uppercase tracking-[0.2em] text-red-700 transition hover:border-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
       type="button"
       onClick={() => deleteContribution.mutate({ contributionId })}
       disabled={deleteContribution.isPending}

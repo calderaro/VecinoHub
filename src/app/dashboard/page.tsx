@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { NoGroupState } from "@/components/dashboard-v2";
 import { listUserGroups } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
@@ -16,18 +17,14 @@ export default async function DashboardIndexPage() {
   if (groups.length === 0) {
     const t = await getTranslations("dashboard.empty");
     return (
-      <div className="min-h-screen text-[var(--foreground)]">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-20">
-          <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-10 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
-            <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-              VecinoHub
-            </p>
-            <h1 className="mt-4 text-3xl font-semibold">{t("title")}</h1>
-            <p className="mt-3 text-sm text-[color:var(--muted)]">
-              {t("body")}
-            </p>
-          </div>
-        </div>
+      <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
+        <NoGroupState
+          eyebrow="VecinoHub"
+          title={t("title")}
+          body={t("body")}
+          statusLabel={t("status")}
+          helpText={t("help")}
+        />
       </div>
     );
   }

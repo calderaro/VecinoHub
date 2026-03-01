@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 
+import { SearchInput, StatusBadge } from "@/components/ui-v3";
 import { listEventsPaged } from "@/services/events";
 import { getSession } from "@/server/auth";
 
@@ -18,11 +20,15 @@ function getDisplayLocale(locale: string) {
   return locale === "en" ? "en-US" : "es-MX";
 }
 
-function formatDate(value: Date, locale: string) {
+function formatDate(value: Date | string, locale: string) {
   return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(value);
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 export default async function EventsPage({
@@ -43,6 +49,10 @@ export default async function EventsPage({
     typeof resolvedSearchParams.q === "string"
       ? resolvedSearchParams.q.trim()
       : "";
+  const status =
+    typeof resolvedSearchParams.status === "string"
+      ? resolvedSearchParams.status
+      : "";
   const pageRaw =
     typeof resolvedSearchParams.page === "string"
       ? Number(resolvedSearchParams.page)
@@ -50,7 +60,7 @@ export default async function EventsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: events, total } = await listEventsPaged(
+  const { items: rawEvents, total } = await listEventsPaged(
     { user: session.user },
     {
       query: query || undefined,
@@ -59,113 +69,154 @@ export default async function EventsPage({
     }
   );
 
+  const now = new Date();
+  const events = rawEvents.filter((event) => {
+    const isUpcoming = new Date(event.startsAt).getTime() >= now.getTime();
+    if (!status) return true;
+    if (status === "upcoming") return isUpcoming;
+    if (status === "completed") return !isUpcoming;
+    return false;
+  });
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const locale = await getLocale();
   const t = await getTranslations("admin.eventsList");
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-            {t("label")}
-          </p>
-          <h1 className="text-3xl font-semibold">{t("title")}</h1>
-          <p className="text-sm text-[color:var(--muted)]">
-            {t("subtitle")}
-          </p>
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
+          <p className="mt-0.5 text-sm text-stone-500">{total} total events</p>
         </div>
         {session.user.role === "admin" ? (
           <Link
-            className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
+            className="vh-v3-focus rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
             href="/admin/events/new"
             data-testid="admin-events-add"
           >
-            {t("addEvent")}
+            + New Event
           </Link>
         ) : null}
       </header>
 
-      <form className="flex flex-wrap gap-3" method="get">
-        <input
-          className="min-w-[220px] flex-1 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
-          name="q"
-          data-testid="admin-events-search"
-          placeholder={t("searchPlaceholder")}
-          defaultValue={query}
-        />
-        <button
-          className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
-          type="submit"
-          data-testid="admin-events-filter"
-        >
-          {t("filter")}
-        </button>
+      <form className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm" method="get">
+        <div className="flex flex-wrap gap-3">
+          <div className="min-w-[220px] flex-1">
+            <SearchInput
+              defaultValue={query}
+              placeholder="Search events..."
+              testId="admin-events-search"
+            />
+          </div>
+          <div className="relative">
+            <select
+              className="vh-v3-focus appearance-none rounded-lg border border-stone-200 bg-white py-2.5 pl-3 pr-8 text-sm text-stone-700 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+              name="status"
+              data-testid="admin-events-status"
+              defaultValue={status}
+            >
+              <option value="">All statuses</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+            </select>
+            <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+          </div>
+        </div>
       </form>
 
-      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
         {events.length === 0 ? (
-          <p className="text-sm text-[color:var(--muted)]">{t("empty")}</p>
+          <p className="px-5 py-12 text-center text-sm text-stone-400">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm" data-testid="admin-events-table">
-              <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                <tr>
-                  <th className="py-2">{t("table.title")}</th>
-                  <th className="py-2">{t("table.starts")}</th>
-                  <th className="py-2">{t("table.location")}</th>
-                  <th className="py-2 text-right">{t("table.action")}</th>
+            <table className="w-full text-sm" data-testid="admin-events-table">
+              <thead>
+                <tr className="border-b border-stone-100 bg-stone-50/60">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    Event
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    Date
+                  </th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500 md:table-cell">
+                    Location
+                  </th>
                 </tr>
               </thead>
-              <tbody className="text-[color:var(--foreground)]">
-                {events.map((event) => (
-                  <tr
-                    key={event.id}
-                    className="border-t border-[color:var(--stroke)]"
-                    data-testid={`admin-events-row-${event.id}`}
-                  >
-                    <td className="py-3 font-medium">{event.title}</td>
-                    <td className="py-3 text-[color:var(--muted)]">
-                      {formatDate(event.startsAt, locale)}
-                    </td>
-                    <td className="py-3 text-[color:var(--muted)]">
-                      {event.location ?? t("table.emptyLocation")}
-                    </td>
-                    <td className="py-3 text-right">
-                      <Link
-                        className="text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
-                        href={`/admin/events/${event.id}`}
-                      >
-                        {t("table.view")}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-stone-100">
+                {events.map((event) => {
+                  const isUpcoming = new Date(event.startsAt).getTime() >= now.getTime();
+                  const statusVariant = isUpcoming ? "upcoming" : "completed";
+                  const eventWithMeta = event as typeof event & { creatorName?: string };
+
+                  return (
+                    <tr
+                      key={event.id}
+                      className="transition-colors hover:bg-stone-50"
+                      data-testid={`admin-events-row-${event.id}`}
+                    >
+                      <td className="px-5 py-3.5">
+                        <Link
+                          href={`/admin/events/${event.id}`}
+                          className="group flex items-center gap-2.5"
+                          data-testid={`event-list-detail-${event.id}`}
+                        >
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-100 bg-blue-50">
+                            <CalendarDaysIcon className="h-3.5 w-3.5 text-blue-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-stone-900 transition-colors group-hover:text-teal-700">
+                              {event.title}
+                            </p>
+                            <p className="text-xs text-stone-400">by {eventWithMeta.creatorName ?? "-"}</p>
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge
+                          variant={statusVariant}
+                          label={statusVariant === "upcoming" ? "Upcoming" : "Completed"}
+                        />
+                      </td>
+                      <td className="px-4 py-3.5 text-stone-600">{formatDate(event.startsAt, locale)}</td>
+                      <td className="hidden px-4 py-3.5 text-stone-500 md:table-cell">
+                        {event.location ?? "-"}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
-      </div>
 
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-        <span>{t("pagination.pageOf", { page, total: totalPages })}</span>
-        <div className="flex items-center gap-3">
-          {page > 1 ? (
-            <Link
-              className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
-              href={`/admin/events${buildQuery({ q: query || undefined, page: String(page - 1) })}`}
-            >
-              {t("pagination.prev")}
-            </Link>
-          ) : null}
-          {page < totalPages ? (
-            <Link
-              className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
-              href={`/admin/events${buildQuery({ q: query || undefined, page: String(page + 1) })}`}
-            >
-              {t("pagination.next")}
-            </Link>
-          ) : null}
+        <div className="flex items-center justify-between border-t border-stone-100 px-5 py-3.5 text-xs text-stone-400">
+          <p>{events.length} of {total} events</p>
+          <div className="flex items-center gap-2">
+            {page > 1 ? (
+              <Link
+                className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
+                href={`/admin/events${buildQuery({ q: query || undefined, status: status || undefined, page: String(page - 1) })}`}
+              >
+                Prev
+              </Link>
+            ) : null}
+            <span className="px-1.5 text-xs font-medium text-stone-500">
+              {page} / {totalPages}
+            </span>
+            {page < totalPages ? (
+              <Link
+                className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
+                href={`/admin/events${buildQuery({ q: query || undefined, status: status || undefined, page: String(page + 1) })}`}
+              >
+                Next
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

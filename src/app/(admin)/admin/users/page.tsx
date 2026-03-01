@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { UsersTable } from "@/components/admin/users-table";
-import { listUsersPaged } from "@/services/users";
+import { getUserGroupCounts, listUsersPaged } from "@/services/users";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -51,29 +51,32 @@ export default async function AdminUsersPage({
     limit: PAGE_SIZE,
     offset,
   });
+  const groupCounts = await getUserGroupCounts(
+    { user: session.user },
+    { userIds: usersPaged.items.map((user) => user.id) }
+  );
 
   const totalPages = Math.max(1, Math.ceil(usersPaged.total / PAGE_SIZE));
   const t = await getTranslations("admin.users");
 
   return (
     <div
-      className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12"
+      className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6"
       data-testid="admin-users-root"
     >
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-          {t("label")}
-        </p>
-        <h1 className="text-3xl font-semibold" data-testid="admin-users-title">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-[color:var(--muted)]">
-          {t("subtitle")}
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900" data-testid="admin-users-title">
+            {t("title")}
+          </h1>
+          <p className="mt-0.5 text-sm text-stone-500">{usersPaged.total} total users</p>
+        </div>
       </header>
 
       <UsersTable
         users={usersPaged.items}
+        totalUsers={usersPaged.total}
+        groupCounts={Object.fromEntries(groupCounts.entries())}
         currentPage={page}
         totalPages={totalPages}
         query={query}

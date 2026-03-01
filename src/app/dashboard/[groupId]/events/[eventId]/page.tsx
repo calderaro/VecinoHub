@@ -52,7 +52,7 @@ export default async function NeighborEventDetailPage({
         ) : null}
       </header>
 
-      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <div className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">
         <div className="grid gap-4 text-sm text-[color:var(--foreground)]">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">

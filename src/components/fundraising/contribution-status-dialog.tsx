@@ -33,7 +33,7 @@ export function ContributionStatusDialog({
   return (
     <>
       <button
-        className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-stone-700 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
         onClick={() => {
           setStatus(contribution.status);
@@ -46,19 +46,19 @@ export function ContributionStatusDialog({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("title")}
             </h3>
-            <p className="mt-1 text-sm text-[color:var(--muted)]">
+            <p className="mt-1 text-sm text-stone-500">
               {t("subtitle")}
             </p>
 
-            <label className="mt-4 block space-y-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+            <label className="mt-4 block space-y-2 text-sm text-stone-500">
               {t("statusLabel")}
               <select
-                className="mt-2 w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+                className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                 value={status}
                 onChange={(event) =>
                   setStatus(event.target.value as Contribution["status"])
@@ -72,7 +72,7 @@ export function ContributionStatusDialog({
 
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 data-testid="contribution-status-cancel"
                 onClick={() => setOpen(false)}
@@ -81,7 +81,7 @@ export function ContributionStatusDialog({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="contribution-status-save"
                 onClick={() =>
