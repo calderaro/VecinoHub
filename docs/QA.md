@@ -1,5 +1,11 @@
 # QA Checklist (Redesign Baseline)
 
+## Public Landing
+- `/` shows marketing landing for signed-out users.
+- `/` redirects authenticated users to `/dashboard`.
+- Landing primary CTA routes to `/login`.
+- Landing includes visible legal links to `/en/terms-of-service`, `/en/privacy-policy`, and `/en/data-deletion`.
+
 ## Auth
 - `/login` renders combined tabbed sign-in/sign-up UI.
 - Sign in succeeds and redirects to `/dashboard`.

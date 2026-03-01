@@ -7,6 +7,15 @@
   - `src/app/globals.css` (`vh-v3-*`, `dashboard-v2-*`)
   - `src/components/ui-v3/*`
 
+## Public Landing
+- Route `/`
+  - Authenticated users redirect to `/dashboard`.
+  - Signed-out users see a marketing landing page with primary CTA to `/login`.
+  - Legal links are visible on-page and route to:
+    - `/en/terms-of-service`
+    - `/en/privacy-policy`
+    - `/en/data-deletion`
+
 ## Auth
 - Route `/login`
   - Combined tabbed sign-in/sign-up shell.

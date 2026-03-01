@@ -51,6 +51,13 @@ Common UI anchors:
 - Navigation: links labeled Polls, Events, Posts, Fundraising, Members
 
 Overview Sections:
+- landing-root
+- landing-header
+- landing-main
+- landing-hero
+- landing-overview-card
+- landing-legal-section
+- landing-footer
 - dashboard-overview-posts
 - dashboard-overview-events
 - dashboard-overview-polls
@@ -113,6 +120,24 @@ Navigation:
 - user-menu-trigger
 - user-menu-signout
 - group-selector
+
+Landing:
+- landing-root
+- landing-header
+- landing-main
+- landing-hero
+- landing-login-link
+- landing-cta-login
+- landing-cta-legal-hub
+- landing-overview-card
+- landing-legal-section
+- landing-legal-terms
+- landing-legal-privacy
+- landing-legal-deletion
+- landing-footer
+- landing-legal-terms-footer
+- landing-legal-privacy-footer
+- landing-legal-deletion-footer
 
 Legal:
 - legal-page-root
@@ -300,6 +325,34 @@ Profile:
 - profile-photo
 - profile-language
 - profile-submit
+
+## Feature: Public Landing
+### Test Run: Signed-Out User Sees Landing and Legal Links
+Preconditions:
+- User is signed out.
+
+Steps:
+1. Go to `/`.
+2. Verify `landing-root`, `landing-hero`, and `landing-legal-section` render.
+3. Click `landing-cta-login` and verify redirect to `/login`.
+4. Go back to `/`.
+5. Open `landing-legal-terms`, `landing-legal-privacy`, and `landing-legal-deletion`.
+
+Expected:
+- Landing page renders modern marketing shell for signed-out users.
+- Login CTA routes to `/login`.
+- All legal links resolve correctly.
+
+### Test Run: Authenticated User Redirect From Root
+Preconditions:
+- User is logged in.
+
+Steps:
+1. Go to `/`.
+2. Observe navigation behavior.
+
+Expected:
+- User is redirected to `/dashboard`.
 
 ## Feature: Auth
 ### Test Run: Register New User
