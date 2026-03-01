@@ -1,4 +1,10 @@
-import { ClockIcon, HomeIcon } from "lucide-react";
+"use client";
+
+import { ClockIcon, HomeIcon, LogOutIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { authClient } from "@/lib/auth-client";
 
 type NoGroupStateProps = {
   eyebrow: string;
@@ -6,9 +12,32 @@ type NoGroupStateProps = {
   body: string;
   statusLabel: string;
   helpText: string;
+  signOutLabel: string;
+  signingOutLabel: string;
 };
 
-export function NoGroupState({ eyebrow, title, body, statusLabel, helpText }: NoGroupStateProps) {
+export function NoGroupState({
+  eyebrow,
+  title,
+  body,
+  statusLabel,
+  helpText,
+  signOutLabel,
+  signingOutLabel,
+}: NoGroupStateProps) {
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    try {
+      await authClient.signOut();
+      router.push("/login");
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
+
   return (
     <main
       className="flex min-h-screen w-full items-center justify-center bg-stone-50 px-4"
@@ -34,6 +63,18 @@ export function NoGroupState({ eyebrow, title, body, statusLabel, helpText }: No
         </div>
 
         <p className="mt-6 text-xs text-stone-400">{helpText}</p>
+        <button
+          type="button"
+          onClick={() => {
+            void handleSignOut();
+          }}
+          disabled={isSigningOut}
+          data-testid="dashboard-no-group-signout"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 hover:border-stone-300 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <LogOutIcon className="h-4 w-4" aria-hidden="true" />
+          {isSigningOut ? signingOutLabel : signOutLabel}
+        </button>
       </div>
     </main>
   );

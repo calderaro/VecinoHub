@@ -16,6 +16,7 @@ export default async function DashboardIndexPage() {
 
   if (groups.length === 0) {
     const t = await getTranslations("dashboard.empty");
+    const tUserMenu = await getTranslations("userMenu");
     return (
       <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
         <NoGroupState
@@ -24,6 +25,8 @@ export default async function DashboardIndexPage() {
           body={t("body")}
           statusLabel={t("status")}
           helpText={t("help")}
+          signOutLabel={tUserMenu("signOut")}
+          signingOutLabel={tUserMenu("signingOut")}
         />
       </div>
     );

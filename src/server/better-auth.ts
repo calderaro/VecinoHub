@@ -30,7 +30,7 @@ const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
-const mailFrom = process.env.MAIL_FROM ?? "VecinoHub <no-reply@vecinohub.local>";
+const mailFrom = process.env.EMAIL_FROM ?? "VecinoHub <no-reply@vecinohub.com>";
 
 let warnedMissingSmtp = false;
 let smtpTransporter: nodemailer.Transporter | null = null;
@@ -68,7 +68,7 @@ async function sendMagicLinkEmail({
     if (!warnedMissingSmtp) {
       warnedMissingSmtp = true;
       console.warn(
-        "[auth] Magic link email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
+        "[auth] Magic link email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.",
       );
     }
 
@@ -89,7 +89,8 @@ export const auth = betterAuth({
   secret: authSecret,
   baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: { enabled: true },
-  socialProviders: Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
+  socialProviders:
+    Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   rateLimit: { enabled: false },
   advanced: {
     database: {

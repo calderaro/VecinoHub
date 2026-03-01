@@ -67,6 +67,7 @@ Overview Sections:
 - dashboard-overview-title
 - dashboard-no-group-state
 - dashboard-no-group-status
+- dashboard-no-group-signout
 - admin-overview-stats
 - admin-overview-stats-polls
 - admin-overview-stats-fundraising
@@ -394,6 +395,19 @@ Steps:
 
 Expected:
 - Session remains active, no redirect to /login.
+
+### Test Run: No-Group Sign Out
+Preconditions:
+- User is logged in and has no group memberships.
+
+Steps:
+1. Go to `/dashboard`.
+2. Verify `dashboard-no-group-state` renders.
+3. Click `dashboard-no-group-signout`.
+4. Verify redirect to `/login`.
+
+Expected:
+- User can sign out from the no-group waiting state.
 
 ### Test Run: Social Auth Redirect
 Preconditions:

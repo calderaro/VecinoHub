@@ -19,6 +19,7 @@
 ## Dashboard
 - `/dashboard` unauthenticated redirect works.
 - `/dashboard` no-group waiting state renders correctly.
+- `/dashboard` no-group waiting state includes `dashboard-no-group-signout` and logs out to `/login`.
 - `/dashboard/[groupId]` overview renders all 5 cards and keeps sticky header.
 - User menu supports keyboard and escape-close behavior.
 
