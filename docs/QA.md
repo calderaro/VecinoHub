@@ -14,7 +14,8 @@
 - Clicking `auth-social-google` starts OAuth redirect flow.
 - Clicking `auth-login-magic-link` with a valid email shows magic-link sent notice.
 - Clicking `auth-login-magic-link` with empty email shows validation notice.
-- Forgot password messaging still shows OTP/reset not enabled notice.
+- Clicking `auth-reset-request` with email sends reset OTP notice.
+- Filling `auth-reset-otp` + `auth-reset-password` and submitting `auth-reset-submit` resets password successfully.
 
 ## Dashboard
 - `/dashboard` unauthenticated redirect works.

@@ -10,8 +10,6 @@ import { trpc } from "@/lib/trpc";
 
 type AuthTab = "signin" | "signup";
 
-const OTP_AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_OTP_ENABLED === "true";
-
 type AuthCombinedPageProps = {
   initialTab: AuthTab;
 };
@@ -47,19 +45,21 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const [tab, setTab] = useState<AuthTab>(initialTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMagicLinkSubmitting, setIsMagicLinkSubmitting] = useState(false);
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
-  const [notice, setNotice] = useState<string | null>(
-    OTP_AUTH_ENABLED ? null : tCombined("otpUnavailable")
-  );
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [hasRequestedResetOtp, setHasRequestedResetOtp] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const updateProfile = trpc.users.updateProfile.useMutation();
-  const isBusy = isSubmitting || isMagicLinkSubmitting;
+  const isBusy = isSubmitting || isMagicLinkSubmitting || isResetSubmitting;
 
   async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    setNotice(OTP_AUTH_ENABLED ? null : tCombined("otpUnavailable"));
+    setNotice(null);
 
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim();
@@ -85,7 +85,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    setNotice(OTP_AUTH_ENABLED ? null : tCombined("otpUnavailable"));
+    setNotice(null);
 
     const formData = new FormData(event.currentTarget);
     const name = String(formData.get("name") ?? "").trim();
@@ -110,10 +110,6 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
       }
 
       setLocaleCookie(preferredLanguage);
-
-      if (!OTP_AUTH_ENABLED) {
-        setNotice(tCombined("otpBypassed"));
-      }
 
       router.push("/dashboard");
     } catch (err) {
@@ -168,8 +164,69 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     }
   }
 
-  function handleUnsupportedFeature(featureKey: "otpUnavailable") {
-    setNotice(tCombined(featureKey));
+  async function handleRequestPasswordResetOtp() {
+    const email = loginEmail.trim();
+
+    if (!email) {
+      setError(null);
+      setNotice(tCombined("passwordResetEmailRequired"));
+      return;
+    }
+
+    setIsResetSubmitting(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await authClient.forgetPassword.emailOtp({ email });
+      setHasRequestedResetOtp(true);
+      setNotice(tCombined("passwordResetOtpSent"));
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : tCombined("passwordResetError"));
+    } finally {
+      setIsResetSubmitting(false);
+    }
+  }
+
+  async function handleResetPasswordWithOtp() {
+    const email = loginEmail.trim();
+    const otp = resetOtp.trim();
+    const newPassword = resetPasswordValue.trim();
+
+    if (!email) {
+      setNotice(tCombined("passwordResetEmailRequired"));
+      return;
+    }
+
+    if (!otp) {
+      setNotice(tCombined("passwordResetOtpRequired"));
+      return;
+    }
+
+    if (!newPassword) {
+      setNotice(tCombined("passwordResetNewPasswordRequired"));
+      return;
+    }
+
+    setIsResetSubmitting(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await authClient.emailOtp.resetPassword({
+        email,
+        otp,
+        password: newPassword,
+      });
+      setResetOtp("");
+      setResetPasswordValue("");
+      setHasRequestedResetOtp(false);
+      setNotice(tCombined("passwordResetSuccess"));
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : tCombined("passwordResetError"));
+    } finally {
+      setIsResetSubmitting(false);
+    }
   }
 
   const baseInputClass =
@@ -297,7 +354,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   <button
                     type="button"
                     className="vh-v3-focus text-xs font-medium text-stone-400 transition-colors hover:text-stone-600"
-                    onClick={() => handleUnsupportedFeature("otpUnavailable")}
+                    onClick={() => {
+                      void handleRequestPasswordResetOtp();
+                    }}
+                    data-testid="auth-reset-request"
                   >
                     {tCombined("forgotPassword")}
                   </button>
@@ -312,6 +372,58 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   className={baseInputClass}
                 />
               </div>
+
+              {hasRequestedResetOtp ? (
+                <>
+                  <div className="space-y-1.5">
+                    <label
+                      className="block text-sm font-medium text-stone-700"
+                      htmlFor="auth-reset-otp"
+                    >
+                      {tCombined("passwordResetOtpLabel")}
+                    </label>
+                    <input
+                      id="auth-reset-otp"
+                      type="text"
+                      inputMode="numeric"
+                      value={resetOtp}
+                      onChange={(event) => setResetOtp(event.currentTarget.value)}
+                      data-testid="auth-reset-otp"
+                      className={baseInputClass}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      className="block text-sm font-medium text-stone-700"
+                      htmlFor="auth-reset-password"
+                    >
+                      {tCombined("passwordResetNewPasswordLabel")}
+                    </label>
+                    <input
+                      id="auth-reset-password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={resetPasswordValue}
+                      onChange={(event) => setResetPasswordValue(event.currentTarget.value)}
+                      data-testid="auth-reset-password"
+                      className={baseInputClass}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleResetPasswordWithOtp();
+                    }}
+                    disabled={isBusy}
+                    data-testid="auth-reset-submit"
+                    className="vh-v3-focus flex w-full items-center justify-center rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isResetSubmitting
+                      ? tCombined("passwordResetSubmitting")
+                      : tCombined("passwordResetAction")}
+                  </button>
+                </>
+              ) : null}
               <button
                 type="button"
                 onClick={() => {

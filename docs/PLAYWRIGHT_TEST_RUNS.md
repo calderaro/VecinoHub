@@ -103,6 +103,10 @@ Auth:
 - auth-login-email
 - auth-login-password
 - auth-login-magic-link
+- auth-reset-request
+- auth-reset-otp
+- auth-reset-password
+- auth-reset-submit
 - auth-login-notice
 - auth-login-submit
 - auth-login-error
@@ -436,17 +440,23 @@ Expected:
 - Request succeeds without leaving the login page.
 - User receives email when SMTP is configured.
 
-### Test Run: OTP/Reset Disabled Feature Messaging
+### Test Run: OTP Password Reset
 Preconditions:
-- `NEXT_PUBLIC_AUTH_OTP_ENABLED` is unset or `false`.
+- Email OTP plugin is enabled.
+- SMTP is configured, or server logs are accessible for dev fallback.
+- Existing user email is available.
 
 Steps:
 1. Go to `/login`.
-2. Click “Forgot password?” link.
-3. Verify OTP/reset disabled notice appears.
+2. Fill `auth-login-email`.
+3. Click `auth-reset-request` to send OTP.
+4. Fill `auth-reset-otp` with received OTP.
+5. Fill `auth-reset-password` with a new password.
+6. Click `auth-reset-submit`.
+7. Verify `auth-login-notice` confirms password reset success.
 
 Expected:
-- User remains on auth page and receives the expected informational notice.
+- Password reset completes via OTP without leaving `/login`.
 
 ## Feature: Groups
 ### Test Run: Admin Creates Group

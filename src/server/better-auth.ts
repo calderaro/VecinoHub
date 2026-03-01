@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { magicLink } from "better-auth/plugins";
+import { emailOTP, magicLink } from "better-auth/plugins";
 import nodemailer from "nodemailer";
 
 import { db } from "@/db";
@@ -30,7 +30,10 @@ const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
-const mailFrom = process.env.EMAIL_FROM ?? "VecinoHub <no-reply@vecinohub.com>";
+const mailFrom =
+  process.env.MAIL_FROM ??
+  process.env.EMAIL_FROM ??
+  "VecinoHub <no-reply@vecinohub.com>";
 
 let warnedMissingSmtp = false;
 let smtpTransporter: nodemailer.Transporter | null = null;
@@ -85,10 +88,86 @@ async function sendMagicLinkEmail({
   });
 }
 
+async function sendPasswordResetEmail({
+  email,
+  url,
+}: {
+  email: string;
+  url: string;
+}) {
+  const transporter = getSmtpTransporter();
+
+  if (!transporter) {
+    if (!warnedMissingSmtp) {
+      warnedMissingSmtp = true;
+      console.warn(
+        "[auth] Password reset email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
+      );
+    }
+
+    console.info(`[auth] Password reset link for ${email}: ${url}`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: mailFrom,
+    to: email,
+    subject: "Reset your VecinoHub password",
+    text: `Use this link to reset your VecinoHub password: ${url}`,
+    html: `<p>Use this link to reset your <strong>VecinoHub</strong> password:</p><p><a href="${url}">${url}</a></p>`,
+  });
+}
+
+async function sendEmailOtp({
+  email,
+  otp,
+  type,
+}: {
+  email: string;
+  otp: string;
+  type: "sign-in" | "email-verification" | "forget-password";
+}) {
+  const transporter = getSmtpTransporter();
+  const purpose =
+    type === "forget-password"
+      ? "password reset"
+      : type === "email-verification"
+        ? "email verification"
+        : "sign in";
+
+  if (!transporter) {
+    if (!warnedMissingSmtp) {
+      warnedMissingSmtp = true;
+      console.warn(
+        "[auth] Email OTP skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
+      );
+    }
+
+    console.info(`[auth] OTP (${type}) for ${email}: ${otp}`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: mailFrom,
+    to: email,
+    subject: `Your VecinoHub ${purpose} code`,
+    text: `Your VecinoHub ${purpose} code is: ${otp}`,
+    html: `<p>Your VecinoHub <strong>${purpose}</strong> code is:</p><p style="font-size:20px;font-weight:700;letter-spacing:0.15em">${otp}</p>`,
+  });
+}
+
 export const auth = betterAuth({
   secret: authSecret,
   baseURL: process.env.BETTER_AUTH_URL,
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({
+        email: user.email,
+        url,
+      });
+    },
+  },
   socialProviders:
     Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   rateLimit: { enabled: false },
@@ -169,6 +248,11 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await sendMagicLinkEmail({ email, url });
+      },
+    }),
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        await sendEmailOtp({ email, otp, type });
       },
     }),
   ],

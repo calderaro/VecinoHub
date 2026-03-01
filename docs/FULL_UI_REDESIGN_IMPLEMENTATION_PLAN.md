@@ -54,7 +54,7 @@ Current backend:
 - Email+password enabled
 - Google social provider supported through `src/server/better-auth.ts` env config
 - Magic-link sign-in enabled through Better Auth plugin + SMTP/Nodemailer delivery
-- No completed OTP verification + reset-password UX integration in app routes
+- Email-OTP password reset is enabled in login flow (send OTP + reset with OTP)
 
 Decision required:
 - `A)` Implement full backend support now (social + OTP + reset flow), or
@@ -63,7 +63,7 @@ Decision taken:
 - `B)` Phased rollout:
   - Social OAuth is enabled for Google when provider credentials are configured.
   - Magic-link authentication is enabled for sign-in via email links.
-  - OTP/reset remains UI messaging only, controlled by `NEXT_PUBLIC_AUTH_OTP_ENABLED`.
+  - OTP reset-password flow is enabled for login via email OTP.
 
 2. Admin redesign status models exceed current DB enums:
 - Campaign redesign: `open | paused | ended` vs current DB `open | closed`

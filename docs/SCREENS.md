@@ -21,7 +21,7 @@
   - Combined tabbed sign-in/sign-up shell.
   - Google action starts Better Auth social OAuth and returns to `/dashboard`.
   - Magic-link action sends sign-in email through Better Auth magic-link plugin.
-  - OTP/reset actions remain informational until OTP backend flow is enabled.
+  - Forgot-password action sends email OTP and enables in-page password reset with OTP + new password.
   - CSR-only form logic (Better Auth client + tRPC profile language update on signup).
 - Route `/register`
   - Redirects to `/login?tab=signup`.
