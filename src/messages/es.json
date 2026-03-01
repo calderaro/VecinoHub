@@ -13,6 +13,7 @@
       "divider": "o continúa con correo",
       "forgotPassword": "¿Olvidaste tu contraseña?",
       "socialUnavailable": "El inicio con redes sociales aún no está habilitado en este entorno.",
+      "socialError": "No se pudo continuar con el inicio social por ahora. Inténtalo de nuevo.",
       "otpUnavailable": "La verificación OTP por correo y el restablecimiento de contraseña aún no están habilitados en este entorno.",
       "otpBypassed": "La verificación por correo está desactivada temporalmente. Tu cuenta queda activa de inmediato.",
       "footer": {

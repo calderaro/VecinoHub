@@ -10,10 +10,35 @@ if (!authSecret) {
   throw new Error("BETTER_AUTH_SECRET is not set");
 }
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
+const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
+
+const socialProviders = {
+  ...(googleClientId && googleClientSecret
+    ? {
+        google: {
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+        },
+      }
+    : {}),
+  ...(facebookClientId && facebookClientSecret
+    ? {
+        facebook: {
+          clientId: facebookClientId,
+          clientSecret: facebookClientSecret,
+        },
+      }
+    : {}),
+};
+
 export const auth = betterAuth({
   secret: authSecret,
   baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: { enabled: true },
+  socialProviders: Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   rateLimit: { enabled: false },
   advanced: {
     database: {

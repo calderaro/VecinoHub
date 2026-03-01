@@ -10,8 +10,6 @@ import { trpc } from "@/lib/trpc";
 
 type AuthTab = "signin" | "signup";
 
-const SOCIAL_AUTH_ENABLED =
-  process.env.NEXT_PUBLIC_AUTH_SOCIAL_ENABLED === "true";
 const OTP_AUTH_ENABLED = process.env.NEXT_PUBLIC_AUTH_OTP_ENABLED === "true";
 
 type AuthCombinedPageProps = {
@@ -135,7 +133,23 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     }
   }
 
-  function handleUnsupportedFeature(featureKey: "socialUnavailable" | "otpUnavailable") {
+  async function handleSocialSignIn(provider: "google" | "facebook") {
+    setIsSubmitting(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: "/dashboard",
+      });
+    } catch {
+      setNotice(tCombined("socialError"));
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleUnsupportedFeature(featureKey: "otpUnavailable") {
     setNotice(tCombined(featureKey));
   }
 
@@ -212,12 +226,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
           <div className="space-y-2.5">
             <button
               type="button"
-              onClick={() =>
-                handleUnsupportedFeature(
-                  SOCIAL_AUTH_ENABLED ? "otpUnavailable" : "socialUnavailable"
-                )
-              }
-              disabled={!SOCIAL_AUTH_ENABLED}
+              onClick={() => {
+                void handleSocialSignIn("google");
+              }}
+              disabled={isSubmitting}
               className={baseButtonClass}
               data-testid="auth-social-google"
             >
@@ -226,12 +238,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
             </button>
             <button
               type="button"
-              onClick={() =>
-                handleUnsupportedFeature(
-                  SOCIAL_AUTH_ENABLED ? "otpUnavailable" : "socialUnavailable"
-                )
-              }
-              disabled={!SOCIAL_AUTH_ENABLED}
+              onClick={() => {
+                void handleSocialSignIn("facebook");
+              }}
+              disabled={isSubmitting}
               className={baseButtonClass}
               data-testid="auth-social-facebook"
             >

@@ -10,7 +10,8 @@
 ## Auth
 - Route `/login`
   - Combined tabbed sign-in/sign-up shell.
-  - Social and OTP/reset actions are UI-visible but disabled when feature flags are off.
+  - Google/Facebook actions start Better Auth social OAuth and return to `/dashboard`.
+  - OTP/reset actions remain informational until OTP backend flow is enabled.
   - CSR-only form logic (Better Auth client + tRPC profile language update on signup).
 - Route `/register`
   - Redirects to `/login?tab=signup`.
@@ -41,6 +42,12 @@
 - Route `/profile`
   - Sticky header + account intro.
   - Editable profile card (username, image URL, language).
+
+## Legal
+- `/en`
+- `/en/terms-of-service`
+- `/en/privacy-policy`
+- `/en/data-deletion`
 
 ## Admin Shell
 - All `/admin/*` routes share:

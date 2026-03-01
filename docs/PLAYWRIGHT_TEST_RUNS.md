@@ -74,6 +74,16 @@ Overview Sections:
 - admin-overview-root
 - admin-overview-title
 - admin-overview-quick-create
+- legal-page-root
+- legal-page-content
+- legal-nav
+- legal-nav-terms
+- legal-nav-privacy
+- legal-nav-data-deletion
+- legal-home-root
+- legal-terms-root
+- legal-privacy-root
+- legal-data-deletion-root
 
 ## data-testid Map
 Use getByTestId for these anchors.
@@ -103,6 +113,18 @@ Navigation:
 - user-menu-trigger
 - user-menu-signout
 - group-selector
+
+Legal:
+- legal-page-root
+- legal-page-content
+- legal-nav
+- legal-nav-terms
+- legal-nav-privacy
+- legal-nav-data-deletion
+- legal-home-root
+- legal-terms-root
+- legal-privacy-root
+- legal-data-deletion-root
 
 Admin Lists:
 - admin-groups-search
@@ -319,19 +341,31 @@ Steps:
 Expected:
 - Session remains active, no redirect to /login.
 
-### Test Run: Auth Disabled Feature Messaging
+### Test Run: Social Auth Redirect
 Preconditions:
-- `NEXT_PUBLIC_AUTH_SOCIAL_ENABLED` and `NEXT_PUBLIC_AUTH_OTP_ENABLED` are unset or `false`.
+- Valid Google/Facebook OAuth credentials are configured server-side.
 
 Steps:
 1. Go to `/login`.
 2. Click `auth-social-google`.
-3. Verify disabled-feature notice appears.
-4. Click “Forgot password?” link.
-5. Verify OTP/reset disabled notice appears.
+3. Verify browser is redirected to Google OAuth consent/login page.
+4. Go back to `/login`.
+5. Click `auth-social-facebook`.
+6. Verify browser is redirected to Facebook OAuth consent/login page.
 
 Expected:
-- No navigation to external providers.
+- Social buttons trigger external provider auth flow.
+
+### Test Run: OTP/Reset Disabled Feature Messaging
+Preconditions:
+- `NEXT_PUBLIC_AUTH_OTP_ENABLED` is unset or `false`.
+
+Steps:
+1. Go to `/login`.
+2. Click “Forgot password?” link.
+3. Verify OTP/reset disabled notice appears.
+
+Expected:
 - User remains on auth page and receives the expected informational notice.
 
 ## Feature: Groups
@@ -674,6 +708,19 @@ Steps:
 
 Expected:
 - Success toast appears and values persist after refresh.
+
+### Test Run: Legal Pages Load
+Preconditions:
+- App running.
+
+Steps:
+1. Go to `/en`.
+2. Open Terms of Service from the legal nav.
+3. Open Privacy Policy from the legal nav.
+4. Open Data Deletion Guide from the legal nav.
+
+Expected:
+- All legal pages render with legal navigation and content sections.
 
 ### Test Run: Admin Users List
 Preconditions:

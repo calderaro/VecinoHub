@@ -51,17 +51,16 @@ The redesign contains some states/features not fully represented in current back
 
 Current backend:
 - Email+password enabled
-- No configured social providers in `src/server/better-auth.ts`
+- Google/Facebook social providers supported through `src/server/better-auth.ts` env config
 - No completed OTP verification + reset-password UX integration in app routes
 
 Decision required:
 - `A)` Implement full backend support now (social + OTP + reset flow), or
 - `B)` Ship UI shells with disabled/hidden unsupported actions behind feature flags.
 Decision taken:
-- `B)` Implemented UI shells and disabled unsupported actions using client feature flags:
-  - `NEXT_PUBLIC_AUTH_SOCIAL_ENABLED`
-  - `NEXT_PUBLIC_AUTH_OTP_ENABLED`
-- Current default behavior in this repository keeps social/OTP/reset disabled while preserving email+password auth and redirects.
+- `B)` Phased rollout:
+  - Social OAuth (Google/Facebook) is implemented and enabled when provider credentials are configured.
+  - OTP/reset remains UI messaging only, controlled by `NEXT_PUBLIC_AUTH_OTP_ENABLED`.
 
 2. Admin redesign status models exceed current DB enums:
 - Campaign redesign: `open | paused | ended` vs current DB `open | closed`

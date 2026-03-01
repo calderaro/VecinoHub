@@ -5,7 +5,9 @@
 - Sign in succeeds and redirects to `/dashboard`.
 - Sign up succeeds and redirects to `/dashboard`.
 - `/register` redirects to `/login?tab=signup`.
-- Disabled-state messaging appears for social and OTP/reset flows when flags are off.
+- Clicking `auth-social-google` starts OAuth redirect flow.
+- Clicking `auth-social-facebook` starts OAuth redirect flow.
+- Forgot password messaging still shows OTP/reset not enabled notice.
 
 ## Dashboard
 - `/dashboard` unauthenticated redirect works.
@@ -23,6 +25,11 @@
 ## Profile
 - Username validation and image URL validation work.
 - Preferred language save updates cookie and locale behavior.
+
+## Legal
+- `/en/terms-of-service` renders with legal nav links.
+- `/en/privacy-policy` renders and is reachable from legal nav.
+- `/en/data-deletion` renders and is reachable from legal nav.
 
 ## Admin Shell + Modules
 - Non-admin cannot access `/admin/*`.

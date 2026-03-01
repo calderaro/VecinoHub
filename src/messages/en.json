@@ -13,6 +13,7 @@
       "divider": "or continue with email",
       "forgotPassword": "Forgot password?",
       "socialUnavailable": "Social login is not enabled yet in this environment.",
+      "socialError": "Unable to continue with social login right now. Please try again.",
       "otpUnavailable": "OTP email verification and password reset are not enabled yet in this environment.",
       "otpBypassed": "Email verification is currently bypassed. Your account is active immediately.",
       "footer": {
