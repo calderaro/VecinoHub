@@ -1,4 +1,4 @@
-import { and, count, eq, ilike } from "drizzle-orm";
+import { and, count, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -245,12 +245,20 @@ export async function listGroupsPaged(
 
   if (ctx.user.role === "admin") {
     const filters = search ? ilike(groups.name, search) : undefined;
-    const items = await db
-      .select()
+    const rows = await db
+      .select({
+        group: groups,
+        adminName: users.name,
+      })
       .from(groups)
+      .leftJoin(users, eq(groups.adminUserId, users.id))
       .where(filters)
       .limit(limit)
       .offset(offset);
+    const items = rows.map((row) => ({
+      ...row.group,
+      adminName: row.adminName,
+    }));
     const totalResult = await db
       .select({ value: count() })
       .from(groups)
@@ -285,6 +293,33 @@ export async function listGroupsPaged(
     .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
+}
+
+const groupMemberCountsSchema = z.object({
+  groupIds: z.array(idSchema).max(200),
+});
+
+export async function getGroupMemberCounts(
+  ctx: ServiceContext,
+  input: z.input<typeof groupMemberCountsSchema>
+) {
+  requireAdmin(ctx);
+  const { groupIds } = groupMemberCountsSchema.parse(input);
+
+  if (groupIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await db
+    .select({
+      groupId: groupMemberships.groupId,
+      total: count(),
+    })
+    .from(groupMemberships)
+    .where(inArray(groupMemberships.groupId, groupIds))
+    .groupBy(groupMemberships.groupId);
+
+  return new Map(rows.map((row) => [row.groupId, Number(row.total)]));
 }
 
 const listGroupMembersSchema = z.object({
@@ -354,15 +389,22 @@ export async function getGroupById(
     }
   }
 
-  const group = await db
-    .select()
+  const rows = await db
+    .select({
+      group: groups,
+      adminName: users.name,
+    })
     .from(groups)
+    .leftJoin(users, eq(groups.adminUserId, users.id))
     .where(eq(groups.id, groupId))
     .limit(1);
 
-  if (!group[0]) {
+  if (!rows[0]) {
     throw new ServiceError("Group not found", "NOT_FOUND");
   }
 
-  return group[0];
+  return {
+    ...rows[0].group,
+    adminName: rows[0].adminName,
+  };
 }

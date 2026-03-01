@@ -1,8 +1,8 @@
-import { and, count, eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { groupMemberships, groups, users } from "@/db/schema";
 
 import { ServiceError } from "./errors";
 import { requireAdmin } from "./guards";
@@ -77,6 +77,104 @@ export async function listUsersPaged(
     .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
+}
+
+const userGroupCountsSchema = z.object({
+  userIds: z.array(idSchema).max(200),
+});
+
+export async function getUserGroupCounts(
+  ctx: ServiceContext,
+  input: z.input<typeof userGroupCountsSchema>
+) {
+  requireAdmin(ctx);
+  const { userIds } = userGroupCountsSchema.parse(input);
+
+  if (userIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await db
+    .select({
+      userId: groupMemberships.userId,
+      total: count(),
+    })
+    .from(groupMemberships)
+    .where(inArray(groupMemberships.userId, userIds))
+    .groupBy(groupMemberships.userId);
+
+  return new Map(rows.map((row) => [row.userId, Number(row.total)]));
+}
+
+const getUserByIdSchema = z.object({
+  userId: idSchema,
+});
+
+export async function getUserById(
+  ctx: ServiceContext,
+  input: z.input<typeof getUserByIdSchema>
+) {
+  requireAdmin(ctx);
+  const { userId } = getUserByIdSchema.parse(input);
+
+  const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = userRows[0];
+
+  if (!user) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  const membershipTotals = await db
+    .select({
+      total: count(),
+      active: sql<number>`coalesce(sum(case when ${groupMemberships.status} = 'active' then 1 else 0 end), 0)`,
+      inactive: sql<number>`coalesce(sum(case when ${groupMemberships.status} = 'inactive' then 1 else 0 end), 0)`,
+    })
+    .from(groupMemberships)
+    .where(eq(groupMemberships.userId, userId));
+
+  const managedTotals = await db
+    .select({ total: count() })
+    .from(groups)
+    .where(eq(groups.adminUserId, userId));
+
+  return {
+    ...user,
+    membershipsTotal: Number(membershipTotals[0]?.total ?? 0),
+    membershipsActive: Number(membershipTotals[0]?.active ?? 0),
+    membershipsInactive: Number(membershipTotals[0]?.inactive ?? 0),
+    groupsManaged: Number(managedTotals[0]?.total ?? 0),
+  };
+}
+
+const listUserMembershipsSchema = z.object({
+  userId: idSchema,
+  limit: z.number().int().positive().max(100).default(20),
+});
+
+export async function listUserMemberships(
+  ctx: ServiceContext,
+  input: z.input<typeof listUserMembershipsSchema>
+) {
+  requireAdmin(ctx);
+  const { userId, limit } = listUserMembershipsSchema.parse(input);
+
+  const rows = await db
+    .select({
+      membershipId: groupMemberships.id,
+      membershipStatus: groupMemberships.status,
+      createdAt: groupMemberships.createdAt,
+      groupId: groups.id,
+      groupName: groups.name,
+      groupAddress: groups.address,
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(eq(groupMemberships.userId, userId))
+    .orderBy(desc(groupMemberships.createdAt))
+    .limit(limit);
+
+  return rows;
 }
 
 const updateRoleSchema = z.object({

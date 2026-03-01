@@ -10,6 +10,11 @@
 - Prefer SSR whenever possible; use CSR only when necessary (e.g., interactive forms).
 - Client-side data fetching must use React Query.
 - Client-side forms must use React Hook Form.
+- Animation/motion may use `framer-motion` when needed for UX polish.
+- Keep motion in client components only, respect `prefers-reduced-motion`, and avoid blocking core flows.
+- Icons may use `lucide-react` when needed; keep icon usage consistent and accessible (decorative icons should be `aria-hidden`).
+- Dates/times may use `date-fns` for parsing, formatting, and date calculations.
+- Email delivery may use `nodemailer` when needed for transactional/system emails.
 
 ## API & Mutations
 - All mutations must go through tRPC.

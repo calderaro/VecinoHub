@@ -1,20 +1,32 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-
-import { getSession } from "@/server/auth";
 import {
-  listActivePollsWithParticipation,
-  listDraftPolls,
-  getPollsStats,
-} from "@/services/polls";
+  AlertCircleIcon,
+  ArrowRightIcon,
+  Building2Icon,
+  CalendarIcon,
+  CoinsIcon,
+  FileTextIcon,
+  PlusIcon,
+  UsersIcon,
+  VoteIcon,
+} from "lucide-react";
+
+import { StatusBadge } from "@/components/ui-v3";
+import { listUpcomingEvents, getEventsStats } from "@/services/events";
 import {
   listOpenCampaignsWithProgress,
-  listPendingContributions,
   getFundraisingStats,
 } from "@/services/fundraising";
-import { listUpcomingEvents, getEventsStats } from "@/services/events";
-import { listRecentPosts, listDraftPosts, getPostsStats } from "@/services/posts";
+import { listGroupsPaged } from "@/services/groups";
+import {
+  listActivePollsWithParticipation,
+  getPollsStats,
+} from "@/services/polls";
+import { listRecentPosts, getPostsStats } from "@/services/posts";
+import { listUsersPaged } from "@/services/users";
+import { getSession } from "@/server/auth";
 
 function getDisplayLocale(locale: string) {
   return locale === "en" ? "en-US" : "es-MX";
@@ -29,20 +41,57 @@ function formatCurrency(amount: number, locale: string) {
   }).format(amount);
 }
 
-function formatDate(date: Date | string, locale: string) {
+function formatMonth(date: Date | string, locale: string) {
   return new Date(date).toLocaleDateString(getDisplayLocale(locale), {
     month: "short",
-    day: "numeric",
   });
 }
 
-function formatDateTime(date: Date | string, locale: string) {
-  return new Date(date).toLocaleDateString(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+type KpiStat = {
+  label: string;
+  value: number;
+  color?: string;
+};
+
+function KpiCard({
+  href,
+  title,
+  icon,
+  iconBg,
+  stats,
+  testId,
+}: {
+  href: string;
+  title: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  stats: KpiStat[];
+  testId?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-xl border border-stone-200 bg-white p-5 text-left shadow-sm transition-all hover:border-stone-300 hover:shadow"
+      data-testid={testId}
+    >
+      <div className="mb-4 flex items-center gap-3">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconBg}`}>
+          {icon}
+        </div>
+        <p className="text-sm font-semibold text-stone-700">{title}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {stats.map((stat) => (
+          <div key={stat.label}>
+            <p className={`text-xl font-bold tabular-nums ${stat.color ?? "text-stone-900"}`}>
+              {stat.value}
+            </p>
+            <p className="mt-0.5 truncate text-[11px] leading-4 text-stone-400">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+    </Link>
+  );
 }
 
 export default async function AdminPage() {
@@ -58,390 +107,353 @@ export default async function AdminPage() {
 
   const locale = await getLocale();
   const t = await getTranslations("admin.overview");
+  const tNav = await getTranslations("admin.nav");
   const serviceContext = { user: session.user };
 
   const [
     pollsStats,
     activePolls,
-    draftPolls,
     fundraisingStats,
     openCampaigns,
-    pendingContributions,
     eventsStats,
     upcomingEvents,
     postsStats,
     recentPosts,
-    draftPosts,
+    usersActive,
+    usersInactive,
+    usersTotal,
+    groupsTotal,
   ] = await Promise.all([
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
-    listDraftPolls(serviceContext),
     getFundraisingStats(serviceContext),
     listOpenCampaignsWithProgress(serviceContext),
-    listPendingContributions(serviceContext),
     getEventsStats(serviceContext),
     listUpcomingEvents(serviceContext),
     getPostsStats(serviceContext),
     listRecentPosts(serviceContext),
-    listDraftPosts(serviceContext),
+    listUsersPaged(serviceContext, { limit: 1, offset: 0, status: "active" }),
+    listUsersPaged(serviceContext, { limit: 1, offset: 0, status: "inactive" }),
+    listUsersPaged(serviceContext, { limit: 1, offset: 0 }),
+    listGroupsPaged(serviceContext, { limit: 1, offset: 0 }),
   ]);
 
   return (
     <div
-      className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12"
+      className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-6"
       data-testid="admin-overview-root"
     >
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-          {t("label")}
-        </p>
-        <h1 className="text-3xl font-semibold" data-testid="admin-overview-title">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-[color:var(--muted)]">
-          {t("subtitle")}
-        </p>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900" data-testid="admin-overview-title">
+            {tNav("overview")}
+          </h1>
+          <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
+        </div>
+        <Link
+          href="/admin/polls/new"
+          className="vh-v3-focus flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+          data-testid="admin-overview-quick-create"
+        >
+          <PlusIcon className="h-4 w-4" /> {t("quickCreate")}
+        </Link>
       </header>
 
-      {/* Stats Cards */}
       <section
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6"
         data-testid="admin-overview-stats"
       >
-        <Link
+        <KpiCard
           href="/admin/polls"
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
-          data-testid="admin-overview-stats-polls"
-        >
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("stats.activePolls")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
-            {pollsStats.active}
-          </p>
-          {pollsStats.drafts > 0 && (
-            <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {t("stats.pollDrafts", { count: pollsStats.drafts })}
-            </p>
-          )}
-        </Link>
+          title={tNav("polls")}
+          icon={<VoteIcon className="h-4.5 w-4.5 text-violet-600" />}
+          iconBg="bg-violet-50"
+          testId="admin-overview-stats-polls"
+          stats={[
+            { label: t("kpi.polls.active"), value: pollsStats.active, color: "text-teal-600" },
+            { label: t("kpi.polls.draft"), value: pollsStats.drafts, color: "text-amber-600" },
+            { label: t("kpi.polls.closed"), value: pollsStats.closed },
+          ]}
+        />
 
-        <Link
+        <KpiCard
           href="/admin/fundraising"
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
-          data-testid="admin-overview-stats-fundraising"
-        >
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("stats.openCampaigns")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
-            {fundraisingStats.openCampaigns}
-          </p>
-          {fundraisingStats.pendingContributions > 0 && (
-            <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {t("stats.pendingContributions", {
-                count: fundraisingStats.pendingContributions,
-              })}
-            </p>
-          )}
-        </Link>
+          title={tNav("fundraising")}
+          icon={<CoinsIcon className="h-4.5 w-4.5 text-amber-600" />}
+          iconBg="bg-amber-50"
+          testId="admin-overview-stats-fundraising"
+          stats={[
+            {
+              label: t("kpi.fundraising.open"),
+              value: fundraisingStats.openCampaigns,
+              color: "text-teal-600",
+            },
+            { label: t("kpi.fundraising.paused"), value: 0, color: "text-violet-600" },
+            {
+              label: t("kpi.fundraising.pending"),
+              value: fundraisingStats.pendingContributions,
+              color: "text-amber-600",
+            },
+          ]}
+        />
 
-        <Link
+        <KpiCard
           href="/admin/events"
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
-          data-testid="admin-overview-stats-events"
-        >
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("stats.upcomingEvents")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
-            {eventsStats.upcoming}
-          </p>
-          <p className="mt-1 text-xs text-[color:var(--muted)]">
-            {t("stats.totalEvents", { count: eventsStats.total })}
-          </p>
-        </Link>
+          title={tNav("events")}
+          icon={<CalendarIcon className="h-4.5 w-4.5 text-blue-600" />}
+          iconBg="bg-blue-50"
+          testId="admin-overview-stats-events"
+          stats={[
+            {
+              label: t("kpi.events.upcoming"),
+              value: eventsStats.upcoming,
+              color: "text-blue-600",
+            },
+            {
+              label: t("kpi.events.done"),
+              value: Math.max(eventsStats.total - eventsStats.upcoming, 0),
+            },
+            { label: t("kpi.events.canceled"), value: 0, color: "text-red-500" },
+          ]}
+        />
 
-        <Link
+        <KpiCard
           href="/admin/posts"
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] transition hover:border-[color:var(--accent)]"
-          data-testid="admin-overview-stats-posts"
-        >
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("stats.publishedPosts")}
-          </p>
-          <p className="mt-2 text-3xl font-semibold text-[color:var(--accent)]">
-            {postsStats.published}
-          </p>
-          {postsStats.drafts > 0 && (
-            <p className="mt-1 text-xs text-[color:var(--accent-strong)]">
-              {t("stats.postDrafts", { count: postsStats.drafts })}
-            </p>
-          )}
-        </Link>
+          title={tNav("posts")}
+          icon={<FileTextIcon className="h-4.5 w-4.5 text-teal-600" />}
+          iconBg="bg-teal-50"
+          testId="admin-overview-stats-posts"
+          stats={[
+            {
+              label: t("kpi.posts.published"),
+              value: postsStats.published,
+              color: "text-teal-600",
+            },
+            { label: t("kpi.posts.draft"), value: postsStats.drafts, color: "text-amber-600" },
+            { label: t("kpi.posts.hidden"), value: 0 },
+          ]}
+        />
+
+        <KpiCard
+          href="/admin/users"
+          title={tNav("users")}
+          icon={<UsersIcon className="h-4.5 w-4.5 text-rose-600" />}
+          iconBg="bg-rose-50"
+          testId="admin-overview-stats-users"
+          stats={[
+            { label: t("kpi.users.active"), value: usersActive.total, color: "text-teal-600" },
+            {
+              label: t("kpi.users.suspended"),
+              value: usersInactive.total,
+              color: "text-red-500",
+            },
+            {
+              label: t("kpi.users.pending"),
+              value: Math.max(usersTotal.total - usersActive.total - usersInactive.total, 0),
+              color: "text-amber-600",
+            },
+          ]}
+        />
+
+        <KpiCard
+          href="/admin/groups"
+          title={tNav("groups")}
+          icon={<Building2Icon className="h-4.5 w-4.5 text-stone-600" />}
+          iconBg="bg-stone-100"
+          testId="admin-overview-stats-groups"
+          stats={[
+            { label: t("kpi.groups.active"), value: groupsTotal.total, color: "text-teal-600" },
+            { label: t("kpi.groups.inactive"), value: 0 },
+            { label: t("kpi.groups.total"), value: groupsTotal.total },
+          ]}
+        />
       </section>
 
-      {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Polls Section */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <section
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
           data-testid="admin-overview-polls"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{t("polls.title")}</h2>
+          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <VoteIcon className="h-4 w-4 text-violet-600" />
+              <h2 className="text-sm font-semibold text-stone-900">{t("polls.title")}</h2>
+            </div>
             <Link
-              href="/admin/polls/new"
-              className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+              href="/admin/polls"
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700"
             >
-              {t("polls.new")}
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="mt-4 space-y-3 text-sm">
+          <div className="divide-y divide-stone-100">
             {activePolls.length === 0 ? (
-              <li className="text-[color:var(--muted)]">{t("polls.empty")}</li>
+              <div className="px-5 py-8 text-sm text-stone-500">{t("polls.empty")}</div>
             ) : (
-              activePolls.slice(0, 5).map((poll) => (
-                <li
+              activePolls.slice(0, 4).map((poll) => (
+                <Link
                   key={poll.id}
-                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
+                  href={`/admin/polls/${poll.id}`}
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-stone-50"
                 >
-                  <Link href={`/admin/polls/${poll.id}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{poll.title}</p>
-                      <span className="shrink-0 rounded-full border border-[color:var(--accent)] bg-[color:var(--surface)] px-2 py-0.5 text-xs text-[color:var(--accent)]">
-                        {t("polls.participation", { percentage: poll.participation })}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-[color:var(--muted)]">
-                      {t("polls.groupsVoted", {
-                        voted: poll.groupsVoted,
-                        total: poll.totalGroups,
-                      })}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-stone-900">{poll.title}</p>
+                    <p className="mt-0.5 text-xs text-stone-400">
+                      {t("polls.votes", { count: poll.voteCount })}
                     </p>
-                  </Link>
-                </li>
+                  </div>
+                  <StatusBadge variant="active" label={t("kpi.polls.active")} />
+                </Link>
               ))
             )}
-          </ul>
-          {draftPolls.length > 0 && (
-            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                {t("polls.draftsTitle")}
-              </p>
-              <ul className="space-y-2">
-                {draftPolls.slice(0, 3).map((poll) => (
-                  <li key={poll.id}>
-                    <Link
-                      href={`/admin/polls/${poll.id}/edit`}
-                      className="text-sm text-[color:var(--muted)] hover:text-[color:var(--foreground)]"
-                    >
-                      {poll.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          </div>
         </section>
 
-        {/* Fundraising Section */}
         <section
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
           data-testid="admin-overview-fundraising"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{t("fundraising.title")}</h2>
+          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <CoinsIcon className="h-4 w-4 text-amber-500" />
+              <h2 className="text-sm font-semibold text-stone-900">{t("fundraising.title")}</h2>
+              {fundraisingStats.pendingContributions > 0 ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 ring-1 ring-amber-200">
+                  <AlertCircleIcon className="h-3 w-3" />
+                  {t("fundraising.pending", { count: fundraisingStats.pendingContributions })}
+                </span>
+              ) : null}
+            </div>
             <Link
-              href="/admin/fundraising/new"
-              className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+              href="/admin/fundraising"
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700"
             >
-              {t("fundraising.new")}
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="mt-4 space-y-3 text-sm">
+          <div className="divide-y divide-stone-100">
             {openCampaigns.length === 0 ? (
-              <li className="text-[color:var(--muted)]">{t("fundraising.empty")}</li>
+              <div className="px-5 py-8 text-sm text-stone-500">{t("fundraising.empty")}</div>
             ) : (
-              openCampaigns.slice(0, 4).map((campaign) => (
-                <li
+              openCampaigns.slice(0, 3).map((campaign) => (
+                <Link
                   key={campaign.id}
-                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
+                  href={`/admin/fundraising/${campaign.id}`}
+                  className="block px-5 py-3 transition-colors hover:bg-stone-50"
                 >
-                  <Link href={`/admin/fundraising/${campaign.id}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-[var(--foreground)]">
-                        {campaign.title}
-                      </p>
-                        {campaign.pendingCount > 0 && (
-                        <span className="shrink-0 rounded-full border border-[color:var(--accent-strong)] bg-[color:var(--surface)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
-                          {t("fundraising.pending", {
-                            count: campaign.pendingCount,
-                          })}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[color:var(--muted)]">
-                          {t("fundraising.progress", {
-                            collected: formatCurrency(campaign.collectedAmount, locale),
-                            goal: formatCurrency(Number(campaign.goalAmount), locale),
-                          })}
-                        </span>
-                        <span className="text-[color:var(--accent)]">
-                          {Math.round(campaign.progress)}%
-                        </span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[color:var(--stroke)]">
-                        <div
-                          className="h-full rounded-full bg-[color:var(--accent)] transition-all"
-                          style={{ width: `${campaign.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    {campaign.dueDate && (
-                      <p className="mt-2 text-xs text-[color:var(--muted)]">
-                        {t("fundraising.due", {
-                          date: formatDate(campaign.dueDate, locale),
-                        })}
-                      </p>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <p className="mr-3 truncate text-sm font-medium text-stone-900">{campaign.title}</p>
+                    <span className="text-xs font-semibold tabular-nums text-teal-600">
+                      {Math.round(campaign.progress)}%
+                    </span>
+                  </div>
+                  <div className="mb-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
+                    <div
+                      className="h-full rounded-full bg-teal-500"
+                      style={{ width: `${campaign.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-stone-400">
+                    {t("fundraising.progress", {
+                      collected: formatCurrency(campaign.collectedAmount, locale),
+                      goal: formatCurrency(Number(campaign.goalAmount), locale),
+                    })}
+                    {campaign.pendingCount > 0 ? (
+                      <span className="font-medium text-amber-600">
+                        {" "}· {t("fundraising.pendingReview", { count: campaign.pendingCount })}
+                      </span>
+                    ) : (
+                      <span> · {t("fundraising.allReviewed")}</span>
                     )}
-                  </Link>
-                </li>
+                  </p>
+                </Link>
               ))
             )}
-          </ul>
-          {pendingContributions.length > 0 && (
-            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                {t("fundraising.reviewTitle")}
-              </p>
-              <ul className="space-y-2">
-                {pendingContributions.slice(0, 4).map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      href={`/admin/fundraising/${c.campaignId}`}
-                      className="flex items-center justify-between text-sm text-[color:var(--muted)] hover:text-[color:var(--foreground)]"
-                    >
-                      <span>
-                        {c.groupName} — {c.campaignTitle}
-                      </span>
-                      <span className="text-[color:var(--accent)]">
-                        {formatCurrency(Number(c.amount), locale)}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          </div>
         </section>
 
-        {/* Events Section */}
         <section
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
           data-testid="admin-overview-events"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{t("events.title")}</h2>
+          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-blue-600" />
+              <h2 className="text-sm font-semibold text-stone-900">{t("events.title")}</h2>
+            </div>
             <Link
-              href="/admin/events/new"
-              className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+              href="/admin/events"
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700"
             >
-              {t("events.new")}
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="mt-4 space-y-3 text-sm">
+          <div className="divide-y divide-stone-100">
             {upcomingEvents.length === 0 ? (
-              <li className="text-[color:var(--muted)]">{t("events.empty")}</li>
+              <div className="px-5 py-8 text-sm text-stone-500">{t("events.empty")}</div>
             ) : (
-              upcomingEvents.slice(0, 5).map((event) => (
-                <li
+              upcomingEvents.slice(0, 4).map((event) => (
+                <Link
                   key={event.id}
-                  className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
+                  href={`/admin/events/${event.id}`}
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-stone-50"
                 >
-                  <Link href={`/admin/events/${event.id}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-[var(--foreground)]">{event.title}</p>
-                      <span className="shrink-0 text-xs text-[color:var(--accent)]">
-                        {formatDateTime(event.startsAt, locale)}
-                      </span>
-                    </div>
-                    {event.location && (
-                      <p className="mt-1 text-xs text-[color:var(--muted)]">
-                        {event.location}
-                      </p>
-                    )}
-                  </Link>
-                </li>
+                  <div className="w-7 text-center">
+                    <p className="text-[9px] font-bold uppercase leading-none text-blue-500">
+                      {formatMonth(event.startsAt, locale)}
+                    </p>
+                    <p className="text-base font-bold leading-tight text-stone-900">
+                      {new Date(event.startsAt).getDate()}
+                    </p>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-stone-900">{event.title}</p>
+                    <p className="mt-0.5 text-xs text-stone-400">{event.location ?? "-"}</p>
+                  </div>
+                </Link>
               ))
             )}
-          </ul>
+          </div>
         </section>
 
-        {/* Posts Section */}
         <section
-          className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+          className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
           data-testid="admin-overview-posts"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{t("posts.title")}</h2>
+          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <FileTextIcon className="h-4 w-4 text-teal-600" />
+              <h2 className="text-sm font-semibold text-stone-900">{t("posts.title")}</h2>
+            </div>
             <Link
-              href="/admin/posts/new"
-              className="text-xs text-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+              href="/admin/posts"
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700"
             >
-              {t("posts.new")}
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="mt-4 space-y-3 text-sm">
+          <div className="divide-y divide-stone-100">
             {recentPosts.length === 0 ? (
-              <li className="text-[color:var(--muted)]">{t("posts.empty")}</li>
+              <div className="px-5 py-8 text-sm text-stone-500">{t("posts.empty")}</div>
             ) : (
-              recentPosts
-                .filter((p) => p.status === "published")
-                .slice(0, 4)
-                .map((post) => (
-                  <li
-                    key={post.id}
-                    className="rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-4 py-3"
-                  >
-                    <Link href={`/admin/posts/${post.id}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-[var(--foreground)]">{post.title}</p>
-                        {post.publishedAt && (
-                          <span className="shrink-0 text-xs text-[color:var(--muted)]">
-                            {formatDate(post.publishedAt, locale)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 line-clamp-1 text-xs text-[color:var(--muted)]">
-                        {post.content.substring(0, 80)}...
-                      </p>
-                    </Link>
-                  </li>
-                ))
+              recentPosts.slice(0, 4).map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/admin/posts/${post.id}`}
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-stone-50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-stone-900">{post.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-stone-400">{post.creatorName ?? "-"}</p>
+                  </div>
+                  <StatusBadge
+                    variant={post.status}
+                    label={post.status === "published" ? t("kpi.posts.published") : t("kpi.posts.draft")}
+                  />
+                </Link>
+              ))
             )}
-          </ul>
-          {draftPosts.length > 0 && (
-            <div className="mt-4 border-t border-[color:var(--stroke)] pt-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[color:var(--accent-strong)]">
-                {t("posts.draftsTitle")}
-              </p>
-              <ul className="space-y-2">
-                {draftPosts.slice(0, 3).map((post) => (
-                  <li key={post.id}>
-                    <Link
-                      href={`/admin/posts/${post.id}/edit`}
-                      className="text-sm text-[color:var(--muted)] hover:text-[color:var(--foreground)]"
-                    >
-                      {post.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          </div>
         </section>
       </div>
     </div>

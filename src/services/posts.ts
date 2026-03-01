@@ -142,21 +142,30 @@ export async function getPostById(
 ) {
   const { postId } = getPostSchema.parse(input);
 
-  const post = await db
-    .select()
+  const rows = await db
+    .select({
+      post: posts,
+      creatorName: users.name,
+    })
     .from(posts)
+    .leftJoin(users, eq(posts.createdBy, users.id))
     .where(eq(posts.id, postId))
     .limit(1);
 
-  if (!post[0]) {
+  const row = rows[0];
+
+  if (!row) {
     throw new ServiceError("Post not found", "NOT_FOUND");
   }
 
-  if (ctx.user.role !== "admin" && post[0].status !== "published") {
+  if (ctx.user.role !== "admin" && row.post.status !== "published") {
     throw new ServiceError("Post not found", "NOT_FOUND");
   }
 
-  return post[0];
+  return {
+    ...row.post,
+    creatorName: row.creatorName,
+  };
 }
 
 const publishPostSchema = z.object({

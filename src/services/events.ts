@@ -172,17 +172,26 @@ export async function getEventById(
 ) {
   const { eventId } = getEventSchema.parse(input);
 
-  const event = await db
-    .select()
+  const rows = await db
+    .select({
+      event: events,
+      creatorName: users.name,
+    })
     .from(events)
+    .leftJoin(users, eq(events.createdBy, users.id))
     .where(eq(events.id, eventId))
     .limit(1);
 
-  if (!event[0]) {
+  const row = rows[0];
+
+  if (!row) {
     throw new ServiceError("Event not found", "NOT_FOUND");
   }
 
-  return event[0];
+  return {
+    ...row.event,
+    creatorName: row.creatorName,
+  };
 }
 
 const removeEventSchema = z.object({

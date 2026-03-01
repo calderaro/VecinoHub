@@ -49,7 +49,7 @@ export function PollAdminActions({
     <>
       {status === "draft" ? (
         <button
-          className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setLaunchOpen(true)}
           disabled={launchPoll.isPending}
@@ -60,7 +60,7 @@ export function PollAdminActions({
       ) : null}
       {status !== "draft" ? (
         <button
-          className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-teal-700 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setResetOpen(true)}
           disabled={resetPoll.isPending}
@@ -71,7 +71,7 @@ export function PollAdminActions({
       ) : null}
       {status !== "closed" ? (
         <button
-          className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-rose-300 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-stone-700 transition hover:border-rose-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setOpen(true)}
           disabled={closePoll.isPending}
@@ -81,7 +81,7 @@ export function PollAdminActions({
         </button>
       ) : (
         <button
-          className="rounded-full border border-[color:var(--stroke)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-stone-200 px-3 py-1 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
           onClick={() => setReopenOpen(true)}
           disabled={reopenPoll.isPending}
@@ -92,17 +92,17 @@ export function PollAdminActions({
       )}
 
       {launchOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("launchTitle")}
             </h3>
-            <p className="mt-2 text-sm text-[color:var(--muted)]">
+            <p className="mt-2 text-sm text-stone-500">
               {t("launchBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setLaunchOpen(false)}
                 disabled={launchPoll.isPending}
@@ -110,7 +110,7 @@ export function PollAdminActions({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-admin-confirm"
                 onClick={() => launchPoll.mutate({ pollId, status: "active" })}
@@ -124,17 +124,17 @@ export function PollAdminActions({
       ) : null}
 
       {resetOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("resetTitle")}
             </h3>
-            <p className="mt-2 text-sm text-[color:var(--muted)]">
+            <p className="mt-2 text-sm text-stone-500">
               {t("resetBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setResetOpen(false)}
                 disabled={resetPoll.isPending}
@@ -142,7 +142,7 @@ export function PollAdminActions({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-700 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-admin-confirm"
                 onClick={() => resetPoll.mutate({ pollId })}
@@ -156,17 +156,17 @@ export function PollAdminActions({
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("closeTitle")}
             </h3>
-            <p className="mt-2 text-sm text-[color:var(--muted)]">
+            <p className="mt-2 text-sm text-stone-500">
               {t("closeBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={closePoll.isPending}
@@ -174,7 +174,7 @@ export function PollAdminActions({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-rose-300 px-4 py-2 text-xs uppercase tracking-[0.2em] text-rose-200 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-rose-300 px-4 py-2 text-sm text-red-700 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-admin-confirm"
                 onClick={() => closePoll.mutate({ pollId })}
@@ -188,17 +188,17 @@ export function PollAdminActions({
       ) : null}
 
       {reopenOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-stone-900">
               {t("reopenTitle")}
             </h3>
-            <p className="mt-2 text-sm text-[color:var(--muted)]">
+            <p className="mt-2 text-sm text-stone-500">
               {t("reopenBody")}
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)]"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-700 transition hover:border-teal-300"
                 type="button"
                 onClick={() => setReopenOpen(false)}
                 disabled={reopenPoll.isPending}
@@ -206,7 +206,7 @@ export function PollAdminActions({
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-stone-200 px-4 py-2 text-sm text-teal-600 transition hover:border-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
                 data-testid="poll-admin-confirm"
                 onClick={() => reopenPoll.mutate({ pollId })}

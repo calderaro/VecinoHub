@@ -1,10 +1,19 @@
 "use client";
 
+import {
+  Building2,
+  Check,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Shield,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -12,6 +21,8 @@ type GroupOption = {
   id: string;
   name: string;
 };
+
+type UserMenuVariant = "default" | "dashboard-v2";
 
 type UserMenuProps = {
   user: {
@@ -22,14 +33,92 @@ type UserMenuProps = {
   groupName?: string | null;
   groups?: GroupOption[];
   selectedGroupId?: string;
+  variant?: UserMenuVariant;
 };
 
-export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuProps) {
+type VariantStyles = {
+  trigger: string;
+  triggerAvatarFallback: string;
+  menu: string;
+  menuHeader: string;
+  menuHeaderName: string;
+  menuHeaderEmail: string;
+  sectionDivider: string;
+  sectionLabel: string;
+  item: string;
+  itemAccent: string;
+  itemDanger: string;
+  itemIcon: string;
+  activeGroupItem: string;
+  groupCheck: string;
+};
+
+const variantStyles: Record<UserMenuVariant, VariantStyles> = {
+  default: {
+    trigger:
+      "vh-v3-focus flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm text-stone-700 transition-colors hover:bg-stone-100",
+    triggerAvatarFallback:
+      "flex h-7 w-7 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold uppercase text-white",
+    menu:
+      "vh-v3-scrollbar absolute right-0 top-full z-50 mt-1.5 min-w-[240px] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg shadow-stone-900/10",
+    menuHeader: "border-b border-stone-100 px-4 py-3",
+    menuHeaderName: "truncate text-sm font-semibold text-stone-900",
+    menuHeaderEmail: "truncate text-xs text-stone-400",
+    sectionDivider: "border-t border-stone-100 py-1",
+    sectionLabel:
+      "px-4 py-2 text-xs font-medium uppercase tracking-widest text-stone-400",
+    item:
+      "vh-v3-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50",
+    itemAccent:
+      "vh-v3-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-violet-700 transition-colors hover:bg-violet-50",
+    itemDanger:
+      "vh-v3-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60",
+    itemIcon: "h-4 w-4 opacity-70",
+    activeGroupItem: "text-teal-700",
+    groupCheck: "ml-auto h-4 w-4 text-teal-600",
+  },
+  "dashboard-v2": {
+    trigger:
+      "dashboard-v2-focus flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm text-stone-700 transition-colors hover:bg-stone-50",
+    triggerAvatarFallback:
+      "flex h-7 w-7 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold uppercase text-white",
+    menu:
+      "dashboard-v2-scrollbar absolute right-0 top-full z-50 mt-1.5 w-64 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg shadow-stone-900/10",
+    menuHeader: "border-b border-stone-100 px-4 py-3",
+    menuHeaderName: "truncate text-sm font-semibold text-stone-900",
+    menuHeaderEmail: "truncate text-xs text-stone-400",
+    sectionDivider: "border-t border-stone-100 py-1",
+    sectionLabel: "px-4 py-2 text-xs font-medium uppercase tracking-widest text-stone-400",
+    item:
+      "dashboard-v2-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50",
+    itemAccent:
+      "dashboard-v2-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-violet-700 transition-colors hover:bg-violet-50",
+    itemDanger:
+      "dashboard-v2-focus flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60",
+    itemIcon: "h-4 w-4 opacity-70",
+    activeGroupItem: "text-teal-700",
+    groupCheck: "ml-auto h-4 w-4 text-teal-600",
+  },
+};
+
+function classNames(...values: Array<string | false | null | undefined>) {
+  return values.filter(Boolean).join(" ");
+}
+
+export function UserMenu({
+  user,
+  groupName,
+  groups,
+  selectedGroupId,
+  variant = "default",
+}: UserMenuProps) {
   const router = useRouter();
   const t = useTranslations("userMenu");
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const styles = variantStyles[variant];
 
   const displayName = user.username || t("defaultUser");
 
@@ -40,12 +129,21 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
       }
     }
 
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen]);
 
@@ -62,170 +160,134 @@ export function UserMenu({ user, groupName, groups, selectedGroupId }: UserMenuP
   return (
     <div className="relative" ref={menuRef}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((current) => !current)}
         data-testid="user-menu-trigger"
-        className="flex items-center gap-2 rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-3 py-1.5 text-sm text-[var(--foreground)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        className={styles.trigger}
       >
         {user.image ? (
           <Image
             src={user.image}
             alt={displayName}
-            className="h-6 w-6 rounded-full object-cover"
-            width={24}
-            height={24}
-            sizes="24px"
+            className="h-7 w-7 rounded-full object-cover"
+            width={28}
+            height={28}
+            sizes="28px"
             unoptimized
           />
         ) : (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--surface-strong)] text-xs font-medium uppercase text-[color:var(--muted-strong)]">
-            {displayName.charAt(0)}
-          </div>
+          <div className={styles.triggerAvatarFallback}>{displayName.charAt(0)}</div>
         )}
-        <div className="flex flex-col items-start">
-          <span className="max-w-[120px] truncate leading-tight">{displayName}</span>
-          {selectedGroupId && groupName && (
-            <span className="max-w-[120px] truncate text-xs leading-tight text-[color:var(--muted)]">
+
+        <div className="hidden flex-col items-start leading-tight sm:flex">
+          <span className={classNames("max-w-[120px] truncate", variant === "dashboard-v2" ? "font-medium text-stone-900" : "font-medium text-stone-900")}>
+            {displayName}
+          </span>
+          {selectedGroupId && groupName ? (
+            <span
+              className={classNames(
+                "max-w-[120px] truncate text-xs",
+                variant === "dashboard-v2" ? "text-stone-400" : "text-stone-400"
+              )}
+            >
               {groupName}
             </span>
-          )}
+          ) : null}
         </div>
-        <svg
-          className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+
+        <ChevronDown
+          className={classNames(styles.itemIcon, "transition-transform duration-200", isOpen && "rotate-180")}
+          aria-hidden="true"
+        />
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 min-w-[180px] overflow-hidden rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
-          <div className="py-1">
-            {selectedGroupId && (
+      {isOpen ? (
+        <div role="menu" className={styles.menu}>
+          <div className={styles.menuHeader}>
+            <p className={styles.menuHeaderName}>{displayName}</p>
+            {groupName ? <p className={styles.menuHeaderEmail}>{groupName}</p> : null}
+          </div>
+
+          <div className="py-1" role="group" aria-label="navigation">
+            {selectedGroupId ? (
               <Link
                 href={`/dashboard/${selectedGroupId}`}
+                role="menuitem"
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
+                className={styles.item}
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
+                <LayoutDashboard className={styles.itemIcon} aria-hidden="true" />
                 {t("dashboard")}
               </Link>
-            )}
+            ) : null}
 
             <Link
               href="/profile"
+              role="menuitem"
               onClick={() => setIsOpen(false)}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
+              className={styles.item}
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              <User className={styles.itemIcon} aria-hidden="true" />
               {t("profile")}
             </Link>
 
-            {user.role === "admin" && (
+            {user.role === "admin" ? (
               <Link
                 href="/admin"
+                role="menuitem"
                 onClick={() => setIsOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--accent)] transition hover:bg-[color:var(--surface)] hover:text-[color:var(--accent-strong)]"
+                className={styles.itemAccent}
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <Shield className={styles.itemIcon} aria-hidden="true" />
                 {t("adminPanel")}
               </Link>
-            )}
+            ) : null}
           </div>
 
-          {groups && groups.length > 0 && (
-            <div className="border-t border-[color:var(--stroke)] py-1">
-              <p className="px-4 py-2 text-xs uppercase tracking-wider text-[color:var(--muted)]">
-                {selectedGroupId ? t("switchGroup") : t("groups")}
-              </p>
-              {groups.map((group) => (
-                <button
-                  key={group.id}
-                  type="button"
-                  onClick={() => {
-                    setIsOpen(false);
-                    router.push(`/dashboard/${group.id}`);
-                  }}
-                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition hover:bg-[color:var(--surface)] ${
-                    selectedGroupId && group.id === selectedGroupId
-                      ? "text-[color:var(--accent)]"
-                      : "text-[color:var(--muted-strong)] hover:text-[color:var(--accent-strong)]"
-                  }`}
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  <span className="truncate">{group.name}</span>
-                  {selectedGroupId && group.id === selectedGroupId && (
-                    <svg className="ml-auto h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+          {groups && groups.length > 0 ? (
+            <div className={styles.sectionDivider} role="group" aria-label="switch-group">
+              <p className={styles.sectionLabel}>{selectedGroupId ? t("switchGroup") : t("groups")}</p>
+              {groups.map((group) => {
+                const isSelected = selectedGroupId ? group.id === selectedGroupId : false;
 
-          <div className="border-t border-[color:var(--stroke)] py-1">
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push(`/dashboard/${group.id}`);
+                    }}
+                    className={classNames(styles.item, isSelected && styles.activeGroupItem)}
+                  >
+                    <Building2 className={styles.itemIcon} aria-hidden="true" />
+                    <span className="flex-1 truncate text-left">{group.name}</span>
+                    {isSelected ? <Check className={styles.groupCheck} aria-hidden="true" /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+
+          <div className={styles.sectionDivider}>
             <button
               type="button"
+              role="menuitem"
               onClick={handleSignOut}
               disabled={isSigningOut}
               data-testid="user-menu-signout"
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[color:var(--muted-strong)] transition hover:bg-[color:var(--surface)] hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className={styles.itemDanger}
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
+              <LogOut className={styles.itemIcon} aria-hidden="true" />
               {isSigningOut ? t("signingOut") : t("signOut")}
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

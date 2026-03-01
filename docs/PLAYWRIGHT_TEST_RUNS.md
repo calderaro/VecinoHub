@@ -58,17 +58,22 @@ Overview Sections:
 - dashboard-overview-members
 - dashboard-overview-root
 - dashboard-overview-title
+- dashboard-no-group-state
+- dashboard-no-group-status
 - admin-overview-stats
 - admin-overview-stats-polls
 - admin-overview-stats-fundraising
 - admin-overview-stats-events
 - admin-overview-stats-posts
+- admin-overview-stats-users
+- admin-overview-stats-groups
 - admin-overview-polls
 - admin-overview-fundraising
 - admin-overview-events
 - admin-overview-posts
 - admin-overview-root
 - admin-overview-title
+- admin-overview-quick-create
 
 ## data-testid Map
 Use getByTestId for these anchors.
@@ -76,6 +81,8 @@ Use getByTestId for these anchors.
 Auth:
 - auth-shell
 - auth-shell-card
+- auth-social-google
+- auth-social-facebook
 - auth-login-email
 - auth-login-password
 - auth-login-submit
@@ -127,11 +134,8 @@ Admin Lists:
 - admin-users-search
 - admin-users-role
 - admin-users-status
-- admin-users-filter
 - admin-users-row-<id>
-- admin-users-role-<id>
-- admin-users-status-<id>
-- admin-users-error
+- user-list-detail-<id>
 - admin-users-pagination
 - admin-users-prev
 - admin-users-next
@@ -161,17 +165,20 @@ Dashboard Lists:
 - dashboard-fundraising-row-<id>
 
 Poll Management:
+- poll-list-detail-<id>
+- poll-detail-back
+- poll-detail-edit
 - poll-options-add
 - poll-options-list
 - poll-options-save
 - poll-options-cancel
-- poll-create-title
-- poll-create-description
-- poll-create-submit
-- poll-edit-title
-- poll-edit-description
-- poll-edit-status
-- poll-edit-submit
+- poll-form-title
+- poll-form-description
+- poll-form-status
+- poll-form-submit
+- poll-form-submit-mobile
+- poll-form-add-option
+- poll-form-option-label-<index>
 - poll-admin-launch
 - poll-admin-reset
 - poll-admin-close
@@ -188,29 +195,49 @@ Group Members:
 - group-members-row-<id>
 
 Groups:
-- group-create-name
-- group-create-address
-- group-create-submit
-- group-edit-name
-- group-edit-address
-- group-edit-admin
-- group-edit-submit
+- group-list-detail-<id>
+- group-detail-back
+- group-detail-edit
+- group-admin-delete
+- group-admin-delete-cancel
+- group-admin-delete-confirm
+- group-form-name
+- group-form-address
+- group-form-admin
+- group-form-submit
+- group-form-submit-mobile
+
+Users:
+- user-detail-root
+- user-detail-back
+- user-detail-edit
+- user-detail-toggle-role
+- user-detail-toggle-status
+- user-detail-memberships
+- user-detail-membership-<id>
+- user-form-role
+- user-form-status
+- user-form-submit
+- user-form-submit-mobile
 
 Fundraising:
+- campaign-list-detail-<id>
+- campaign-detail-back
+- campaign-detail-edit
+- campaign-detail-submit-contribution
+- campaign-admin-close
+- campaign-admin-close-confirm
+- campaign-admin-close-cancel
 - contribution-status-open
 - contribution-status-save
 - contribution-status-cancel
-- fundraising-confirm-contribution
-- campaign-create-title
-- campaign-create-goal
-- campaign-create-description
-- campaign-create-due
-- campaign-create-submit
-- campaign-edit-title
-- campaign-edit-description
-- campaign-edit-goal
-- campaign-edit-status
-- campaign-edit-submit
+- campaign-form-title
+- campaign-form-goal
+- campaign-form-description
+- campaign-form-due
+- campaign-form-status
+- campaign-form-submit
+- campaign-form-submit-mobile
 - contribution-form-group
 - contribution-form-method
 - contribution-form-amount
@@ -224,6 +251,9 @@ Posts:
 - post-admin-delete
 - post-admin-delete-confirm
 - post-admin-delete-cancel
+- post-list-detail-<id>
+- post-detail-back
+- post-detail-edit
 - post-form-title
 - post-form-status
 - post-form-content
@@ -233,6 +263,9 @@ Events:
 - event-admin-delete
 - event-admin-delete-confirm
 - event-admin-delete-cancel
+- event-list-detail-<id>
+- event-detail-back
+- event-detail-edit
 - event-form-title
 - event-form-start
 - event-form-end
@@ -252,10 +285,10 @@ Preconditions:
 - No existing user with the test email.
 
 Steps:
-1. Go to /register.
-2. Fill name, email, password.
-3. Submit registration.
-4. Verify redirect to /dashboard.
+1. Go to `/register` and verify redirect to `/login?tab=signup`.
+2. Fill `auth-register-name`, `auth-register-email`, `auth-register-password`.
+3. Submit registration with `auth-register-submit`.
+4. Verify redirect to `/dashboard`.
 
 Expected:
 - User is logged in and sees dashboard shell.
@@ -266,8 +299,8 @@ Preconditions:
 
 Steps:
 1. Go to /login.
-2. Fill email and password.
-3. Submit.
+2. Fill `auth-login-email` and `auth-login-password`.
+3. Submit with `auth-login-submit`.
 4. Verify redirect to /dashboard.
 5. Open user menu and sign out.
 
@@ -285,6 +318,21 @@ Steps:
 
 Expected:
 - Session remains active, no redirect to /login.
+
+### Test Run: Auth Disabled Feature Messaging
+Preconditions:
+- `NEXT_PUBLIC_AUTH_SOCIAL_ENABLED` and `NEXT_PUBLIC_AUTH_OTP_ENABLED` are unset or `false`.
+
+Steps:
+1. Go to `/login`.
+2. Click `auth-social-google`.
+3. Verify disabled-feature notice appears.
+4. Click “Forgot password?” link.
+5. Verify OTP/reset disabled notice appears.
+
+Expected:
+- No navigation to external providers.
+- User remains on auth page and receives the expected informational notice.
 
 ## Feature: Groups
 ### Test Run: Admin Creates Group
@@ -569,9 +617,28 @@ Steps:
 1. Go to /dashboard.
 2. Verify group selection is available.
 3. Select a group if not already selected.
+4. Verify the 5 overview cards using:
+   - dashboard-overview-posts
+   - dashboard-overview-events
+   - dashboard-overview-polls
+   - dashboard-overview-fundraising
+   - dashboard-overview-members
 
 Expected:
 - Dashboard overview renders sections for posts, events, polls, fundraising, members.
+
+### Test Run: Dashboard No Group State
+Preconditions:
+- Logged in user without any group memberships.
+
+Steps:
+1. Go to /dashboard.
+2. Verify the no-group waiting card appears.
+3. Verify status pill appears.
+
+Expected:
+- `dashboard-no-group-state` is visible.
+- `dashboard-no-group-status` is visible.
 
 ### Test Run: Group Dashboard Nav
 Preconditions:
@@ -615,10 +682,11 @@ Preconditions:
 Steps:
 1. Go to /admin/users.
 2. Use search and filters.
-3. Update a user's role or status.
+3. Open a user from the list.
+4. Use detail actions or edit form to update role/status.
 
 Expected:
-- Users list updates and changes persist after refresh.
+- User detail opens from list links and changes persist after refresh.
 
 ## Feature: Admin CRUD Coverage
 ### Test Run: Admin Edits Group

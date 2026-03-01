@@ -52,7 +52,7 @@ export default async function NeighborPostDetailPage({
         ) : null}
       </header>
 
-      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <div className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">
         <div className="space-y-3 text-sm text-[color:var(--foreground)]">
           <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
             {t("content")}

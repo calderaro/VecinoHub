@@ -43,7 +43,7 @@ export default async function MembersPage({
       </header>
 
       <section
-        className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+        className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm"
         data-testid="dashboard-members-list"
       >
         <GroupMembers

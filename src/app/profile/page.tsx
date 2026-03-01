@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { ArrowLeftIcon } from "lucide-react";
 
 import { ProfileForm } from "@/components/profile/profile-form";
 import { UserMenu } from "@/components/user-menu";
@@ -24,14 +25,14 @@ export default async function ProfilePage() {
   const t = await getTranslations("profile");
 
   return (
-    <div className="min-h-screen text-[var(--foreground)]">
-      <header className="border-b border-[color:var(--stroke)] bg-[color:var(--surface)]">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
+    <div className="vh-v3 vh-v3-font min-h-screen bg-stone-50 text-stone-900">
+      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
           <Link href="/dashboard" className="group flex flex-col">
-            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-strong)] transition group-hover:text-[color:var(--accent)]">
+            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-800 transition group-hover:text-teal-700">
               VecinoHub
             </span>
-            <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] transition group-hover:text-[color:var(--accent)] group-hover:opacity-80">
+            <span className="text-xs uppercase tracking-[0.3em] text-stone-400 transition group-hover:text-teal-600 group-hover:opacity-80">
               {t("navLabel")}
             </span>
           </Link>
@@ -45,7 +46,21 @@ export default async function ProfilePage() {
           />
         </div>
       </header>
-      <main className="mx-auto w-full max-w-4xl px-6 py-10">
+      <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+        <Link
+          href="/dashboard"
+          className="vh-v3-focus mb-6 inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-700"
+        >
+          <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
+          {t("back")}
+        </Link>
+        <div className="mb-8">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-teal-600">
+            {t("eyebrow")}
+          </p>
+          <h1 className="mb-1.5 text-3xl font-bold text-stone-900">{t("title")}</h1>
+          <p className="text-sm text-stone-500">{t("subtitle")}</p>
+        </div>
         <ProfileForm
           name={profile.name}
           email={profile.email}

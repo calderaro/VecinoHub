@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
-import { PostAdminActions } from "@/components/posts/post-admin-actions";
+import { PostDetailActions } from "@/components/posts/post-detail-actions";
+import { StatusBadge } from "@/components/ui-v3";
 import { getPostById } from "@/services/posts";
 import { getSession } from "@/server/auth";
 
@@ -10,10 +12,12 @@ function getDisplayLocale(locale: string) {
   return locale === "en" ? "en-US" : "es-MX";
 }
 
-function formatDate(value: Date, locale: string) {
+function formatDate(value: Date | string, locale: string) {
   return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "full",
-  }).format(value);
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 export default async function AdminPostDetailPage({
@@ -37,50 +41,55 @@ export default async function AdminPostDetailPage({
   const t = await getTranslations("admin.postDetail");
   const tStatus = await getTranslations("status");
 
+  const postWithMeta = post as typeof post & { creatorName?: string };
+
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-12">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold">{post.title}</h1>
-          <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            <span>
-              {t("statusLabel")}: {tStatus(post.status)}
-            </span>
-            <span>
-              {t("publishedLabel")}: {post.publishedAt
-                ? formatDate(post.publishedAt, locale)
-                : t("emptyDate")}
-            </span>
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-6 py-6">
+      <Link
+        className="inline-flex w-fit items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-700"
+        href="/admin/posts"
+        data-testid="post-detail-back"
+      >
+        <ArrowLeftIcon className="h-4 w-4" /> {t("back")}
+      </Link>
+
+      <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-100 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-blue-600">
+                Platform Post
+              </p>
+              <h1 className="mb-2 text-xl font-bold text-stone-900">{post.title}</h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusBadge variant={post.status} label={tStatus(post.status)} />
+                <span className="text-xs text-stone-400">by {postWithMeta.creatorName ?? "-"}</span>
+                <span className="text-xs text-stone-400">
+                  Created {formatDate(post.createdAt, locale)}
+                </span>
+                {post.publishedAt ? (
+                  <span className="text-xs text-stone-400">
+                    {t("publishedLabel")} {formatDate(post.publishedAt, locale)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href={`/admin/posts/${post.id}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50"
+                data-testid="post-detail-edit"
+              >
+                <PencilIcon className="h-3.5 w-3.5" /> {t("edit")}
+              </Link>
+              <PostDetailActions postId={post.id} status={post.status} />
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
-            href={`/admin/posts/${post.id}/edit`}
-          >
-            {t("edit")}
-          </Link>
-          <PostAdminActions postId={post.id} status={post.status} />
+        <div className="px-6 py-5">
+          <p className="whitespace-pre-line text-sm leading-relaxed text-stone-600">{post.content}</p>
         </div>
-      </header>
-
-      <div className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
-        <div className="space-y-3 text-sm text-[color:var(--foreground)]">
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("contentLabel")}
-          </p>
-          <p className="whitespace-pre-line text-[color:var(--muted-strong)]">
-            {post.content}
-          </p>
-        </div>
-      </div>
-
-      <Link
-        className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)] hover:text-[color:var(--accent)]"
-        href="/admin/posts"
-      >
-        {t("back")}
-      </Link>
+      </section>
     </div>
   );
 }

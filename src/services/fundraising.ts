@@ -416,6 +416,42 @@ export async function listCampaignsPaged(
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
 
+const campaignProgressSchema = z.object({
+  campaignIds: z.array(idSchema).max(200),
+});
+
+export async function getCampaignProgressByIds(
+  ctx: ServiceContext,
+  input: z.input<typeof campaignProgressSchema>
+) {
+  requireAdmin(ctx);
+  const { campaignIds } = campaignProgressSchema.parse(input);
+
+  if (campaignIds.length === 0) {
+    return new Map<string, { raisedAmount: number; pendingCount: number }>();
+  }
+
+  const rows = await db
+    .select({
+      campaignId: fundraisingContributions.campaignId,
+      raisedAmount: sql<string>`COALESCE(SUM(CASE WHEN ${fundraisingContributions.status} = 'confirmed' THEN ${fundraisingContributions.amount}::numeric ELSE 0 END), 0)`,
+      pendingCount: sql<number>`SUM(CASE WHEN ${fundraisingContributions.status} = 'submitted' THEN 1 ELSE 0 END)`,
+    })
+    .from(fundraisingContributions)
+    .where(inArray(fundraisingContributions.campaignId, campaignIds))
+    .groupBy(fundraisingContributions.campaignId);
+
+  return new Map(
+    rows.map((row) => [
+      row.campaignId,
+      {
+        raisedAmount: Number(row.raisedAmount),
+        pendingCount: Number(row.pendingCount),
+      },
+    ])
+  );
+}
+
 const getCampaignSchema = z.object({ campaignId: idSchema });
 
 export async function getCampaignDetail(
@@ -424,15 +460,23 @@ export async function getCampaignDetail(
 ) {
   const { campaignId } = getCampaignSchema.parse(input);
 
-  const campaign = await db
-    .select()
+  const campaignRows = await db
+    .select({
+      campaign: fundraisingCampaigns,
+      creatorName: users.name,
+    })
     .from(fundraisingCampaigns)
+    .leftJoin(users, eq(fundraisingCampaigns.createdBy, users.id))
     .where(eq(fundraisingCampaigns.id, campaignId))
     .limit(1);
 
-  if (!campaign[0]) {
+  if (!campaignRows[0]) {
     throw new ServiceError("Campaign not found", "NOT_FOUND");
   }
+  const campaign = {
+    ...campaignRows[0].campaign,
+    creatorName: campaignRows[0].creatorName,
+  };
 
   if (ctx.user.role === "admin") {
     const contributions = await db
@@ -459,7 +503,7 @@ export async function getCampaignDetail(
       .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
       .where(eq(fundraisingContributions.campaignId, campaignId));
 
-    return { ...campaign[0], contributions };
+    return { ...campaign, contributions };
   }
 
   const memberships = await db
@@ -483,7 +527,7 @@ export async function getCampaignDetail(
       )
     );
 
-  return { ...campaign[0], contributions };
+  return { ...campaign, contributions };
 }
 
 export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {

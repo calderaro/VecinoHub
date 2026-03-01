@@ -59,7 +59,7 @@ export function ProfileForm({
 
   return (
     <form
-      className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+      className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!canSubmit) {
@@ -85,15 +85,16 @@ export function ProfileForm({
         }
       }}
     >
-      <h2 className="text-lg font-semibold">{t("title")}</h2>
-      <p className="mt-1 text-sm text-[color:var(--muted)]">
-        {t("subtitle")}
-      </p>
+      <div className="border-b border-stone-100 px-5 py-4">
+        <h2 className="text-base font-semibold text-stone-900">{t("title")}</h2>
+        <p className="mt-1 text-sm text-stone-500">{t("subtitle")}</p>
+      </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4">
+      <div className="space-y-6 px-5 py-6">
+      <div className="flex flex-wrap items-center gap-4 border-b border-stone-100 pb-6">
         {imageTrimmed ? (
           <Image
-            className="h-16 w-16 rounded-full border border-[color:var(--stroke)] object-cover"
+            className="h-16 w-16 rounded-full border border-stone-200 object-cover"
             src={imageTrimmed}
             alt={usernameTrimmed || name}
             width={64}
@@ -102,40 +103,40 @@ export function ProfileForm({
             unoptimized
           />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-lg font-semibold text-[color:var(--muted-strong)]">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-600 text-lg font-semibold text-white">
             {(usernameTrimmed?.[0] ?? name?.[0] ?? "?").toUpperCase()}
           </div>
         )}
         <div>
-          <p className="text-sm text-[color:var(--muted-strong)]">{name}</p>
-          <p className="text-xs text-[color:var(--muted)]">{email}</p>
+          <p className="text-sm font-medium text-stone-800">{name}</p>
+          <p className="text-xs text-stone-500">{email}</p>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="space-y-2 text-sm text-stone-700">
           <span>{t("usernameLabel")}</span>
           <input
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
             data-testid="profile-username"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             placeholder={t("usernamePlaceholder")}
             required
           />
-          <p className="text-xs text-[color:var(--muted)]">
+          <p className="text-xs text-stone-400">
             {t("usernameHelp")}
           </p>
           {!isUsernameValid ? (
-            <p className="text-xs text-rose-200">
+            <p className="text-xs text-red-600">
               {t("usernameError")}
             </p>
           ) : null}
         </label>
-        <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
+        <label className="space-y-2 text-sm text-stone-700">
           <span>{t("photoLabel")}</span>
           <input
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
             data-testid="profile-photo"
             value={image}
             onChange={(event) => setImage(event.target.value)}
@@ -143,18 +144,18 @@ export function ProfileForm({
             type="url"
           />
           {!isImageValid ? (
-            <p className="text-xs text-rose-200">
+            <p className="text-xs text-red-600">
               {t("photoError")}
             </p>
           ) : null}
         </label>
       </div>
 
-      <div className="mt-5">
-        <label className="space-y-2 text-sm text-[color:var(--muted-strong)]">
+      <div>
+        <label className="space-y-2 text-sm text-stone-700">
           <span>{t("languageLabel")}</span>
           <select
-            className="w-full rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[var(--foreground)] outline-none ring-[rgba(106,163,143,0.35)] focus:border-[color:var(--accent)] focus:ring-2"
+            className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
             data-testid="profile-language"
             value={preferredLanguage}
             onChange={(event) =>
@@ -168,13 +169,14 @@ export function ProfileForm({
       </div>
 
       <button
-        className="mt-5 rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="vh-v3-focus rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={!canSubmit}
         data-testid="profile-submit"
       >
         {isSaving ? t("saving") : t("save")}
       </button>
+      </div>
     </form>
   );
 }

@@ -61,7 +61,7 @@ export default async function NeighborCampaignDetailPage({
         </div>
       </header>
 
-      <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+      <section className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">{t("yourContributions")}</h2>
           {campaign.status === "open" ? (
@@ -83,10 +83,10 @@ export default async function NeighborCampaignDetailPage({
             contributions.map((contribution) => (
               <div
                 key={contribution.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--stroke)] bg-[color:var(--surface-strong)] px-3 py-2 text-sm text-[color:var(--muted-strong)]"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--stroke)] bg-stone-50 px-3 py-2 text-sm text-[color:var(--muted-strong)]"
               >
                 <div>
-                  <p className="font-medium text-[var(--foreground)]">
+                  <p className="font-medium text-stone-900">
                     {t(`methods.${contribution.method}`)}
                   </p>
                   <p className="text-xs text-[color:var(--muted)]">

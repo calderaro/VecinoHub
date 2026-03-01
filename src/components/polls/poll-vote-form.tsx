@@ -44,7 +44,7 @@ export function PollVoteForm({
 
   if (!groupId || options.length === 0) {
     return (
-      <p className="text-sm text-[color:var(--muted)]">
+      <p className="text-sm text-stone-500">
         {t("unavailable")}
       </p>
     );
@@ -64,17 +64,17 @@ export function PollVoteForm({
       }}
     >
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+        <p className="text-xs uppercase tracking-[0.3em] text-stone-500">
           {t("optionsLabel")}
         </p>
         <div className="space-y-2">
           {options.map((option) => (
             <label
               key={option.id}
-              className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-3 py-2 text-sm ${
+              className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2 text-sm ${
                 optionId === option.id
-                  ? "border-[color:var(--accent)] bg-[color:var(--surface)] text-[color:var(--foreground)]"
-                  : "border-[color:var(--stroke)] bg-[color:var(--surface-strong)] text-[color:var(--muted-strong)]"
+                  ? "border-teal-300 bg-white text-stone-900"
+                  : "border-stone-200 bg-stone-50 text-stone-700"
               }`}
             >
               <input
@@ -83,17 +83,17 @@ export function PollVoteForm({
                 value={option.id}
                 checked={optionId === option.id}
                 onChange={() => setOptionId(option.id)}
-                className="mt-1 accent-[color:var(--accent)]"
+                className="mt-1 accent-teal-600"
               />
               <div className="space-y-1">
                 <div className="font-medium">{option.label}</div>
                 {option.description ? (
-                  <div className="text-xs text-[color:var(--muted)]">
+                  <div className="text-xs text-stone-500">
                     {option.description}
                   </div>
                 ) : null}
                 {option.amount ? (
-                  <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
+                  <div className="text-xs uppercase tracking-[0.3em] text-stone-500">
                     {t("amount", { amount: option.amount })}
                   </div>
                 ) : null}
@@ -104,15 +104,15 @@ export function PollVoteForm({
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+        <p className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-red-700">
           {error}
         </p>
       ) : null}
       {existingVote ? (
-        <p className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--surface-strong)] px-3 py-2 text-xs text-[color:var(--accent)]">
+        <p className="rounded-lg border border-teal-300 bg-stone-50 px-3 py-2 text-xs text-teal-600">
           {t("alreadyVoted")}
           {existingOption ? (
-            <span className="ml-2 text-[color:var(--foreground)]">
+            <span className="ml-2 text-stone-900">
               {t("currentSelection", { label: existingOption.label })}
             </span>
           ) : null}
@@ -120,7 +120,7 @@ export function PollVoteForm({
       ) : null}
 
       <button
-        className="w-full rounded-2xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#0d1515] transition hover:bg-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={!isValid || vote.isPending}
       >

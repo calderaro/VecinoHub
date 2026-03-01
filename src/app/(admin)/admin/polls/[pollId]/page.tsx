@@ -1,11 +1,28 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
 import { PollAdminActions } from "@/components/polls/poll-admin-actions";
 import { PollOptionsManager } from "@/components/polls/poll-options-manager";
+import { StatusBadge } from "@/components/ui-v3";
 import { getPollParticipation, getPollResults, getPollWithOptions } from "@/services/polls";
 import { getSession } from "@/server/auth";
+
+function getDisplayLocale(locale: string) {
+  return locale === "en" ? "en-US" : "es-MX";
+}
+
+function formatDate(value: Date | string | null | undefined, locale: string) {
+  if (!value) {
+    return "-";
+  }
+  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 export default async function PollDetailPage({
   params,
@@ -18,112 +35,142 @@ export default async function PollDetailPage({
     redirect("/login");
   }
 
+  if (session.user.role !== "admin") {
+    redirect("/dashboard");
+  }
+
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
   const poll = await getPollWithOptions(serviceContext, {
     pollId: resolvedParams.pollId,
   });
-  const results =
-    session.user.role === "admin"
-      ? await getPollResults(serviceContext, { pollId: resolvedParams.pollId })
-      : [];
-  const participation =
-    session.user.role === "admin"
-      ? await getPollParticipation(serviceContext, {
-          pollId: resolvedParams.pollId,
-        })
-      : null;
+  const results = await getPollResults(serviceContext, { pollId: resolvedParams.pollId });
+  const participation = await getPollParticipation(serviceContext, {
+    pollId: resolvedParams.pollId,
+  });
   const participationPercent =
-    participation && participation.activeGroups > 0
-      ? Math.round(
-          (participation.votedGroups / participation.activeGroups) * 100
-        )
+    participation.activeGroups > 0
+      ? Math.round((participation.votedGroups / participation.activeGroups) * 100)
       : 0;
+
+  const locale = await getLocale();
   const t = await getTranslations("admin.pollDetail");
   const tStatus = await getTranslations("status");
 
+  const pollWithMeta = poll as typeof poll & { creatorName?: string };
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-12">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold">{poll.title}</h1>
-          {poll.description ? (
-            <p className="text-sm text-[color:var(--muted)]">{poll.description}</p>
-          ) : null}
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-            {t("statusLabel")}: {tStatus(poll.status)}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {session.user.role === "admin" && poll.status === "draft" ? (
-            <Link
-              className="rounded-full border border-[color:var(--stroke)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--accent)] transition hover:border-[color:var(--accent)]"
-              href={`/admin/polls/${poll.id}/edit`}
-            >
-              {t("edit")}
-            </Link>
-          ) : null}
-          {session.user.role === "admin" ? (
-            <PollAdminActions pollId={poll.id} status={poll.status} />
-          ) : null}
-        </div>
-      </header>
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-6 py-6">
+      <Link
+        className="inline-flex w-fit items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-700"
+        href="/admin/polls"
+        data-testid="poll-detail-back"
+      >
+        <ArrowLeftIcon className="h-4 w-4" /> {t("back")}
+      </Link>
 
-      <PollOptionsManager
-        pollId={poll.id}
-        options={poll.options.map((option) => ({
-          id: option.id,
-          label: option.label,
-          description: option.description,
-          amount: option.amount,
-        }))}
-        canEdit={poll.status === "draft"}
-      />
-
-      {session.user.role === "admin" ? (
-        <section className="rounded-[28px] border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">{t("results")}</h2>
-            {participation ? (
-              <div className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                {t("participation", {
-                  voted: participation.votedGroups,
-                  total: participation.activeGroups,
-                  percent: participationPercent,
-                })}
+      <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-100 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-blue-600">
+                {t("pollLabel")}
+              </p>
+              <h1 className="mb-2 text-xl font-bold text-stone-900">{poll.title}</h1>
+              {poll.description ? <p className="mb-3 text-sm text-stone-500">{poll.description}</p> : null}
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusBadge variant={poll.status} label={tStatus(poll.status)} />
+                <span className="text-xs text-stone-400">
+                  {t("createdBy")} {pollWithMeta.creatorName ?? "-"}
+                </span>
+                <span className="text-xs text-stone-400">
+                  {t("startedLabel")} {formatDate(poll.createdAt, locale)}
+                </span>
               </div>
-            ) : null}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {poll.status !== "closed" ? (
+                <Link
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50"
+                  href={`/admin/polls/${poll.id}/edit`}
+                  data-testid="poll-detail-edit"
+                >
+                  <PencilIcon className="h-3.5 w-3.5" /> {t("edit")}
+                </Link>
+              ) : null}
+              <PollAdminActions pollId={poll.id} status={poll.status} />
+            </div>
           </div>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">
-                <tr>
-                  <th className="py-2">{t("table.option")}</th>
-                  <th className="py-2">{t("table.votes")}</th>
+        </div>
+
+        <div className="grid gap-3 border-b border-stone-100 px-6 py-5 sm:grid-cols-3">
+          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
+            <p className="text-xs text-stone-400">{t("stats.participants")}</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">{participation.votedGroups}</p>
+          </div>
+          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
+            <p className="text-xs text-stone-400">{t("stats.options")}</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">{poll.options.length}</p>
+          </div>
+          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
+            <p className="text-xs text-stone-400">{t("stats.participationRate")}</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">{participationPercent}%</p>
+          </div>
+        </div>
+
+        <div className="px-6 py-5">
+          <PollOptionsManager
+            pollId={poll.id}
+            options={poll.options.map((option) => ({
+              id: option.id,
+              label: option.label,
+              description: option.description,
+              amount: option.amount,
+            }))}
+            canEdit={poll.status === "draft"}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">{t("results")}</h2>
+          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">
+            {t("participation", {
+              voted: participation.votedGroups,
+              total: participation.activeGroups,
+              percent: participationPercent,
+            })}
+          </div>
+        </div>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase tracking-[0.3em] text-stone-500">
+              <tr>
+                <th className="py-2">{t("table.option")}</th>
+                <th className="py-2">{t("table.votes")}</th>
+              </tr>
+            </thead>
+            <tbody className="text-stone-900">
+              {results.map((result) => (
+                <tr
+                  key={result.id}
+                  className="border-t border-stone-200"
+                  data-testid={`admin-poll-results-row-${result.id}`}
+                >
+                  <td className="py-3 font-medium">{result.label}</td>
+                  <td className="py-3 text-stone-500">
+                    {participation.activeGroups > 0
+                      ? `${result.count} (${Math.round((result.count / participation.activeGroups) * 100)}%)`
+                      : `${result.count} (0%)`}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="text-[color:var(--foreground)]">
-                {results.map((result) => (
-                  <tr
-                    key={result.id}
-                    className="border-t border-[color:var(--stroke)]"
-                    data-testid={`admin-poll-results-row-${result.id}`}
-                  >
-                    <td className="py-3 font-medium">{result.label}</td>
-                    <td className="py-3 text-[color:var(--muted)]">
-                      {participation && participation.activeGroups > 0
-                        ? `${result.count} (${Math.round(
-                            (result.count / participation.activeGroups) * 100
-                          )}%)`
-                        : `${result.count} (0%)`}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }
