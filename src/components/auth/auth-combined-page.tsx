@@ -39,17 +39,6 @@ function GoogleIcon() {
   );
 }
 
-function FacebookIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path
-        d="M18 9a9 9 0 10-10.406 8.892V11.61H5.31V9h2.284V7.017c0-2.254 1.343-3.5 3.4-3.5.984 0 2.014.175 2.014.175v2.213h-1.135c-1.118 0-1.467.694-1.467 1.406V9h2.496l-.399 2.61H10.41v6.282A9.003 9.003 0 0018 9z"
-        fill="#1877F2"
-      />
-    </svg>
-  );
-}
-
 export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const router = useRouter();
   const tCombined = useTranslations("auth.combined");
@@ -57,11 +46,14 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const tRegister = useTranslations("auth.register");
   const [tab, setTab] = useState<AuthTab>(initialTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMagicLinkSubmitting, setIsMagicLinkSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginEmail, setLoginEmail] = useState("");
   const [notice, setNotice] = useState<string | null>(
     OTP_AUTH_ENABLED ? null : tCombined("otpUnavailable")
   );
   const updateProfile = trpc.users.updateProfile.useMutation();
+  const isBusy = isSubmitting || isMagicLinkSubmitting;
 
   async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -149,12 +141,35 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     }
   }
 
-  function handleUnsupportedFeature(featureKey: "otpUnavailable") {
-    setNotice(tCombined(featureKey));
+  async function handleMagicLinkSignIn() {
+    const email = loginEmail.trim();
+
+    if (!email) {
+      setError(null);
+      setNotice(tCombined("magicLinkEmailRequired"));
+      return;
+    }
+
+    setIsMagicLinkSubmitting(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await authClient.signIn.magicLink({
+        email,
+        callbackURL: "/dashboard",
+        errorCallbackURL: "/login",
+      });
+      setNotice(tCombined("magicLinkSent"));
+    } catch (err) {
+      setNotice(err instanceof Error ? err.message : tCombined("magicLinkError"));
+    } finally {
+      setIsMagicLinkSubmitting(false);
+    }
   }
 
-  function handleDisabledFacebookSignIn() {
-    setNotice(tCombined("socialUnavailable"));
+  function handleUnsupportedFeature(featureKey: "otpUnavailable") {
+    setNotice(tCombined(featureKey));
   }
 
   const baseInputClass =
@@ -233,24 +248,12 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
               onClick={() => {
                 void handleSocialSignIn("google");
               }}
-              disabled={isSubmitting}
+              disabled={isBusy}
               className={baseButtonClass}
               data-testid="auth-social-google"
             >
               <GoogleIcon />
               {tCombined("social.google")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                handleDisabledFacebookSignIn();
-              }}
-              disabled={isSubmitting}
-              className={baseButtonClass}
-              data-testid="auth-social-facebook"
-            >
-              <FacebookIcon />
-              {tCombined("social.facebook")}
             </button>
           </div>
 
@@ -277,6 +280,8 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   type="email"
                   autoComplete="email"
                   required
+                  value={loginEmail}
+                  onChange={(event) => setLoginEmail(event.currentTarget.value)}
                   data-testid="auth-login-email"
                   className={baseInputClass}
                 />
@@ -307,6 +312,19 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   className={baseInputClass}
                 />
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleMagicLinkSignIn();
+                }}
+                disabled={isBusy}
+                data-testid="auth-login-magic-link"
+                className="vh-v3-focus flex w-full items-center justify-center rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isMagicLinkSubmitting
+                  ? tCombined("magicLinkSending")
+                  : tCombined("magicLinkAction")}
+              </button>
 
               {error ? (
                 <p
@@ -319,7 +337,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isBusy}
                 data-testid="auth-login-submit"
                 className="vh-v3-focus flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -385,7 +403,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isBusy}
                 data-testid="auth-register-submit"
                 className="vh-v3-focus flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -395,7 +413,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
           )}
 
           {notice ? (
-            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+            <p
+              className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700"
+              data-testid="auth-login-notice"
+            >
               {notice}
             </p>
           ) : null}

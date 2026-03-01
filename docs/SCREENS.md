@@ -20,7 +20,7 @@
 - Route `/login`
   - Combined tabbed sign-in/sign-up shell.
   - Google action starts Better Auth social OAuth and returns to `/dashboard`.
-  - Facebook action is visible in UI but disabled from OAuth flow.
+  - Magic-link action sends sign-in email through Better Auth magic-link plugin.
   - OTP/reset actions remain informational until OTP backend flow is enabled.
   - CSR-only form logic (Better Auth client + tRPC profile language update on signup).
 - Route `/register`

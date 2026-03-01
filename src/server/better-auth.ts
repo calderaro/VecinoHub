@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { magicLink } from "better-auth/plugins";
+import nodemailer from "nodemailer";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema";
@@ -23,6 +25,65 @@ const socialProviders = {
       }
     : {}),
 };
+
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT ?? "587");
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const mailFrom = process.env.MAIL_FROM ?? "VecinoHub <no-reply@vecinohub.local>";
+
+let warnedMissingSmtp = false;
+let smtpTransporter: nodemailer.Transporter | null = null;
+
+function getSmtpTransporter() {
+  if (!smtpHost || !smtpUser || !smtpPass) {
+    return null;
+  }
+
+  if (!smtpTransporter) {
+    smtpTransporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+  }
+
+  return smtpTransporter;
+}
+
+async function sendMagicLinkEmail({
+  email,
+  url,
+}: {
+  email: string;
+  url: string;
+}) {
+  const transporter = getSmtpTransporter();
+
+  if (!transporter) {
+    if (!warnedMissingSmtp) {
+      warnedMissingSmtp = true;
+      console.warn(
+        "[auth] Magic link email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
+      );
+    }
+
+    console.info(`[auth] Magic link for ${email}: ${url}`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: mailFrom,
+    to: email,
+    subject: "Your VecinoHub sign-in link",
+    text: `Use this link to sign in to VecinoHub: ${url}`,
+    html: `<p>Use this link to sign in to <strong>VecinoHub</strong>:</p><p><a href="${url}">${url}</a></p>`,
+  });
+}
 
 export const auth = betterAuth({
   secret: authSecret,
@@ -102,5 +163,12 @@ export const auth = betterAuth({
       updatedAt: "updatedAt",
     },
   },
-  plugins: [nextCookies()],
+  plugins: [
+    nextCookies(),
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendMagicLinkEmail({ email, url });
+      },
+    }),
+  ],
 });

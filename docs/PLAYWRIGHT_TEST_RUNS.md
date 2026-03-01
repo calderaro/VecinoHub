@@ -99,9 +99,10 @@ Auth:
 - auth-shell
 - auth-shell-card
 - auth-social-google
-- auth-social-facebook
 - auth-login-email
 - auth-login-password
+- auth-login-magic-link
+- auth-login-notice
 - auth-login-submit
 - auth-login-error
 - auth-register-name
@@ -402,14 +403,24 @@ Steps:
 1. Go to `/login`.
 2. Click `auth-social-google`.
 3. Verify browser is redirected to Google OAuth consent/login page.
-4. Go back to `/login`.
-5. Click `auth-social-facebook`.
-6. Verify no external redirect occurs.
-7. Verify social-disabled notice appears on the auth page.
 
 Expected:
 - Google triggers external OAuth.
-- Facebook remains disabled in-app.
+
+### Test Run: Magic Link Request
+Preconditions:
+- Magic link plugin is enabled.
+- SMTP is configured, or server logs are accessible for dev fallback.
+
+Steps:
+1. Go to `/login`.
+2. Fill `auth-login-email`.
+3. Click `auth-login-magic-link`.
+4. Verify `auth-login-notice` shows magic-link sent feedback.
+
+Expected:
+- Request succeeds without leaving the login page.
+- User receives email when SMTP is configured.
 
 ### Test Run: OTP/Reset Disabled Feature Messaging
 Preconditions:

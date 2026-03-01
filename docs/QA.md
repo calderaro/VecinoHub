@@ -12,7 +12,8 @@
 - Sign up succeeds and redirects to `/dashboard`.
 - `/register` redirects to `/login?tab=signup`.
 - Clicking `auth-social-google` starts OAuth redirect flow.
-- Clicking `auth-social-facebook` shows the social-disabled notice and does not redirect.
+- Clicking `auth-login-magic-link` with a valid email shows magic-link sent notice.
+- Clicking `auth-login-magic-link` with empty email shows validation notice.
 - Forgot password messaging still shows OTP/reset not enabled notice.
 
 ## Dashboard
