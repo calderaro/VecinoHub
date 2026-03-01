@@ -12,7 +12,7 @@
 - Sign up succeeds and redirects to `/dashboard`.
 - `/register` redirects to `/login?tab=signup`.
 - Clicking `auth-social-google` starts OAuth redirect flow.
-- Clicking `auth-social-facebook` starts OAuth redirect flow.
+- Clicking `auth-social-facebook` shows the social-disabled notice and does not redirect.
 - Forgot password messaging still shows OTP/reset not enabled notice.
 
 ## Dashboard

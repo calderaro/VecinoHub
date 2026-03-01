@@ -396,7 +396,7 @@ Expected:
 
 ### Test Run: Social Auth Redirect
 Preconditions:
-- Valid Google/Facebook OAuth credentials are configured server-side.
+- Valid Google OAuth credentials are configured server-side.
 
 Steps:
 1. Go to `/login`.
@@ -404,10 +404,12 @@ Steps:
 3. Verify browser is redirected to Google OAuth consent/login page.
 4. Go back to `/login`.
 5. Click `auth-social-facebook`.
-6. Verify browser is redirected to Facebook OAuth consent/login page.
+6. Verify no external redirect occurs.
+7. Verify social-disabled notice appears on the auth page.
 
 Expected:
-- Social buttons trigger external provider auth flow.
+- Google triggers external OAuth.
+- Facebook remains disabled in-app.
 
 ### Test Run: OTP/Reset Disabled Feature Messaging
 Preconditions:

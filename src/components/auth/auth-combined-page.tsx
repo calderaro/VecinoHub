@@ -133,7 +133,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     }
   }
 
-  async function handleSocialSignIn(provider: "google" | "facebook") {
+  async function handleSocialSignIn(provider: "google") {
     setIsSubmitting(true);
     setError(null);
     setNotice(null);
@@ -151,6 +151,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
 
   function handleUnsupportedFeature(featureKey: "otpUnavailable") {
     setNotice(tCombined(featureKey));
+  }
+
+  function handleDisabledFacebookSignIn() {
+    setNotice(tCombined("socialUnavailable"));
   }
 
   const baseInputClass =
@@ -239,7 +243,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
             <button
               type="button"
               onClick={() => {
-                void handleSocialSignIn("facebook");
+                handleDisabledFacebookSignIn();
               }}
               disabled={isSubmitting}
               className={baseButtonClass}

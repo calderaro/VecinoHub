@@ -12,8 +12,6 @@ if (!authSecret) {
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
-const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
 
 const socialProviders = {
   ...(googleClientId && googleClientSecret
@@ -21,14 +19,6 @@ const socialProviders = {
         google: {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
-        },
-      }
-    : {}),
-  ...(facebookClientId && facebookClientSecret
-    ? {
-        facebook: {
-          clientId: facebookClientId,
-          clientSecret: facebookClientSecret,
         },
       }
     : {}),

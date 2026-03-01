@@ -45,13 +45,14 @@ The redesign contains some states/features not fully represented in current back
 
 1. Auth redesign includes:
 - Single combined sign-in/sign-up page
-- Social login buttons (Google/Facebook)
+- Social login buttons (Google/Facebook UI)
 - OTP email verification for sign-up
 - OTP reset-password flow
 
 Current backend:
 - Email+password enabled
-- Google/Facebook social providers supported through `src/server/better-auth.ts` env config
+- Google social provider supported through `src/server/better-auth.ts` env config
+- Facebook login remains UI-only (disabled in auth flow)
 - No completed OTP verification + reset-password UX integration in app routes
 
 Decision required:
@@ -59,7 +60,8 @@ Decision required:
 - `B)` Ship UI shells with disabled/hidden unsupported actions behind feature flags.
 Decision taken:
 - `B)` Phased rollout:
-  - Social OAuth (Google/Facebook) is implemented and enabled when provider credentials are configured.
+  - Social OAuth is enabled for Google when provider credentials are configured.
+  - Facebook social button remains non-OAuth in this phase.
   - OTP/reset remains UI messaging only, controlled by `NEXT_PUBLIC_AUTH_OTP_ENABLED`.
 
 2. Admin redesign status models exceed current DB enums:
