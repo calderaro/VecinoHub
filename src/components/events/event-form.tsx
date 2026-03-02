@@ -18,6 +18,7 @@ import { StatusBadge } from "@/components/ui-v3";
 
 type EventFormProps = {
   mode: "create" | "edit";
+  adminBasePath?: string;
   eventId?: string;
   initialTitle?: string;
   initialDescription?: string | null;
@@ -52,6 +53,7 @@ function formatPreviewDate(value: Date) {
 
 export function EventForm({
   mode,
+  adminBasePath = "/admin",
   eventId,
   initialTitle = "",
   initialDescription = "",
@@ -119,7 +121,7 @@ export function EventForm({
           endsAt: parsedEndsAt ?? undefined,
         });
         addToast(t("createdToast"), "success");
-        router.push("/admin/events");
+        router.push(`${adminBasePath}/events`);
         return;
       }
 
@@ -137,7 +139,7 @@ export function EventForm({
         endsAt: parsedEndsAt,
       });
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/events/${eventId}`);
+      router.push(`${adminBasePath}/events/${eventId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("saveError");
       setError(message);
@@ -297,7 +299,13 @@ export function EventForm({
           <div className="hidden items-center justify-between pt-2 sm:flex">
             <button
               type="button"
-              onClick={() => router.push(mode === "create" ? "/admin/events" : `/admin/events/${eventId}`)}
+              onClick={() =>
+                router.push(
+                  mode === "create"
+                    ? `${adminBasePath}/events`
+                    : `${adminBasePath}/events/${eventId}`
+                )
+              }
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200"
               disabled={isDisabled}
             >
@@ -356,7 +364,13 @@ export function EventForm({
       <div className="fixed bottom-0 left-0 right-0 z-30 flex gap-3 border-t border-stone-200 bg-white px-4 py-3 sm:hidden">
         <button
           type="button"
-          onClick={() => router.push(mode === "create" ? "/admin/events" : `/admin/events/${eventId}`)}
+          onClick={() =>
+            router.push(
+              mode === "create"
+                ? `${adminBasePath}/events`
+                : `${adminBasePath}/events/${eventId}`
+            )
+          }
           className="flex-1 rounded-lg bg-stone-100 py-2.5 text-sm font-medium text-stone-600"
           disabled={isDisabled}
         >

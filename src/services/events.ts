@@ -1,16 +1,71 @@
-import { count, eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { events, users } from "@/db/schema";
+import { events, neighborhoods, users } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireAdmin } from "./guards";
+import {
+  isPlatformAdmin,
+  listNeighborhoodAdminIdsForUser,
+  listNeighborhoodIdsForUser,
+  requireNeighborhoodAdminOrPlatform,
+  requirePlatformAdmin,
+} from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, paginationSchema } from "./validators";
 
+function combineFilters<T>(filters: Array<T | undefined>) {
+  const filtered = filters.filter((filter): filter is T => Boolean(filter));
+  if (filtered.length === 0) {
+    return undefined;
+  }
+
+  const [first, ...rest] = filtered;
+  return and(first as never, ...(rest as never[]));
+}
+
+async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
+    throw new ServiceError("Admin access required", "FORBIDDEN");
+  }
+
+  return neighborhoodAdminIds;
+}
+
+async function getEventScope(eventId: string) {
+  const event = await db
+    .select({ neighborhoodId: events.neighborhoodId })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  if (!event[0]) {
+    throw new ServiceError("Event not found", "NOT_FOUND");
+  }
+
+  return event[0];
+}
+
+async function requireEventAdminScope(ctx: ServiceContext, eventId: string) {
+  const event = await getEventScope(eventId);
+  if (!event.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+    return event;
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, event.neighborhoodId);
+  return event;
+}
+
 const createEventSchema = z
   .object({
+    neighborhoodId: idSchema.optional(),
     title: z.string().min(1),
     description: z.string().optional(),
     startsAt: z.date(),
@@ -26,13 +81,27 @@ export async function createEvent(
   ctx: ServiceContext,
   input: z.input<typeof createEventSchema>
 ) {
-  requireAdmin(ctx);
-  const { title, description, startsAt, endsAt, location } =
+  const { neighborhoodId, title, description, startsAt, endsAt, location } =
     createEventSchema.parse(input);
+  let resolvedNeighborhoodId = neighborhoodId;
+  if (!resolvedNeighborhoodId) {
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    resolvedNeighborhoodId = neighborhoodAdminIds?.[0];
+  }
+  if (!resolvedNeighborhoodId && isPlatformAdmin(ctx)) {
+    const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
+    resolvedNeighborhoodId = firstNeighborhood[0]?.id;
+  }
+  if (!resolvedNeighborhoodId) {
+    throw new ServiceError("Neighborhood is required", "INVALID");
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
   const created = await db
     .insert(events)
     .values({
+      neighborhoodId: resolvedNeighborhoodId,
       title: title.trim(),
       description: description?.trim() || null,
       startsAt,
@@ -85,9 +154,9 @@ export async function updateEvent(
   ctx: ServiceContext,
   input: z.input<typeof updateEventSchema>
 ) {
-  requireAdmin(ctx);
   const { eventId, title, description, startsAt, endsAt, location } =
     updateEventSchema.parse(input);
+  await requireEventAdminScope(ctx, eventId);
 
   const updates: Partial<typeof events.$inferInsert> = {};
   if (title !== undefined) {
@@ -120,14 +189,15 @@ export async function updateEvent(
 }
 
 const listEventsPagedSchema = paginationSchema.unwrap().extend({
+  neighborhoodId: idSchema.optional(),
   query: z.string().optional(),
 });
 
 export async function listEventsPaged(
-  _ctx: ServiceContext,
+  ctx: ServiceContext,
   input: z.input<typeof listEventsPagedSchema>
 ) {
-  const { query, limit, offset } = listEventsPagedSchema.parse(input);
+  const { neighborhoodId, query, limit, offset } = listEventsPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
   const searchFilter = search
     ? or(
@@ -137,6 +207,19 @@ export async function listEventsPaged(
       )
     : undefined;
 
+  let scopeFilter = neighborhoodId ? eq(events.neighborhoodId, neighborhoodId) : undefined;
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      return { items: [], total: 0 };
+    }
+    scopeFilter = scopeFilter
+      ? and(scopeFilter, inArray(events.neighborhoodId, neighborhoodIds))
+      : inArray(events.neighborhoodId, neighborhoodIds);
+  }
+
+  const combinedFilter = combineFilters([searchFilter, scopeFilter]);
+
   const rows = await db
     .select({
       event: events,
@@ -144,7 +227,7 @@ export async function listEventsPaged(
     })
     .from(events)
     .leftJoin(users, eq(events.createdBy, users.id))
-    .where(searchFilter)
+    .where(combinedFilter)
     .orderBy(events.startsAt)
     .limit(limit)
     .offset(offset);
@@ -157,7 +240,7 @@ export async function listEventsPaged(
   const totalResult = await db
     .select({ value: count() })
     .from(events)
-    .where(searchFilter);
+    .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
 }
@@ -167,7 +250,7 @@ const getEventSchema = z.object({
 });
 
 export async function getEventById(
-  _ctx: ServiceContext,
+  ctx: ServiceContext,
   input: z.input<typeof getEventSchema>
 ) {
   const { eventId } = getEventSchema.parse(input);
@@ -188,6 +271,13 @@ export async function getEventById(
     throw new ServiceError("Event not found", "NOT_FOUND");
   }
 
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || !row.event.neighborhoodId || !neighborhoodIds.includes(row.event.neighborhoodId)) {
+      throw new ServiceError("Event not found", "NOT_FOUND");
+    }
+  }
+
   return {
     ...row.event,
     creatorName: row.creatorName,
@@ -202,8 +292,8 @@ export async function removeEvent(
   ctx: ServiceContext,
   input: z.input<typeof removeEventSchema>
 ) {
-  requireAdmin(ctx);
   const { eventId } = removeEventSchema.parse(input);
+  await requireEventAdminScope(ctx, eventId);
 
   const removed = await db
     .delete(events)
@@ -218,7 +308,7 @@ export async function removeEvent(
 }
 
 export async function listUpcomingEvents(ctx: ServiceContext, limit = 6) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
   const now = new Date();
 
   const rows = await db
@@ -228,7 +318,14 @@ export async function listUpcomingEvents(ctx: ServiceContext, limit = 6) {
     })
     .from(events)
     .leftJoin(users, eq(events.createdBy, users.id))
-    .where(sql`${events.startsAt} >= ${now}`)
+    .where(
+      isPlatformAdmin(ctx)
+        ? sql`${events.startsAt} >= ${now}`
+        : and(
+            sql`${events.startsAt} >= ${now}`,
+            inArray(events.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    )
     .orderBy(events.startsAt)
     .limit(limit);
 
@@ -239,15 +336,29 @@ export async function listUpcomingEvents(ctx: ServiceContext, limit = 6) {
 }
 
 export async function getEventsStats(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
   const now = new Date();
 
   const upcomingResult = await db
     .select({ value: count() })
     .from(events)
-    .where(sql`${events.startsAt} >= ${now}`);
+    .where(
+      isPlatformAdmin(ctx)
+        ? sql`${events.startsAt} >= ${now}`
+        : and(
+            sql`${events.startsAt} >= ${now}`,
+            inArray(events.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    );
 
-  const totalResult = await db.select({ value: count() }).from(events);
+  const totalResult = await db
+    .select({ value: count() })
+    .from(events)
+    .where(
+      isPlatformAdmin(ctx)
+        ? undefined
+        : inArray(events.neighborhoodId, neighborhoodAdminIds ?? [])
+    );
 
   return {
     upcoming: Number(upcomingResult[0]?.value ?? 0),

@@ -100,7 +100,13 @@
     "switchGroup": "Switch Group",
     "groups": "Groups",
     "signingOut": "Signing out...",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "platformPanel": "Platform",
+    "switchNeighborhood": "Switch Neighborhood",
+    "neighborhoods": "Neighborhoods",
+    "allNeighborhoods": "All neighborhoods",
+    "switchAdminNeighborhood": "Switch Admin Neighborhood",
+    "adminNeighborhoods": "Neighborhood Admin"
   },
   "admin": {
     "nav": {
@@ -190,7 +196,9 @@
         "user": "User",
         "admin": "Admin",
         "userLower": "user",
-        "adminLower": "admin"
+        "adminLower": "admin",
+        "platform_admin": "Platform admin",
+        "platform_adminLower": "platform admin"
       },
       "statuses": {
         "all": "All statuses",
@@ -851,7 +859,8 @@
         "emptyHint": "Group members will appear here once assigned.",
         "roles": {
           "admin": "admin",
-          "user": "user"
+          "user": "user",
+          "platform_admin": "platform admin"
         }
       }
     },
@@ -875,7 +884,8 @@
       "remove": "Remove",
       "roles": {
         "admin": "admin",
-        "user": "user"
+        "user": "user",
+        "platform_admin": "platform admin"
       },
       "toasts": {
         "added": "Member added to the group.",

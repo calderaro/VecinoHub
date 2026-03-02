@@ -100,7 +100,13 @@
     "switchGroup": "Cambiar grupo",
     "groups": "Grupos",
     "signingOut": "Cerrando sesión...",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "platformPanel": "Plataforma",
+    "switchNeighborhood": "Cambiar colonia",
+    "neighborhoods": "Colonias",
+    "allNeighborhoods": "Todas las colonias",
+    "switchAdminNeighborhood": "Cambiar admin de colonia",
+    "adminNeighborhoods": "Admin de colonias"
   },
   "admin": {
     "nav": {
@@ -190,7 +196,9 @@
         "user": "Usuario",
         "admin": "Admin",
         "userLower": "usuario",
-        "adminLower": "admin"
+        "adminLower": "admin",
+        "platform_admin": "Admin de plataforma",
+        "platform_adminLower": "admin de plataforma"
       },
       "statuses": {
         "all": "Todos los estados",
@@ -851,7 +859,8 @@
         "emptyHint": "Los miembros del grupo aparecerán aquí cuando sean asignados.",
         "roles": {
           "admin": "admin",
-          "user": "usuario"
+          "user": "usuario",
+          "platform_admin": "admin de plataforma"
         }
       }
     },
@@ -875,7 +884,8 @@
       "remove": "Eliminar",
       "roles": {
         "admin": "admin",
-        "user": "usuario"
+        "user": "usuario",
+        "platform_admin": "admin de plataforma"
       },
       "toasts": {
         "added": "Miembro agregado al grupo.",

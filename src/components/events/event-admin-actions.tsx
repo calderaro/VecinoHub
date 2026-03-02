@@ -7,7 +7,13 @@ import { useTranslations } from "next-intl";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
-export function EventAdminActions({ eventId }: { eventId: string }) {
+export function EventAdminActions({
+  eventId,
+  adminBasePath = "/admin",
+}: {
+  eventId: string;
+  adminBasePath?: string;
+}) {
   const router = useRouter();
   const { addToast } = useToast();
   const t = useTranslations("admin.eventActions");
@@ -16,7 +22,7 @@ export function EventAdminActions({ eventId }: { eventId: string }) {
   const removeEvent = trpc.events.remove.useMutation({
     onSuccess: () => {
       addToast(t("deletedToast"), "success");
-      router.push("/admin/events");
+      router.push(`${adminBasePath}/events`);
       router.refresh();
     },
     onError: (err) => addToast(err.message, "error"),

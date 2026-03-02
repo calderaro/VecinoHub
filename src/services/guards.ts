@@ -1,27 +1,161 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
-import { groupMemberships, groups } from "@/db/schema";
+import { groupMemberships, groups, neighborhoodMemberships } from "@/db/schema";
 
 import { ServiceError } from "./errors";
 import type { ServiceContext } from "./types";
 
-export function requireAdmin(ctx: ServiceContext) {
-  if (ctx.user.role !== "admin") {
+export function isPlatformAdmin(ctx: ServiceContext) {
+  return ctx.user.role === "admin" || ctx.user.role === "platform_admin";
+}
+
+export function requirePlatformAdmin(ctx: ServiceContext) {
+  if (!isPlatformAdmin(ctx)) {
     throw new ServiceError("Admin access required", "FORBIDDEN");
   }
 }
 
-export async function requireGroupAdminOrAdmin(
+export function requireAdmin(ctx: ServiceContext) {
+  requirePlatformAdmin(ctx);
+}
+
+export async function requireNeighborhoodMember(
   ctx: ServiceContext,
-  groupId: string
+  neighborhoodId: string
 ) {
-  if (ctx.user.role === "admin") {
+  if (isPlatformAdmin(ctx)) {
     return;
   }
 
+  const membership = await db
+    .select({ id: neighborhoodMemberships.id })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.status, "active")
+      )
+    )
+    .limit(1);
+
+  if (!membership[0]) {
+    throw new ServiceError("Neighborhood membership required", "FORBIDDEN");
+  }
+}
+
+export async function requireNeighborhoodAdminOrPlatform(
+  ctx: ServiceContext,
+  neighborhoodId: string
+) {
+  if (isPlatformAdmin(ctx)) {
+    return;
+  }
+
+  const membership = await db
+    .select({ id: neighborhoodMemberships.id })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.role, "neighborhood_admin"),
+        eq(neighborhoodMemberships.status, "active")
+      )
+    )
+    .limit(1);
+
+  if (!membership[0]) {
+    throw new ServiceError("Neighborhood admin access required", "FORBIDDEN");
+  }
+}
+
+export async function listNeighborhoodIdsForUser(ctx: ServiceContext) {
+  if (ctx.user.activeNeighborhoodId) {
+    if (isPlatformAdmin(ctx)) {
+      return [ctx.user.activeNeighborhoodId];
+    }
+
+    const membership = await db
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, ctx.user.id),
+          eq(neighborhoodMemberships.neighborhoodId, ctx.user.activeNeighborhoodId),
+          eq(neighborhoodMemberships.status, "active")
+        )
+      )
+      .limit(1);
+
+    return membership[0] ? [ctx.user.activeNeighborhoodId] : [];
+  }
+
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const memberships = await db
+    .select({ neighborhoodId: neighborhoodMemberships.neighborhoodId })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.status, "active")
+      )
+    );
+
+  return memberships
+    .map((membership) => membership.neighborhoodId)
+    .filter((id): id is string => Boolean(id));
+}
+
+export async function listNeighborhoodAdminIdsForUser(ctx: ServiceContext) {
+  if (ctx.user.activeNeighborhoodId) {
+    if (isPlatformAdmin(ctx)) {
+      return [ctx.user.activeNeighborhoodId];
+    }
+
+    const membership = await db
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, ctx.user.id),
+          eq(neighborhoodMemberships.neighborhoodId, ctx.user.activeNeighborhoodId),
+          eq(neighborhoodMemberships.status, "active"),
+          eq(neighborhoodMemberships.role, "neighborhood_admin")
+        )
+      )
+      .limit(1);
+
+    return membership[0] ? [ctx.user.activeNeighborhoodId] : [];
+  }
+
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const memberships = await db
+    .select({ neighborhoodId: neighborhoodMemberships.neighborhoodId })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.status, "active"),
+        eq(neighborhoodMemberships.role, "neighborhood_admin")
+      )
+    );
+
+  return memberships
+    .map((membership) => membership.neighborhoodId)
+    .filter((id): id is string => Boolean(id));
+}
+
+export async function resolveGroupAccess(ctx: ServiceContext, groupId: string) {
   const group = await db
-    .select({ adminUserId: groups.adminUserId })
+    .select({ adminUserId: groups.adminUserId, neighborhoodId: groups.neighborhoodId })
     .from(groups)
     .where(eq(groups.id, groupId))
     .limit(1);
@@ -30,12 +164,50 @@ export async function requireGroupAdminOrAdmin(
     throw new ServiceError("Group not found", "NOT_FOUND");
   }
 
-  if (group[0].adminUserId !== ctx.user.id) {
+  return group[0];
+}
+
+export async function requireGroupAdminOrAdmin(
+  ctx: ServiceContext,
+  groupId: string
+) {
+  if (isPlatformAdmin(ctx)) {
+    return;
+  }
+
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (group.adminUserId === ctx.user.id) {
+    return;
+  }
+
+  if (!group.neighborhoodId) {
+    throw new ServiceError("Group admin access required", "FORBIDDEN");
+  }
+
+  const neighborhoodAdminMembership = await db
+    .select({ id: neighborhoodMemberships.id })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
+        eq(neighborhoodMemberships.role, "neighborhood_admin"),
+        eq(neighborhoodMemberships.status, "active")
+      )
+    )
+    .limit(1);
+
+  if (!neighborhoodAdminMembership[0]) {
     throw new ServiceError("Group admin access required", "FORBIDDEN");
   }
 }
 
 export async function requireGroupMember(ctx: ServiceContext, groupId: string) {
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (group.neighborhoodId) {
+    await requireNeighborhoodMember(ctx, group.neighborhoodId);
+  }
+
   const membership = await db
     .select({ id: groupMemberships.id })
     .from(groupMemberships)
@@ -50,4 +222,35 @@ export async function requireGroupMember(ctx: ServiceContext, groupId: string) {
   if (!membership[0]) {
     throw new ServiceError("Membership required", "FORBIDDEN");
   }
+
+  return {
+    groupId,
+    neighborhoodId: group.neighborhoodId ?? null,
+  };
+}
+
+export async function applyNeighborhoodScopeToGroupIds(
+  ctx: ServiceContext,
+  groupIds: string[]
+) {
+  if (groupIds.length === 0 || isPlatformAdmin(ctx)) {
+    return groupIds;
+  }
+
+  const allowedNeighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+  if (!allowedNeighborhoodIds || allowedNeighborhoodIds.length === 0) {
+    return [];
+  }
+
+  const allowedRows = await db
+    .select({ id: groups.id })
+    .from(groups)
+    .where(
+      and(
+        inArray(groups.id, groupIds),
+        inArray(groups.neighborhoodId, allowedNeighborhoodIds)
+      )
+    );
+
+  return allowedRows.map((row) => row.id);
 }

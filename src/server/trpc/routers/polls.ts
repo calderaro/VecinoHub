@@ -27,6 +27,7 @@ export const pollsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
+        neighborhoodId: z.string().uuid().optional(),
         title: z.string().min(1),
         description: z.string().optional(),
         options: z

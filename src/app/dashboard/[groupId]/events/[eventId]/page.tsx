@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getEventById } from "@/services/events";
+import { getGroupById } from "@/services/groups";
+import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 function getDisplayLocale(locale: string) {
@@ -28,7 +30,19 @@ export default async function NeighborEventDetailPage({
   }
 
   const resolvedParams = await Promise.resolve(params);
-  const event = await getEventById({ user: session.user }, { eventId: resolvedParams.eventId });
+  const baseContext = { user: session.user };
+  const group = await getGroupById(baseContext, { groupId: resolvedParams.groupId });
+  const serviceContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
+  const [event, canAccessAdmin] = await Promise.all([
+    getEventById(serviceContext, { eventId: resolvedParams.eventId }),
+    hasNeighborhoodAdminRole(baseContext),
+  ]);
+  const adminBasePath = `/admin/${group.neighborhoodId}`;
   const locale = await getLocale();
   const t = await getTranslations("dashboard.eventDetail");
 
@@ -42,10 +56,10 @@ export default async function NeighborEventDetailPage({
             {event.endsAt ? ` - ${formatDate(event.endsAt, locale)}` : ""}
           </p>
         </div>
-        {session.user.role === "admin" ? (
+        {canAccessAdmin ? (
           <Link
             className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
-            href={`/admin/events/${event.id}`}
+            href={`${adminBasePath}/events/${event.id}`}
           >
             {t("adminView")}
           </Link>

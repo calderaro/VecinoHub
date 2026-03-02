@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getGroupById } from "@/services/groups";
 import { listPostsPaged } from "@/services/posts";
 import { getSession } from "@/server/auth";
 
@@ -51,9 +52,16 @@ export default async function NeighborPostsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
   const resolvedParams = await Promise.resolve(params);
+  const group = await getGroupById({ user: session.user }, { groupId: resolvedParams.groupId });
+  const scopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
 
   const { items: posts, total } = await listPostsPaged(
-    { user: session.user },
+    scopedContext,
     {
       query: query || undefined,
       limit: PAGE_SIZE,

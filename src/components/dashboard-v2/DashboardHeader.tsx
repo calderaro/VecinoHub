@@ -7,26 +7,37 @@ type GroupOption = {
   name: string;
 };
 
+type NeighborhoodOption = {
+  id: string;
+  name: string;
+};
+
 type DashboardHeaderProps = {
   user: {
     username: string | null;
     image: string | null;
-    role: "user" | "admin";
+    role: "user" | "admin" | "platform_admin";
   };
-  groups: GroupOption[];
-  selectedGroupId: string;
-  groupName: string;
+  groups?: GroupOption[];
+  selectedGroupId?: string;
+  neighborhoods?: NeighborhoodOption[];
+  selectedNeighborhoodId?: string | null;
   dashboardLabel: string;
+  canAccessAdmin?: boolean;
+  homeHref?: string;
 };
 
 export function DashboardHeader({
   user,
   groups,
   selectedGroupId,
-  groupName,
+  neighborhoods,
+  selectedNeighborhoodId,
   dashboardLabel,
+  canAccessAdmin,
+  homeHref = "/dashboard",
 }: DashboardHeaderProps) {
-  const dashboardHref = `/dashboard/${selectedGroupId}`;
+  const dashboardHref = selectedGroupId ? `/dashboard/${selectedGroupId}` : homeHref;
 
   return (
     <header className="sticky top-0 z-40 h-14 border-b border-stone-200 bg-white">
@@ -54,9 +65,11 @@ export function DashboardHeader({
 
         <UserMenu
           user={user}
-          groupName={groupName}
           groups={groups}
           selectedGroupId={selectedGroupId}
+          neighborhoods={neighborhoods}
+          selectedNeighborhoodId={selectedNeighborhoodId}
+          showAdminLink={canAccessAdmin}
           variant="dashboard-v2"
         />
       </div>

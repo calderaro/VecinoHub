@@ -2,14 +2,24 @@ import { and, count, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { groupMemberships, groups, users } from "@/db/schema";
+import { groupMemberships, groups, neighborhoodMemberships, neighborhoods, users } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireAdmin, requireGroupAdminOrAdmin } from "./guards";
+import {
+  applyNeighborhoodScopeToGroupIds,
+  isPlatformAdmin,
+  listNeighborhoodAdminIdsForUser,
+  listNeighborhoodIdsForUser,
+  requireGroupAdminOrAdmin,
+  requireNeighborhoodAdminOrPlatform,
+  requirePlatformAdmin,
+  resolveGroupAccess,
+} from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema } from "./validators";
 
 const createGroupSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   name: z.string().min(1),
   address: z.string().optional(),
   adminUserId: idSchema,
@@ -19,8 +29,25 @@ export async function createGroup(
   ctx: ServiceContext,
   input: z.input<typeof createGroupSchema>
 ) {
-  requireAdmin(ctx);
-  const { name, address, adminUserId } = createGroupSchema.parse(input);
+  const { neighborhoodId, name, address, adminUserId } = createGroupSchema.parse(input);
+  let resolvedNeighborhoodId = neighborhoodId ?? ctx.user.activeNeighborhoodId ?? undefined;
+  if (!resolvedNeighborhoodId) {
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    resolvedNeighborhoodId = neighborhoodAdminIds?.[0];
+  }
+
+  if (!resolvedNeighborhoodId) {
+    if (isPlatformAdmin(ctx)) {
+      const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
+      resolvedNeighborhoodId = firstNeighborhood[0]?.id;
+    }
+  }
+
+  if (!resolvedNeighborhoodId) {
+    throw new ServiceError("Neighborhood is required", "INVALID");
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
   const admin = await db
     .select({ id: users.id })
@@ -35,7 +62,7 @@ export async function createGroup(
   return db.transaction(async (tx) => {
     const created = await tx
       .insert(groups)
-      .values({ name, address, adminUserId })
+      .values({ neighborhoodId: resolvedNeighborhoodId, name, address, adminUserId })
       .returning();
 
     const group = created[0];
@@ -46,6 +73,16 @@ export async function createGroup(
     await tx
       .insert(groupMemberships)
       .values({ groupId: group.id, userId: adminUserId })
+      .onConflictDoNothing();
+
+    await tx
+      .insert(neighborhoodMemberships)
+      .values({
+        neighborhoodId: resolvedNeighborhoodId,
+        userId: adminUserId,
+        role: "neighbor",
+        status: "active",
+      })
       .onConflictDoNothing();
 
     return group;
@@ -62,8 +99,13 @@ export async function updateGroup(
   ctx: ServiceContext,
   input: z.input<typeof updateGroupSchema>
 ) {
-  requireAdmin(ctx);
   const { groupId, name, address } = updateGroupSchema.parse(input);
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (!group.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+  } else {
+    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
+  }
 
   const updated = await db
     .update(groups)
@@ -86,8 +128,13 @@ export async function deleteGroup(
   ctx: ServiceContext,
   input: z.input<typeof deleteGroupSchema>
 ) {
-  requireAdmin(ctx);
   const { groupId } = deleteGroupSchema.parse(input);
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (!group.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+  } else {
+    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
+  }
 
   const deleted = await db
     .delete(groups)
@@ -110,8 +157,13 @@ export async function assignGroupAdmin(
   ctx: ServiceContext,
   input: z.input<typeof assignGroupAdminSchema>
 ) {
-  requireAdmin(ctx);
   const { groupId, adminUserId } = assignGroupAdminSchema.parse(input);
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (!group.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+  } else {
+    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
+  }
 
   const updated = await db
     .update(groups)
@@ -127,6 +179,18 @@ export async function assignGroupAdmin(
     .insert(groupMemberships)
     .values({ groupId, userId: adminUserId })
     .onConflictDoNothing();
+
+  if (group.neighborhoodId) {
+    await db
+      .insert(neighborhoodMemberships)
+      .values({
+        neighborhoodId: group.neighborhoodId,
+        userId: adminUserId,
+        role: "neighbor",
+        status: "active",
+      })
+      .onConflictDoNothing();
+  }
 
   return updated[0];
 }
@@ -148,6 +212,7 @@ export async function addMember(
 ) {
   const { groupId, userId, email } = addMemberSchema.parse(input);
   await requireGroupAdminOrAdmin(ctx, groupId);
+  const group = await resolveGroupAccess(ctx, groupId);
 
   let resolvedUserId = userId;
   if (!resolvedUserId && email) {
@@ -172,6 +237,18 @@ export async function addMember(
     .values({ groupId, userId: resolvedUserId })
     .onConflictDoNothing()
     .returning();
+
+  if (group.neighborhoodId) {
+    await db
+      .insert(neighborhoodMemberships)
+      .values({
+        neighborhoodId: group.neighborhoodId,
+        userId: resolvedUserId,
+        role: "neighbor",
+        status: "active",
+      })
+      .onConflictDoNothing();
+  }
 
   if (!membership[0]) {
     return { groupId, userId: resolvedUserId };
@@ -210,9 +287,14 @@ export async function removeMember(
 }
 
 export async function listUserGroups(ctx: ServiceContext) {
+  const neighborhoodFilter = ctx.user.activeNeighborhoodId
+    ? eq(groups.neighborhoodId, ctx.user.activeNeighborhoodId)
+    : undefined;
+
   return db
     .select({
       id: groups.id,
+      neighborhoodId: groups.neighborhoodId,
       name: groups.name,
       address: groups.address,
       adminUserId: groups.adminUserId,
@@ -222,15 +304,22 @@ export async function listUserGroups(ctx: ServiceContext) {
       groupMemberships,
       eq(groups.id, groupMemberships.groupId)
     )
-    .where(eq(groupMemberships.userId, ctx.user.id));
+    .where(
+      and(
+        eq(groupMemberships.userId, ctx.user.id),
+        eq(groupMemberships.status, "active"),
+        ...(neighborhoodFilter ? [neighborhoodFilter] : [])
+      )
+    );
 }
 
 export async function listAllGroups(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   return db.select().from(groups);
 }
 
 const listGroupsPagedSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   query: z.string().optional(),
   limit: z.number().int().positive().max(100).default(10),
   offset: z.number().int().min(0).default(0),
@@ -240,11 +329,20 @@ export async function listGroupsPaged(
   ctx: ServiceContext,
   input: z.input<typeof listGroupsPagedSchema>
 ) {
-  const { query, limit, offset } = listGroupsPagedSchema.parse(input);
+  const { neighborhoodId, query, limit, offset } = listGroupsPagedSchema.parse(input);
+  const activeNeighborhoodId = ctx.user.activeNeighborhoodId ?? undefined;
+  const neighborhoodScopeId = neighborhoodId ?? activeNeighborhoodId;
   const search = query ? `%${query}%` : undefined;
+  const searchFilter = search ? ilike(groups.name, search) : undefined;
+  const neighborhoodFilter = neighborhoodScopeId
+    ? eq(groups.neighborhoodId, neighborhoodScopeId)
+    : undefined;
+  const scopedFilters =
+    searchFilter && neighborhoodFilter
+      ? and(searchFilter, neighborhoodFilter)
+      : (searchFilter ?? neighborhoodFilter);
 
-  if (ctx.user.role === "admin") {
-    const filters = search ? ilike(groups.name, search) : undefined;
+  if (isPlatformAdmin(ctx)) {
     const rows = await db
       .select({
         group: groups,
@@ -252,7 +350,7 @@ export async function listGroupsPaged(
       })
       .from(groups)
       .leftJoin(users, eq(groups.adminUserId, users.id))
-      .where(filters)
+      .where(scopedFilters)
       .limit(limit)
       .offset(offset);
     const items = rows.map((row) => ({
@@ -262,37 +360,42 @@ export async function listGroupsPaged(
     const totalResult = await db
       .select({ value: count() })
       .from(groups)
-      .where(filters);
+      .where(scopedFilters);
 
     return { items, total: Number(totalResult[0]?.value ?? 0) };
   }
 
-  const searchFilter = search ? ilike(groups.name, search) : undefined;
-  const membershipFilter = eq(groupMemberships.userId, ctx.user.id);
-  const combinedFilter = searchFilter
-    ? and(membershipFilter, searchFilter)
+  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+  if (!neighborhoodIds || neighborhoodIds.length === 0) {
+    return { items: [], total: 0 };
+  }
+  const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
+  const combinedFilter = scopedFilters
+    ? and(membershipFilter, scopedFilters)
     : membershipFilter;
 
   const items = await db
     .select({
-      id: groups.id,
-      name: groups.name,
-      address: groups.address,
-      adminUserId: groups.adminUserId,
+      group: groups,
+      adminName: users.name,
     })
     .from(groups)
-    .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
+    .leftJoin(users, eq(groups.adminUserId, users.id))
     .where(combinedFilter)
     .limit(limit)
     .offset(offset);
 
+  const normalizedItems = items.map((row) => ({
+    ...row.group,
+    adminName: row.adminName,
+  }));
+
   const totalResult = await db
     .select({ value: count() })
     .from(groups)
-    .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
     .where(combinedFilter);
 
-  return { items, total: Number(totalResult[0]?.value ?? 0) };
+  return { items: normalizedItems, total: Number(totalResult[0]?.value ?? 0) };
 }
 
 const groupMemberCountsSchema = z.object({
@@ -303,10 +406,10 @@ export async function getGroupMemberCounts(
   ctx: ServiceContext,
   input: z.input<typeof groupMemberCountsSchema>
 ) {
-  requireAdmin(ctx);
   const { groupIds } = groupMemberCountsSchema.parse(input);
+  const allowedGroupIds = await applyNeighborhoodScopeToGroupIds(ctx, groupIds);
 
-  if (groupIds.length === 0) {
+  if (allowedGroupIds.length === 0) {
     return new Map<string, number>();
   }
 
@@ -316,7 +419,7 @@ export async function getGroupMemberCounts(
       total: count(),
     })
     .from(groupMemberships)
-    .where(inArray(groupMemberships.groupId, groupIds))
+    .where(inArray(groupMemberships.groupId, allowedGroupIds))
     .groupBy(groupMemberships.groupId);
 
   return new Map(rows.map((row) => [row.groupId, Number(row.total)]));
@@ -331,21 +434,53 @@ export async function listGroupMembers(
   input: z.input<typeof listGroupMembersSchema>
 ) {
   const { groupId } = listGroupMembersSchema.parse(input);
-
-  if (ctx.user.role !== "admin") {
-    const membership = await db
-      .select({ id: groupMemberships.id })
-      .from(groupMemberships)
-      .where(
-        and(
-          eq(groupMemberships.groupId, groupId),
-          eq(groupMemberships.userId, ctx.user.id)
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (!isPlatformAdmin(ctx)) {
+    if (group.neighborhoodId) {
+      const neighborhoodAdmin = await db
+        .select({ id: neighborhoodMemberships.id })
+        .from(neighborhoodMemberships)
+        .where(
+          and(
+            eq(neighborhoodMemberships.userId, ctx.user.id),
+            eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
+            eq(neighborhoodMemberships.role, "neighborhood_admin"),
+            eq(neighborhoodMemberships.status, "active")
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
 
-    if (!membership[0]) {
-      throw new ServiceError("Membership required", "FORBIDDEN");
+      if (!neighborhoodAdmin[0]) {
+        const membership = await db
+          .select({ id: groupMemberships.id })
+          .from(groupMemberships)
+          .where(
+            and(
+              eq(groupMemberships.groupId, groupId),
+              eq(groupMemberships.userId, ctx.user.id)
+            )
+          )
+          .limit(1);
+
+        if (!membership[0]) {
+          throw new ServiceError("Membership required", "FORBIDDEN");
+        }
+      }
+    } else {
+      const membership = await db
+        .select({ id: groupMemberships.id })
+        .from(groupMemberships)
+        .where(
+          and(
+            eq(groupMemberships.groupId, groupId),
+            eq(groupMemberships.userId, ctx.user.id)
+          )
+        )
+        .limit(1);
+
+      if (!membership[0]) {
+        throw new ServiceError("Membership required", "FORBIDDEN");
+      }
     }
   }
 
@@ -371,21 +506,39 @@ export async function getGroupById(
   input: z.input<typeof getGroupSchema>
 ) {
   const { groupId } = getGroupSchema.parse(input);
-
-  if (ctx.user.role !== "admin") {
-    const membership = await db
-      .select({ id: groupMemberships.id })
-      .from(groupMemberships)
-      .where(
-        and(
-          eq(groupMemberships.groupId, groupId),
-          eq(groupMemberships.userId, ctx.user.id)
+  const group = await resolveGroupAccess(ctx, groupId);
+  if (!isPlatformAdmin(ctx)) {
+    if (group.neighborhoodId) {
+      const neighborhoodMembership = await db
+        .select({ id: neighborhoodMemberships.id })
+        .from(neighborhoodMemberships)
+        .where(
+          and(
+            eq(neighborhoodMemberships.userId, ctx.user.id),
+            eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
+            eq(neighborhoodMemberships.status, "active")
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
 
-    if (!membership[0]) {
-      throw new ServiceError("Membership required", "FORBIDDEN");
+      if (!neighborhoodMembership[0]) {
+        throw new ServiceError("Membership required", "FORBIDDEN");
+      }
+    } else {
+      const membership = await db
+        .select({ id: groupMemberships.id })
+        .from(groupMemberships)
+        .where(
+          and(
+            eq(groupMemberships.groupId, groupId),
+            eq(groupMemberships.userId, ctx.user.id)
+          )
+        )
+        .limit(1);
+
+      if (!membership[0]) {
+        throw new ServiceError("Membership required", "FORBIDDEN");
+      }
     }
   }
 

@@ -10,9 +10,11 @@ import { useToast } from "@/components/ui/toast";
 export function PostDetailActions({
   postId,
   status,
+  adminBasePath = "/admin",
 }: {
   postId: string;
   status: "draft" | "published";
+  adminBasePath?: string;
 }) {
   const router = useRouter();
   const { addToast } = useToast();
@@ -38,7 +40,7 @@ export function PostDetailActions({
   const remove = trpc.posts.remove.useMutation({
     onSuccess: () => {
       addToast(t("deletedToast"), "success");
-      router.push("/admin/posts");
+      router.push(`${adminBasePath}/posts`);
       router.refresh();
     },
     onError: (err) => addToast(err.message, "error"),

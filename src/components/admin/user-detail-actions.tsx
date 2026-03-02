@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/toast";
 
 type UserDetailActionsProps = {
   userId: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "platform_admin";
   status: "active" | "inactive";
 };
 
@@ -33,7 +33,7 @@ export function UserDetailActions({ userId, role, status }: UserDetailActionsPro
     onError: (err) => addToast(err.message, "error"),
   });
 
-  const nextRole = role === "admin" ? "user" : "admin";
+  const nextRole = role === "user" ? "platform_admin" : "user";
   const nextStatus = status === "active" ? "inactive" : "active";
 
   return (
@@ -47,7 +47,7 @@ export function UserDetailActions({ userId, role, status }: UserDetailActionsPro
       >
         {updateRole.isPending
           ? t("saving")
-          : nextRole === "admin"
+          : nextRole === "platform_admin"
             ? t("makeAdmin")
             : t("makeUser")}
       </button>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { listCampaignsPaged } from "@/services/fundraising";
+import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -62,9 +63,16 @@ export default async function NeighborFundraisingPage({
       : 1;
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
+  const group = await getGroupById({ user: session.user }, { groupId: resolvedParams.groupId });
+  const scopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
 
   const { items: campaigns, total } = await listCampaignsPaged(
-    { user: session.user },
+    scopedContext,
     {
       query: query || undefined,
       status: "open",

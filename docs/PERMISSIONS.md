@@ -1,38 +1,43 @@
 # Permissions Matrix
 
 ## Roles
-- user
-- admin
+- System roles: `user`, `platform_admin` (legacy `admin` treated as platform admin during migration compatibility).
+- Neighborhood membership roles: `neighbor`, `neighborhood_admin`.
+- Group delegation: `groups.admin_user_id`.
 
-## Group Admin Scope
-- A group admin can manage membership for their group only.
+## Scope Rules
+- All domain data is neighborhood-scoped.
+- Server-side checks are mandatory in services for both reads and mutations.
+- Client-provided neighborhood identifiers are validated against actor permissions.
 
-## Permissions
+## Platform Admin
+- Create/update neighborhoods.
+- Manage global users (role/status).
+- Full CRUD across groups, polls, fundraising, events, posts.
+- Assign/revoke neighborhood admin memberships.
 
-### User
-- View their groups and members
-- View polls
-- Vote on polls for their groups (neighbor UI only)
-- View fundraising campaigns
-- Submit and delete contributions for their groups (while campaign is open)
-- Update own profile (username, photo)
-- View events
-- View published posts
-- If admin role: can manage members in any group (add/remove)
+## Neighborhood Admin
+- CRUD for groups, polls, fundraising campaigns, events, and posts only in authorized neighborhoods.
+- Manage group memberships in neighborhood groups.
+- Manage neighborhood membership role/status in their neighborhood.
+- Cannot create neighborhoods.
+- Cannot assign `platform_admin` role.
 
-### Admin
-- All user permissions
-- Create/edit/delete groups
-- Assign group admins
-- Manage users and roles
-- Create/edit/close/re-open/reset polls
-- Launch polls (draft -> active)
-- Manage poll options (draft only)
-- Create/edit/close fundraising campaigns
-- Update contribution status
-- Create/edit/delete events
-- Create/edit/publish/unpublish posts
+## Neighbor
+- Read own neighborhood/group dashboard data.
+- Vote for own groups in active polls.
+- Submit/delete own group contributions while campaign is open.
+- Update own profile.
+- Cannot access `/admin/*` or `/platform/*`.
 
-## Permission Checks (Server-Side)
-- Mutations must verify role and group scope.
-- Read-only SSR calls must verify membership or admin role where applicable.
+## Group Admin (Delegated)
+- Add/remove members for owned group.
+- No elevated cross-neighborhood privileges.
+
+## Required Server Checks
+- Membership validation before dashboard/group read.
+- Neighborhood authorization before neighborhood-scoped mutations.
+- Cross-neighborhood consistency checks:
+  - vote: poll neighborhood must match group neighborhood
+  - contribution: campaign neighborhood must match group neighborhood
+- tRPC routers must map `ServiceError` only; never leak raw errors.

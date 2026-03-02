@@ -12,8 +12,8 @@ Purpose: define manual, repeatable Playwright runs per feature so agents can val
 - App is running at http://localhost:3000
 - Database is available and migrations applied.
 - Seed data is loaded (or flows create required data).
-- A user account with role admin exists.
-- A user account with role member exists.
+- A `platform_admin` account exists.
+- At least one `neighborhood_admin` and one `neighbor` account exist.
 
 ### Environment Setup (Recommended)
 Use these steps before the first run or when data is missing.
@@ -26,12 +26,59 @@ Commands:
 - npm run seed
 
 Seeded Accounts (if available):
-- Admin email: admin@vecinohub.local
-- Admin password: Admin123!
-- Member email: ana@vecinohub.local
-- Member password: User123!
-- Member email: luis@vecinohub.local
-- Member password: User123!
+- Platform admin: admin@vecinohub.local / Admin123!
+- Neighborhood admin (Centro): ana@vecinohub.local / User123!
+- Neighborhood admin (Sur): luis@vecinohub.local / User123!
+
+## Feature: Multi-Neighborhood and Platform Admin
+
+### Test Run: Platform Admin Creates Neighborhood
+Preconditions:
+- Logged in as `platform_admin`.
+
+Steps:
+1. Go to `/platform`.
+2. Fill `platform-neighborhood-name` and `platform-neighborhood-slug` with unique values.
+3. Submit `platform-neighborhood-submit`.
+4. Confirm a new row appears in `platform-neighborhoods-list`.
+
+Expected:
+- New neighborhood is created and listed immediately after refresh.
+
+### Test Run: Neighborhood Admin Cannot Access Platform
+Preconditions:
+- Logged in as neighborhood admin (non-platform).
+
+Steps:
+1. Navigate directly to `/platform`.
+
+Expected:
+- User is redirected away from `/platform` (to `/` by current guard behavior).
+
+### Test Run: Active Neighborhood Switcher Scopes Dashboard
+Preconditions:
+- Logged in user belongs to multiple neighborhoods.
+
+Steps:
+1. Open `user-menu-trigger` on `/dashboard/{groupId}`.
+2. Click one neighborhood switch entry: `user-menu-neighborhood-{id}`.
+3. Verify redirect to `/dashboard`.
+4. Verify resolved group and dashboard cards belong to selected neighborhood.
+
+Expected:
+- Active neighborhood cookie is updated through tRPC and SSR data is neighborhood-scoped.
+
+### Test Run: Platform Admin Clears Active Neighborhood Scope
+Preconditions:
+- Logged in as platform admin with active neighborhood set.
+
+Steps:
+1. Open `user-menu-trigger`.
+2. Click `user-menu-neighborhood-platform-all`.
+3. Refresh and verify global platform views are no longer constrained to a single neighborhood.
+
+Expected:
+- `vh_active_neighborhood` cookie is cleared and global context is restored.
 
 If seeding does not create users, create them via the UI in the Auth runs.
 

@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { DashboardHeader } from "@/components/dashboard-v2";
-import { listUserGroups } from "@/services/groups";
+import { getGroupById, listUserGroups } from "@/services/groups";
+import {
+  hasNeighborhoodAdminRole,
+  listNeighborhoodAdminOptions,
+} from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function DashboardLayout({
@@ -19,16 +23,36 @@ export default async function DashboardLayout({
   }
 
   const resolvedParams = await Promise.resolve(params);
-  const groups = await listUserGroups({ user: session.user });
+  const baseContext = { user: session.user };
+  const selectedGroup = await getGroupById(baseContext, {
+    groupId: resolvedParams.groupId,
+  }).catch(() => null);
+
+  if (!selectedGroup) {
+    redirect("/dashboard");
+  }
+
+  const unscopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: null,
+    },
+  };
+
+  const [groups, canAccessAdmin, adminNeighborhoods] = await Promise.all([
+    listUserGroups(unscopedContext),
+    hasNeighborhoodAdminRole(baseContext),
+    listNeighborhoodAdminOptions(baseContext),
+  ]);
 
   if (groups.length === 0) {
     redirect("/dashboard");
   }
 
-  const selectedGroup = groups.find((group) => group.id === resolvedParams.groupId);
+  const selectedGroupFromNeighborhood = groups.find((group) => group.id === resolvedParams.groupId);
 
-  if (!selectedGroup) {
-    redirect(`/dashboard/${groups[0].id}`);
+  if (!selectedGroupFromNeighborhood) {
+    redirect("/dashboard");
   }
 
   const t = await getTranslations("nav");
@@ -41,10 +65,11 @@ export default async function DashboardLayout({
           image: session.user.image,
           role: session.user.role,
         }}
-        groupName={selectedGroup.name}
         groups={groups.map((group) => ({ id: group.id, name: group.name }))}
         selectedGroupId={resolvedParams.groupId}
+        neighborhoods={adminNeighborhoods}
         dashboardLabel={t("dashboard")}
+        canAccessAdmin={canAccessAdmin}
       />
       {children}
     </div>

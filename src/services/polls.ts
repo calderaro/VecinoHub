@@ -2,16 +2,23 @@ import { and, count, countDistinct, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { groupMemberships, pollOptions, polls, users, votes } from "@/db/schema";
+import { groupMemberships, groups, neighborhoods, pollOptions, polls, users, votes } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireAdmin, requireGroupMember } from "./guards";
+import {
+  isPlatformAdmin,
+  listNeighborhoodAdminIdsForUser,
+  listNeighborhoodIdsForUser,
+  requireGroupMember,
+  requireNeighborhoodAdminOrPlatform,
+  requirePlatformAdmin,
+} from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema } from "./validators";
 
-async function requireDraftPoll(pollId: string) {
+async function getPollRecord(pollId: string) {
   const poll = await db
-    .select({ status: polls.status })
+    .select({ status: polls.status, neighborhoodId: polls.neighborhoodId })
     .from(polls)
     .where(eq(polls.id, pollId))
     .limit(1);
@@ -20,12 +27,53 @@ async function requireDraftPoll(pollId: string) {
     throw new ServiceError("Poll not found", "NOT_FOUND");
   }
 
-  if (poll[0].status !== "draft") {
+  return poll[0];
+}
+
+async function requirePollAdminScope(ctx: ServiceContext, pollId: string) {
+  const poll = await getPollRecord(pollId);
+  if (!poll.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+    return poll;
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, poll.neighborhoodId);
+  return poll;
+}
+
+async function requireDraftPoll(pollId: string) {
+  const poll = await getPollRecord(pollId);
+
+  if (poll.status !== "draft") {
     throw new ServiceError("Poll options can only be edited in draft", "INVALID");
   }
 }
 
+async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
+    throw new ServiceError("Admin access required", "FORBIDDEN");
+  }
+
+  return neighborhoodAdminIds;
+}
+
+function combineFilters<T>(filters: Array<T | undefined>) {
+  const filtered = filters.filter((filter): filter is T => Boolean(filter));
+  if (filtered.length === 0) {
+    return undefined;
+  }
+
+  const [first, ...rest] = filtered;
+  return and(first as never, ...(rest as never[]));
+}
+
 const createPollSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   title: z.string().min(1),
   description: z.string().optional(),
   options: z
@@ -43,13 +91,27 @@ export async function createPoll(
   ctx: ServiceContext,
   input: z.input<typeof createPollSchema>
 ) {
-  requireAdmin(ctx);
-  const { title, description, options } = createPollSchema.parse(input);
+  const { neighborhoodId, title, description, options } = createPollSchema.parse(input);
+  let resolvedNeighborhoodId = neighborhoodId;
+  if (!resolvedNeighborhoodId) {
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    resolvedNeighborhoodId = neighborhoodAdminIds?.[0];
+  }
+  if (!resolvedNeighborhoodId && isPlatformAdmin(ctx)) {
+    const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
+    resolvedNeighborhoodId = firstNeighborhood[0]?.id;
+  }
+  if (!resolvedNeighborhoodId) {
+    throw new ServiceError("Neighborhood is required", "INVALID");
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
   return db.transaction(async (tx) => {
     const createdPoll = await tx
       .insert(polls)
       .values({
+        neighborhoodId: resolvedNeighborhoodId,
         title,
         description,
         status: "draft",
@@ -89,8 +151,8 @@ export async function updatePoll(
   ctx: ServiceContext,
   input: z.input<typeof updatePollSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId, ...data } = updatePollSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
 
   const updated = await db
     .update(polls)
@@ -113,8 +175,8 @@ export async function closePoll(
   ctx: ServiceContext,
   input: z.input<typeof closePollSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId } = closePollSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
 
   const updated = await db
     .update(polls)
@@ -137,8 +199,8 @@ export async function reopenPoll(
   ctx: ServiceContext,
   input: z.input<typeof reopenPollSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId } = reopenPollSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
 
   const updated = await db
     .update(polls)
@@ -161,8 +223,8 @@ export async function resetPoll(
   ctx: ServiceContext,
   input: z.input<typeof resetPollSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId } = resetPollSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
 
   const poll = await db
     .select({ status: polls.status })
@@ -205,9 +267,9 @@ export async function addOption(
   ctx: ServiceContext,
   input: z.input<typeof addOptionSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId, label, description, amount, sortOrder } =
     addOptionSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
   await requireDraftPoll(pollId);
 
   const created = await db
@@ -235,7 +297,6 @@ export async function updateOption(
   ctx: ServiceContext,
   input: z.input<typeof updateOptionSchema>
 ) {
-  requireAdmin(ctx);
   const { optionId, label, description, amount } =
     updateOptionSchema.parse(input);
 
@@ -249,6 +310,7 @@ export async function updateOption(
     throw new ServiceError("Option not found", "NOT_FOUND");
   }
 
+  await requirePollAdminScope(ctx, optionPoll[0].pollId);
   await requireDraftPoll(optionPoll[0].pollId);
 
   const updated = await db
@@ -276,7 +338,6 @@ export async function removeOption(
   ctx: ServiceContext,
   input: z.input<typeof removeOptionSchema>
 ) {
-  requireAdmin(ctx);
   const { optionId } = removeOptionSchema.parse(input);
 
   const optionPoll = await db
@@ -289,6 +350,7 @@ export async function removeOption(
     throw new ServiceError("Option not found", "NOT_FOUND");
   }
 
+  await requirePollAdminScope(ctx, optionPoll[0].pollId);
   await requireDraftPoll(optionPoll[0].pollId);
 
   const removed = await db
@@ -314,10 +376,10 @@ export async function voteInPoll(
   input: z.input<typeof voteSchema>
 ) {
   const { pollId, groupId, optionId } = voteSchema.parse(input);
-  await requireGroupMember(ctx, groupId);
+  const groupScope = await requireGroupMember(ctx, groupId);
 
   const poll = await db
-    .select({ status: polls.status })
+    .select({ status: polls.status, neighborhoodId: polls.neighborhoodId })
     .from(polls)
     .where(eq(polls.id, pollId))
     .limit(1);
@@ -328,6 +390,12 @@ export async function voteInPoll(
 
   if (poll[0].status !== "active") {
     throw new ServiceError("Poll is not active", "INVALID");
+  }
+
+  if (poll[0].neighborhoodId && groupScope.neighborhoodId) {
+    if (poll[0].neighborhoodId !== groupScope.neighborhoodId) {
+      throw new ServiceError("Group and poll belong to different neighborhoods", "FORBIDDEN");
+    }
   }
 
   const existingVote = await db
@@ -360,17 +428,30 @@ export async function voteInPoll(
 }
 
 export async function listPolls(ctx: ServiceContext) {
-  if (ctx.user.role === "admin") {
+  if (isPlatformAdmin(ctx)) {
     return db.select().from(polls);
   }
+
+  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+  if (!neighborhoodIds || neighborhoodIds.length === 0) {
+    return [];
+  }
+
+  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+  const canViewAllStatuses = Boolean(neighborhoodAdminIds && neighborhoodAdminIds.length > 0);
 
   return db
     .select()
     .from(polls)
-    .where(eq(polls.status, "active"));
+    .where(
+      canViewAllStatuses
+        ? inArray(polls.neighborhoodId, neighborhoodIds)
+        : and(inArray(polls.neighborhoodId, neighborhoodIds), eq(polls.status, "active"))
+    );
 }
 
 const listPollsPagedSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   query: z.string().optional(),
   status: z.enum(["draft", "active", "closed"]).optional(),
   limit: z.number().int().positive().max(100).default(10),
@@ -381,20 +462,34 @@ export async function listPollsPaged(
   ctx: ServiceContext,
   input: z.input<typeof listPollsPagedSchema>
 ) {
-  const { query, status, limit, offset } = listPollsPagedSchema.parse(input);
+  const { neighborhoodId, query, status, limit, offset } = listPollsPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
 
   const searchFilter = search ? ilike(polls.title, search) : undefined;
-  const statusFilter =
-    ctx.user.role === "admin"
+  const neighborhoodFilter = neighborhoodId ? eq(polls.neighborhoodId, neighborhoodId) : undefined;
+
+  let statusFilter;
+  let scopeFilter = neighborhoodFilter;
+  if (isPlatformAdmin(ctx)) {
+    statusFilter = status ? eq(polls.status, status) : undefined;
+  } else {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      return { items: [], total: 0 };
+    }
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    const canViewAllStatuses = Boolean(neighborhoodAdminIds && neighborhoodAdminIds.length > 0);
+    scopeFilter = scopeFilter
+      ? and(scopeFilter, inArray(polls.neighborhoodId, neighborhoodIds))
+      : inArray(polls.neighborhoodId, neighborhoodIds);
+    statusFilter = canViewAllStatuses
       ? status
         ? eq(polls.status, status)
         : undefined
       : eq(polls.status, "active");
-  const combinedFilter =
-    searchFilter && statusFilter
-      ? and(searchFilter, statusFilter)
-      : (searchFilter ?? statusFilter);
+  }
+
+  const combinedFilter = combineFilters([searchFilter, statusFilter, scopeFilter]);
 
   const rows = await db
     .select({
@@ -428,10 +523,28 @@ export async function getPollVoteCounts(
   ctx: ServiceContext,
   input: z.input<typeof pollVoteCountsSchema>
 ) {
-  requireAdmin(ctx);
   const { pollIds } = pollVoteCountsSchema.parse(input);
 
   if (pollIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  let allowedPollIds = pollIds;
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
+    const scopedPollRows = await db
+      .select({ id: polls.id })
+      .from(polls)
+      .where(
+        and(
+          inArray(polls.id, pollIds),
+          inArray(polls.neighborhoodId, neighborhoodAdminIds ?? [])
+        )
+      );
+    allowedPollIds = scopedPollRows.map((row) => row.id);
+  }
+
+  if (allowedPollIds.length === 0) {
     return new Map<string, number>();
   }
 
@@ -441,7 +554,7 @@ export async function getPollVoteCounts(
       total: count(),
     })
     .from(votes)
-    .where(inArray(votes.pollId, pollIds))
+    .where(inArray(votes.pollId, allowedPollIds))
     .groupBy(votes.pollId);
 
   return new Map(rows.map((row) => [row.pollId, Number(row.total)]));
@@ -491,8 +604,22 @@ export async function getPollWithOptions(
     creatorName: pollRows[0].creatorName,
   };
 
-  if (ctx.user.role !== "admin" && poll.status !== "active") {
-    throw new ServiceError("Poll not available", "FORBIDDEN");
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      throw new ServiceError("Poll not available", "FORBIDDEN");
+    }
+
+    if (!poll.neighborhoodId || !neighborhoodIds.includes(poll.neighborhoodId)) {
+      throw new ServiceError("Poll not available", "FORBIDDEN");
+    }
+
+    if (poll.status !== "active") {
+      const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+      if (!neighborhoodAdminIds || !neighborhoodAdminIds.includes(poll.neighborhoodId)) {
+        throw new ServiceError("Poll not available", "FORBIDDEN");
+      }
+    }
   }
 
   const options = await db
@@ -507,8 +634,8 @@ export async function getPollResults(
   ctx: ServiceContext,
   input: z.input<typeof getPollSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId } = getPollSchema.parse(input);
+  await requirePollAdminScope(ctx, pollId);
 
   const options = await db
     .select()
@@ -538,13 +665,19 @@ export async function getPollParticipation(
   ctx: ServiceContext,
   input: z.input<typeof pollParticipationSchema>
 ) {
-  requireAdmin(ctx);
   const { pollId } = pollParticipationSchema.parse(input);
+  const poll = await requirePollAdminScope(ctx, pollId);
 
-  const activeGroupsResult = await db
-    .select({ value: countDistinct(groupMemberships.groupId) })
-    .from(groupMemberships)
-    .where(eq(groupMemberships.status, "active"));
+  const activeGroupsResult = poll.neighborhoodId
+    ? await db
+        .select({ value: countDistinct(groupMemberships.groupId) })
+        .from(groupMemberships)
+        .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+        .where(and(eq(groupMemberships.status, "active"), eq(groups.neighborhoodId, poll.neighborhoodId)))
+    : await db
+        .select({ value: countDistinct(groupMemberships.groupId) })
+        .from(groupMemberships)
+        .where(eq(groupMemberships.status, "active"));
 
   const votedGroupsResult = await db
     .select({ value: countDistinct(votes.groupId) })
@@ -558,11 +691,18 @@ export async function getPollParticipation(
 }
 
 export async function listOpenPollsWithVoteCounts(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
   const openPolls = await db
     .select()
     .from(polls)
-    .where(eq(polls.status, "active"));
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(polls.status, "active")
+        : and(
+            eq(polls.status, "active"),
+            inArray(polls.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    );
 
   if (openPolls.length === 0) {
     return [];
@@ -586,22 +726,25 @@ export async function listOpenPollsWithVoteCounts(ctx: ServiceContext) {
 }
 
 export async function getPollsStats(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
+  const scopeFilter = isPlatformAdmin(ctx)
+    ? undefined
+    : inArray(polls.neighborhoodId, neighborhoodAdminIds ?? []);
 
   const activeResult = await db
     .select({ value: count() })
     .from(polls)
-    .where(eq(polls.status, "active"));
+    .where(combineFilters([eq(polls.status, "active"), scopeFilter]));
 
   const draftResult = await db
     .select({ value: count() })
     .from(polls)
-    .where(eq(polls.status, "draft"));
+    .where(combineFilters([eq(polls.status, "draft"), scopeFilter]));
 
   const closedResult = await db
     .select({ value: count() })
     .from(polls)
-    .where(eq(polls.status, "closed"));
+    .where(combineFilters([eq(polls.status, "closed"), scopeFilter]));
 
   return {
     active: Number(activeResult[0]?.value ?? 0),
@@ -611,7 +754,7 @@ export async function getPollsStats(ctx: ServiceContext) {
 }
 
 export async function listDraftPolls(ctx: ServiceContext, limit = 6) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
 
   const rows = await db
     .select({
@@ -620,7 +763,11 @@ export async function listDraftPolls(ctx: ServiceContext, limit = 6) {
     })
     .from(polls)
     .leftJoin(users, eq(polls.createdBy, users.id))
-    .where(eq(polls.status, "draft"))
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(polls.status, "draft")
+        : and(eq(polls.status, "draft"), inArray(polls.neighborhoodId, neighborhoodAdminIds ?? []))
+    )
     .limit(limit);
 
   return rows.map((row) => ({
@@ -630,12 +777,16 @@ export async function listDraftPolls(ctx: ServiceContext, limit = 6) {
 }
 
 export async function listActivePollsWithParticipation(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
 
   const activePolls = await db
     .select()
     .from(polls)
-    .where(eq(polls.status, "active"));
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(polls.status, "active")
+        : and(eq(polls.status, "active"), inArray(polls.neighborhoodId, neighborhoodAdminIds ?? []))
+    );
 
   if (activePolls.length === 0) {
     return [];
@@ -644,7 +795,15 @@ export async function listActivePollsWithParticipation(ctx: ServiceContext) {
   const activeGroupsResult = await db
     .select({ value: countDistinct(groupMemberships.groupId) })
     .from(groupMemberships)
-    .where(eq(groupMemberships.status, "active"));
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(groupMemberships.status, "active")
+        : and(
+            eq(groupMemberships.status, "active"),
+            inArray(groups.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    );
   const totalGroups = Number(activeGroupsResult[0]?.value ?? 0);
 
   const pollIds = activePolls.map((poll) => poll.id);

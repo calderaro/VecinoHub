@@ -26,6 +26,7 @@ export const fundraisingRouter = createTRPCRouter({
   createCampaign: protectedProcedure
     .input(
       z.object({
+        neighborhoodId: z.string().uuid().optional(),
         title: z.string().min(1),
         description: z.string().optional(),
         goalAmount: z.string().min(1),

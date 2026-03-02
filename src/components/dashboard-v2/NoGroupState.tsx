@@ -14,6 +14,7 @@ type NoGroupStateProps = {
   helpText: string;
   signOutLabel: string;
   signingOutLabel: string;
+  fullScreen?: boolean;
 };
 
 export function NoGroupState({
@@ -24,6 +25,7 @@ export function NoGroupState({
   helpText,
   signOutLabel,
   signingOutLabel,
+  fullScreen = true,
 }: NoGroupStateProps) {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -40,7 +42,7 @@ export function NoGroupState({
 
   return (
     <main
-      className="flex min-h-screen w-full items-center justify-center bg-stone-50 px-4"
+      className={`flex w-full items-center justify-center bg-stone-50 px-4 ${fullScreen ? "min-h-screen" : "min-h-[calc(100vh-56px)]"}`}
       data-testid="dashboard-no-group-state"
     >
       <div className="w-full max-w-md text-center">

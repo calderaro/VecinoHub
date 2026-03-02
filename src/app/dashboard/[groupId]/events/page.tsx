@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { listEventsPaged } from "@/services/events";
+import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -52,9 +53,16 @@ export default async function NeighborEventsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
   const resolvedParams = await Promise.resolve(params);
+  const group = await getGroupById({ user: session.user }, { groupId: resolvedParams.groupId });
+  const scopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
 
   const { items: events, total } = await listEventsPaged(
-    { user: session.user },
+    scopedContext,
     {
       query: query || undefined,
       limit: PAGE_SIZE,

@@ -6,12 +6,13 @@ import {
   ChevronDown,
   LayoutDashboard,
   LogOut,
+  Settings,
   Shield,
   User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -22,17 +23,24 @@ type GroupOption = {
   name: string;
 };
 
+type NeighborhoodOption = {
+  id: string;
+  name: string;
+};
+
 type UserMenuVariant = "default" | "dashboard-v2";
 
 type UserMenuProps = {
   user: {
     username: string | null;
     image: string | null;
-    role: "user" | "admin";
+    role: "user" | "admin" | "platform_admin";
   };
-  groupName?: string | null;
   groups?: GroupOption[];
   selectedGroupId?: string;
+  neighborhoods?: NeighborhoodOption[];
+  selectedNeighborhoodId?: string | null;
+  showAdminLink?: boolean;
   variant?: UserMenuVariant;
 };
 
@@ -107,18 +115,26 @@ function classNames(...values: Array<string | false | null | undefined>) {
 
 export function UserMenu({
   user,
-  groupName,
   groups,
   selectedGroupId,
+  neighborhoods,
+  selectedNeighborhoodId,
+  showAdminLink,
   variant = "default",
 }: UserMenuProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations("userMenu");
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const styles = variantStyles[variant];
+  const canSeeAdminLink =
+    showAdminLink ?? (user.role === "admin" || user.role === "platform_admin");
+  const canSeePlatformLink = user.role === "admin" || user.role === "platform_admin";
+  const selectedAdminNeighborhoodId =
+    pathname.match(/^\/admin\/([0-9a-fA-F-]{36})(?:\/|$)/)?.[1] ?? selectedNeighborhoodId ?? null;
 
   const displayName = user.username || t("defaultUser");
 
@@ -186,16 +202,6 @@ export function UserMenu({
           <span className={classNames("max-w-[120px] truncate", variant === "dashboard-v2" ? "font-medium text-stone-900" : "font-medium text-stone-900")}>
             {displayName}
           </span>
-          {selectedGroupId && groupName ? (
-            <span
-              className={classNames(
-                "max-w-[120px] truncate text-xs",
-                variant === "dashboard-v2" ? "text-stone-400" : "text-stone-400"
-              )}
-            >
-              {groupName}
-            </span>
-          ) : null}
         </div>
 
         <ChevronDown
@@ -208,21 +214,18 @@ export function UserMenu({
         <div role="menu" className={styles.menu}>
           <div className={styles.menuHeader}>
             <p className={styles.menuHeaderName}>{displayName}</p>
-            {groupName ? <p className={styles.menuHeaderEmail}>{groupName}</p> : null}
           </div>
 
           <div className="py-1" role="group" aria-label="navigation">
-            {selectedGroupId ? (
-              <Link
-                href={`/dashboard/${selectedGroupId}`}
-                role="menuitem"
-                onClick={() => setIsOpen(false)}
-                className={styles.item}
-              >
-                <LayoutDashboard className={styles.itemIcon} aria-hidden="true" />
-                {t("dashboard")}
-              </Link>
-            ) : null}
+            <Link
+              href={selectedGroupId ? `/dashboard/${selectedGroupId}` : "/dashboard"}
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className={styles.item}
+            >
+              <LayoutDashboard className={styles.itemIcon} aria-hidden="true" />
+              {t("dashboard")}
+            </Link>
 
             <Link
               href="/profile"
@@ -234,7 +237,7 @@ export function UserMenu({
               {t("profile")}
             </Link>
 
-            {user.role === "admin" ? (
+            {canSeeAdminLink ? (
               <Link
                 href="/admin"
                 role="menuitem"
@@ -245,11 +248,50 @@ export function UserMenu({
                 {t("adminPanel")}
               </Link>
             ) : null}
+
+            {canSeePlatformLink ? (
+              <Link
+                href="/platform"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+                className={styles.itemAccent}
+              >
+                <Settings className={styles.itemIcon} aria-hidden="true" />
+                {t("platformPanel")}
+              </Link>
+            ) : null}
           </div>
+
+          {canSeeAdminLink && neighborhoods && neighborhoods.length > 0 ? (
+            <div className={styles.sectionDivider} role="group" aria-label="switch-admin-neighborhood">
+              <p className={styles.sectionLabel}>{t("adminNeighborhoods")}</p>
+              {neighborhoods.map((neighborhood) => {
+                const isSelected = neighborhood.id === selectedAdminNeighborhoodId;
+
+                return (
+                  <button
+                    key={neighborhood.id}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push(`/admin/${neighborhood.id}`);
+                    }}
+                    className={classNames(styles.item, isSelected && styles.activeGroupItem)}
+                    data-testid={`user-menu-admin-neighborhood-${neighborhood.id}`}
+                  >
+                    <Shield className={styles.itemIcon} aria-hidden="true" />
+                    <span className="flex-1 truncate text-left">{neighborhood.name}</span>
+                    {isSelected ? <Check className={styles.groupCheck} aria-hidden="true" /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           {groups && groups.length > 0 ? (
             <div className={styles.sectionDivider} role="group" aria-label="switch-group">
-              <p className={styles.sectionLabel}>{selectedGroupId ? t("switchGroup") : t("groups")}</p>
+              <p className={styles.sectionLabel}>{t("groups")}</p>
               {groups.map((group) => {
                 const isSelected = selectedGroupId ? group.id === selectedGroupId : false;
 

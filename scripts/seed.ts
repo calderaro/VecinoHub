@@ -5,6 +5,8 @@ import { db } from "@/db";
 import {
   groupMemberships,
   groups,
+  neighborhoodMemberships,
+  neighborhoods,
   events,
   posts,
   fundraisingContributions,
@@ -21,16 +23,16 @@ type SeedUser = {
   password: string;
   name: string;
   username: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "platform_admin";
 };
 
 const seedUsers: SeedUser[] = [
   {
     email: "admin@vecinohub.local",
     password: "Admin123!",
-    name: "Vecino Admin",
+    name: "Vecino Platform Admin",
     username: "vecino_admin",
-    role: "admin",
+    role: "platform_admin",
   },
   {
     email: "ana@vecinohub.local",
@@ -93,6 +95,34 @@ async function ensureUser(user: SeedUser) {
   return created[0];
 }
 
+async function ensureNeighborhood(name: string, slug: string, createdBy: string) {
+  const existing = await db
+    .select()
+    .from(neighborhoods)
+    .where(eq(neighborhoods.slug, slug))
+    .limit(1);
+
+  if (existing[0]) {
+    return existing[0];
+  }
+
+  const created = await db
+    .insert(neighborhoods)
+    .values({
+      name,
+      slug,
+      createdBy,
+      status: "active",
+    })
+    .returning();
+
+  if (!created[0]) {
+    throw new Error(`Failed to create neighborhood with slug ${slug}`);
+  }
+
+  return created[0];
+}
+
 async function main() {
   const createdUsers = [];
 
@@ -109,6 +139,47 @@ async function main() {
 
   const [admin, ana, luis] = createdUsers;
 
+  const [centroNeighborhood, surNeighborhood] = await Promise.all([
+    ensureNeighborhood("Colonia Centro", "colonia-centro", admin.id),
+    ensureNeighborhood("Jardines del Sur", "jardines-del-sur", admin.id),
+  ]);
+
+  await db
+    .insert(neighborhoodMemberships)
+    .values([
+      {
+        neighborhoodId: centroNeighborhood.id,
+        userId: admin.id,
+        role: "neighborhood_admin",
+      },
+      {
+        neighborhoodId: surNeighborhood.id,
+        userId: admin.id,
+        role: "neighborhood_admin",
+      },
+      {
+        neighborhoodId: centroNeighborhood.id,
+        userId: ana.id,
+        role: "neighborhood_admin",
+      },
+      {
+        neighborhoodId: surNeighborhood.id,
+        userId: luis.id,
+        role: "neighborhood_admin",
+      },
+      {
+        neighborhoodId: centroNeighborhood.id,
+        userId: luis.id,
+        role: "neighbor",
+      },
+      {
+        neighborhoodId: surNeighborhood.id,
+        userId: ana.id,
+        role: "neighbor",
+      },
+    ])
+    .onConflictDoNothing();
+
   const existingGroups = await db.select().from(groups).limit(1);
   if (existingGroups.length > 0) {
     console.log("Groups already exist, skipping group/poll/fundraising seed.");
@@ -121,12 +192,14 @@ async function main() {
       {
         name: "Casa 101",
         address: "Calle Principal 101",
-        adminUserId: admin.id,
+        adminUserId: ana.id,
+        neighborhoodId: centroNeighborhood.id,
       },
       {
         name: "Casa 202",
         address: "Calle Principal 202",
-        adminUserId: admin.id,
+        adminUserId: luis.id,
+        neighborhoodId: surNeighborhood.id,
       },
     ])
     .returning();
@@ -147,6 +220,7 @@ async function main() {
       title: "Mejora del parque",
       description: "Aprobar presupuesto para mejorar el parque",
       status: "active",
+      neighborhoodId: centroNeighborhood.id,
       createdBy: admin.id,
     })
     .returning();
@@ -177,6 +251,7 @@ async function main() {
       goalAmount: "300.00",
       status: "open",
       dueDate: new Date().toISOString().split("T")[0],
+      neighborhoodId: centroNeighborhood.id,
       createdBy: admin.id,
     })
     .returning();
@@ -210,6 +285,16 @@ async function main() {
       startsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
       endsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7 + 1000 * 60 * 60 * 2),
       location: "Community hall",
+      neighborhoodId: centroNeighborhood.id,
+      createdBy: admin.id,
+    },
+    {
+      title: "Neighborhood watch meeting",
+      description: "Monthly neighborhood watch sync.",
+      startsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+      endsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14 + 1000 * 60 * 60 * 2),
+      location: "South Clubhouse",
+      neighborhoodId: surNeighborhood.id,
       createdBy: admin.id,
     },
   ]);
@@ -221,6 +306,16 @@ async function main() {
         "Thanks for participating in the last cleanup. We will share next steps soon.",
       status: "published",
       publishedAt: new Date(),
+      neighborhoodId: centroNeighborhood.id,
+      createdBy: admin.id,
+    },
+    {
+      title: "South district update",
+      content:
+        "Welcome to VecinoHub for Jardines del Sur. Watch this board for local updates.",
+      status: "published",
+      publishedAt: new Date(),
+      neighborhoodId: surNeighborhood.id,
       createdBy: admin.id,
     },
   ]);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { getGroupById } from "@/services/groups";
 import { listPollsPaged } from "@/services/polls";
 import { getSession } from "@/server/auth";
 
@@ -41,9 +42,16 @@ export default async function NeighborPollsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
   const resolvedParams = await Promise.resolve(params);
+  const group = await getGroupById({ user: session.user }, { groupId: resolvedParams.groupId });
+  const scopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
 
   const { items: polls, total } = await listPollsPaged(
-    { user: session.user },
+    scopedContext,
     {
       query: query || undefined,
       limit: PAGE_SIZE,

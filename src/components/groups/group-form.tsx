@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/ui-v3";
 
 type GroupFormProps = {
   mode: "create" | "edit";
+  adminBasePath?: string;
   groupId?: string;
   initialName?: string;
   initialAddress?: string | null;
@@ -29,6 +30,7 @@ const inputBase =
 
 export function GroupForm({
   mode,
+  adminBasePath = "/admin",
   groupId,
   initialName = "",
   initialAddress = "",
@@ -54,7 +56,8 @@ export function GroupForm({
   const isValid = name.trim().length > 0 && adminUserId.trim().length > 0;
   const isDisabled =
     createGroup.isPending || updateGroup.isPending || assignAdmin.isPending;
-  const cancelHref = mode === "create" ? "/admin/groups" : `/admin/groups/${groupId ?? ""}`;
+  const cancelHref =
+    mode === "create" ? `${adminBasePath}/groups` : `${adminBasePath}/groups/${groupId ?? ""}`;
 
   async function handleSubmit() {
     setError(null);
@@ -72,7 +75,7 @@ export function GroupForm({
           adminUserId: adminUserId.trim(),
         });
         addToast(t("createdToast"), "success");
-        router.push("/admin/groups");
+        router.push(`${adminBasePath}/groups`);
         return;
       }
 
@@ -95,7 +98,7 @@ export function GroupForm({
       }
 
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/groups/${groupId}`);
+      router.push(`${adminBasePath}/groups/${groupId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("updateError");
       setError(message);

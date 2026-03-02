@@ -37,26 +37,32 @@ export default async function DashboardPage({
   }
 
   const resolvedParams = await Promise.resolve(params);
-  const serviceContext = { user: session.user };
-  const group = await getGroupById(serviceContext, {
+  const baseContext = { user: session.user };
+  const group = await getGroupById(baseContext, {
     groupId: resolvedParams.groupId,
   });
-  const members = await listGroupMembers(serviceContext, {
+  const scopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
+  const members = await listGroupMembers(scopedContext, {
     groupId: resolvedParams.groupId,
   });
-  const polls = await listPollsPaged(serviceContext, {
+  const polls = await listPollsPaged(scopedContext, {
     limit: 5,
     offset: 0,
   });
-  const events = await listEventsPaged(serviceContext, {
+  const events = await listEventsPaged(scopedContext, {
     limit: 5,
     offset: 0,
   });
-  const posts = await listPostsPaged(serviceContext, {
+  const posts = await listPostsPaged(scopedContext, {
     limit: 5,
     offset: 0,
   });
-  const campaigns = await listCampaignsPaged(serviceContext, {
+  const campaigns = await listCampaignsPaged(scopedContext, {
     status: "open",
     limit: 5,
     offset: 0,

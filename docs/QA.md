@@ -1,70 +1,47 @@
-# QA Checklist (Redesign Baseline)
+# QA Checklist
 
-## Public Landing
-- `/` shows marketing landing for signed-out users.
-- `/` redirects authenticated users to `/dashboard`.
-- Landing primary CTA routes to `/login`.
-- Landing includes visible legal links to `/en/terms-of-service`, `/en/privacy-policy`, and `/en/data-deletion`.
-
-## Auth
-- `/login` renders combined tabbed sign-in/sign-up UI.
-- Sign in succeeds and redirects to `/dashboard`.
-- Sign up succeeds and redirects to `/dashboard`.
-- `/register` redirects to `/login?tab=signup`.
-- Clicking `auth-social-google` starts OAuth redirect flow.
-- Clicking `auth-login-magic-link` with a valid email shows magic-link sent notice.
-- Clicking `auth-login-magic-link` with empty email shows validation notice.
-- Clicking `auth-reset-request` with email sends reset OTP notice.
-- Filling `auth-reset-otp` + `auth-reset-password` and submitting `auth-reset-submit` resets password successfully.
-
-## Dashboard
-- `/dashboard` unauthenticated redirect works.
-- `/dashboard` no-group waiting state renders correctly.
-- `/dashboard` no-group waiting state includes `dashboard-no-group-signout` and logs out to `/login`.
-- `/dashboard/[groupId]` overview renders all 5 cards and keeps sticky header.
-- User menu supports keyboard and escape-close behavior.
-
-## Resident Modules
-- Members: add/remove works only for allowed users; non-managers can still view list.
-- Events: list search/filter and detail page render expected data.
-- Posts: list and detail render expected publish visibility.
-- Polls: list + detail render; vote form respects status and one-vote-per-group rule.
-- Fundraising: list + detail + contribution form validations work.
-
-## Profile
-- Username validation and image URL validation work.
-- Preferred language save updates cookie and locale behavior.
-
-## Legal
-- `/en/terms-of-service` renders with legal nav links.
-- `/en/privacy-policy` renders and is reachable from legal nav.
-- `/en/data-deletion` renders and is reachable from legal nav.
-
-## Admin Shell + Modules
-- Non-admin cannot access `/admin/*`.
-- Sidebar/topbar shell renders on all admin routes.
-- Users list/detail/edit access management works from `/admin/users`.
-- Groups create/edit/detail flows work.
-- Polls create/edit/options/actions flows work.
-- Fundraising create/edit/detail/contribution-review flows work.
-- Events create/edit/detail/delete flows work.
-- Posts create/edit/publish/unpublish/delete flows work.
-
-## Visual + Accessibility
-- Stone light surfaces and teal accents are consistent across auth/dashboard/profile/admin.
-- Focus-visible ring appears on interactive controls.
-- Dialog overlays close on escape (where applicable) and preserve action states.
-- Responsive checks at mobile/tablet/desktop for key routes:
-  - `/login`
-  - `/dashboard/[groupId]`
-  - `/dashboard/[groupId]/members`
-  - `/admin`
-  - `/admin/users`
-
-## Regression
+## Regression Gates
 - `npm run lint` passes.
 - `npm run build` passes.
-- Core permission boundaries remain unchanged:
-  - admin-only admin routes
-  - group membership checks for dashboard group routes
-  - service-layer authorization for mutations
+- `npm run db:migrate` applies successfully on a clean DB.
+
+## Auth and Base Navigation
+- Signed-out users hitting `/dashboard`, `/admin`, `/platform` redirect to `/login`.
+- Signed-in users can open `UserMenu` and sign out from any page header using it.
+
+## Role Access Matrix
+- Platform admin can access `/platform` and `/admin/*`.
+- Neighborhood admin cannot access `/platform`.
+- Neighborhood admin can access `/admin` and domain modules in authorized neighborhoods.
+- Regular neighbor cannot access `/admin/*` or `/platform`.
+
+## Multi-Neighborhood Isolation
+- Platform admin can create a new neighborhood in `/platform`.
+- Neighborhood admin cannot create neighborhoods.
+- Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
+- Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
+- Group member operations reject cross-neighborhood group/user combinations.
+
+## Active Neighborhood Context
+- User with memberships in multiple neighborhoods can switch neighborhood in `UserMenu`.
+- Switching neighborhood updates dashboard route behavior (`/dashboard` resolves to group in selected neighborhood).
+- Clearing active context (platform admin) returns to global scope behavior.
+
+## Feature Flows
+- Groups: create/edit/delete and member add/remove respect permissions.
+- Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
+- Fundraising: create campaign, submit contribution, confirm/reject still work.
+- Events: create/edit/delete and list/detail render correctly.
+- Posts: create/edit/publish/unpublish/delete flows work.
+- Profile update (username/image/language) still works.
+
+## UI and Accessibility
+- New/updated UI includes test ids:
+  - platform neighborhood creation/list
+  - neighborhood switcher entries in `UserMenu`
+- Keyboard close (`Esc`) still closes `UserMenu`.
+- Responsive checks on:
+  - `/dashboard/[groupId]`
+  - `/profile`
+  - `/admin`
+  - `/platform`

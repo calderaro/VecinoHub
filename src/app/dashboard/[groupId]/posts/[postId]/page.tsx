@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getGroupById } from "@/services/groups";
+import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
 import { getPostById } from "@/services/posts";
 import { getSession } from "@/server/auth";
 
@@ -27,7 +29,19 @@ export default async function NeighborPostDetailPage({
   }
 
   const resolvedParams = await Promise.resolve(params);
-  const post = await getPostById({ user: session.user }, { postId: resolvedParams.postId });
+  const baseContext = { user: session.user };
+  const group = await getGroupById(baseContext, { groupId: resolvedParams.groupId });
+  const serviceContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
+  const [post, canAccessAdmin] = await Promise.all([
+    getPostById(serviceContext, { postId: resolvedParams.postId }),
+    hasNeighborhoodAdminRole(baseContext),
+  ]);
+  const adminBasePath = `/admin/${group.neighborhoodId}`;
   const locale = await getLocale();
   const t = await getTranslations("dashboard.postDetail");
 
@@ -42,10 +56,10 @@ export default async function NeighborPostDetailPage({
             })}
           </p>
         </div>
-        {session.user.role === "admin" ? (
+        {canAccessAdmin ? (
           <Link
             className="rounded-full border border-[color:var(--stroke)] bg-[color:var(--surface)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[color:var(--muted-strong)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
-            href={`/admin/posts/${post.id}`}
+            href={`${adminBasePath}/posts/${post.id}`}
           >
             {t("adminView")}
           </Link>

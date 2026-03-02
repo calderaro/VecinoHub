@@ -71,6 +71,20 @@
       "when": 1769275720729,
       "tag": "0009_icy_malice",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1772471385389,
+      "tag": "0010_eager_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1772472510215,
+      "tag": "0011_rare_madame_hydra",
+      "breakpoints": true
     }
   ]
 }

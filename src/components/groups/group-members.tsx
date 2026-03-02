@@ -15,7 +15,7 @@ type GroupMember = {
   username: string | null;
   email: string;
   image: string | null;
-  role: "user" | "admin";
+  role: "user" | "admin" | "platform_admin";
   status: "active" | "inactive";
 };
 

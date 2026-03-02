@@ -1,25 +1,25 @@
 # Seeding and Test Data
 
-## Baseline Seed
-- 1 admin user (email + password)
-- 2 normal users
-- 2 groups (houses)
-- Assign group admins and memberships
-- 1 poll with 2 options
-- 1 fundraising campaign
-- 1 submitted contribution (wire transfer)
-- 1 event
-- 1 post
-
-## Local Seed Steps
-1) Run migrations.
-2) Run `npm run seed`.
-3) Log in as admin and verify lists.
-
-## Data Notes
-- Use realistic amounts and dates.
-- Ensure one user belongs to multiple groups.
-- Default credentials (change after first login):
+## Seed Coverage
+Current seed creates multi-neighborhood baseline data:
+- 1 platform admin:
   - `admin@vecinohub.local` / `Admin123!`
+- 2 standard users:
   - `ana@vecinohub.local` / `User123!`
   - `luis@vecinohub.local` / `User123!`
+- 2 neighborhoods:
+  - `colonia-centro`
+  - `jardines-del-sur`
+- Neighborhood memberships including neighborhood admins and neighbors.
+- 2 groups (one per neighborhood) with active memberships.
+- Poll/campaign/events/posts across neighborhoods.
+
+## Local Setup
+1. `npm run db:up`
+2. `npm run db:migrate`
+3. `npm run seed`
+4. Optional migration safety script: `npm run backfill:neighborhoods`
+
+## Notes
+- Seed is idempotent for users/neighborhoods/memberships and skips bulk domain inserts when groups already exist.
+- Role compatibility keeps legacy `admin` value valid, but seeded admin user is `platform_admin`.

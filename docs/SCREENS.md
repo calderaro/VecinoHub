@@ -1,97 +1,61 @@
 # Screens and UI Map
 
-## Global Visual Baseline
-- Design source: `/Users/angel/Downloads/vecinohub-redesign`
-- App-wide style direction: `stone` light surfaces, `teal` primary actions, rounded `xl` cards, low-elevation shadows.
-- Shared utilities live in:
-  - `src/app/globals.css` (`vh-v3-*`, `dashboard-v2-*`)
-  - `src/components/ui-v3/*`
+## Public
+- `/`
+  - Signed-out users: landing page.
+  - Signed-in users: redirect to `/dashboard`.
+- `/login`
+- `/register` -> redirects to `/login?tab=signup`
 
-## Public Landing
-- Route `/`
-  - Authenticated users redirect to `/dashboard`.
-  - Signed-out users see a marketing landing page with primary CTA to `/login`.
-  - Legal links are visible on-page and route to:
-    - `/en/terms-of-service`
-    - `/en/privacy-policy`
-    - `/en/data-deletion`
-
-## Auth
-- Route `/login`
-  - Combined tabbed sign-in/sign-up shell.
-  - Google action starts Better Auth social OAuth and returns to `/dashboard`.
-  - Magic-link action sends sign-in email through Better Auth magic-link plugin.
-  - Forgot-password action sends email OTP and enables in-page password reset with OTP + new password.
-  - CSR-only form logic (Better Auth client + tRPC profile language update on signup).
-- Route `/register`
-  - Redirects to `/login?tab=signup`.
-
-## Dashboard (Resident)
-- Route `/dashboard`
-  - Unauthenticated users redirect to `/login`.
-  - Users without groups see waiting/no-group state.
-  - Users with groups redirect to `/dashboard/{firstGroupId}`.
-- Route `/dashboard/[groupId]`
-  - Sticky 56px header with user menu actions.
-  - Overview cards: posts, events, polls, fundraising, members.
-
-## Resident Modules
-- `/dashboard/[groupId]/members`
-  - Group roster with add/remove member dialogs (permission-gated).
-- `/dashboard/[groupId]/events`
-- `/dashboard/[groupId]/events/[eventId]`
-- `/dashboard/[groupId]/posts`
-- `/dashboard/[groupId]/posts/[postId]`
-- `/dashboard/[groupId]/polls`
-- `/dashboard/[groupId]/polls/[pollId]`
-- `/dashboard/[groupId]/fundraising`
-- `/dashboard/[groupId]/fundraising/[campaignId]`
-- `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
+## Resident Dashboard
+- `/dashboard`
+  - redirects to first available group in active neighborhood context.
+  - no-group users see waiting state.
+- `/dashboard/[groupId]`
+  - overview cards: posts, events, polls, fundraising, members.
+  - sticky header with `UserMenu`.
+  - `UserMenu` supports:
+    - profile link
+    - group switcher
+    - neighborhood switcher (if user has >1 neighborhood)
+    - admin/platform entries based on role
+- Resident modules:
+  - `/dashboard/[groupId]/members`
+  - `/dashboard/[groupId]/polls`
+  - `/dashboard/[groupId]/polls/[pollId]`
+  - `/dashboard/[groupId]/fundraising`
+  - `/dashboard/[groupId]/fundraising/[campaignId]`
+  - `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
+  - `/dashboard/[groupId]/events`
+  - `/dashboard/[groupId]/events/[eventId]`
+  - `/dashboard/[groupId]/posts`
+  - `/dashboard/[groupId]/posts/[postId]`
 
 ## Profile
-- Route `/profile`
-  - Sticky header + account intro.
-  - Editable profile card (username, image URL, language).
+- `/profile`
+  - profile form (username/image/language).
+  - includes `UserMenu` with group + neighborhood switching.
 
-## Legal
-- `/en`
-- `/en/terms-of-service`
-- `/en/privacy-policy`
-- `/en/data-deletion`
+## Neighborhood Admin Shell
+- `/admin/*`
+  - access requires neighborhood admin membership or platform admin.
+  - users module remains platform-admin only.
+- Routes:
+  - `/admin`
+  - `/admin/groups`, `/admin/groups/new`, `/admin/groups/[groupId]`, `/admin/groups/[groupId]/edit`
+  - `/admin/polls`, `/admin/polls/new`, `/admin/polls/[pollId]`, `/admin/polls/[pollId]/edit`
+  - `/admin/fundraising`, `/admin/fundraising/new`, `/admin/fundraising/[campaignId]`, `/admin/fundraising/[campaignId]/edit`, `/admin/fundraising/[campaignId]/contribute`
+  - `/admin/events`, `/admin/events/new`, `/admin/events/[eventId]`, `/admin/events/[eventId]/edit`
+  - `/admin/posts`, `/admin/posts/new`, `/admin/posts/[postId]`, `/admin/posts/[postId]/edit`
+  - `/admin/users`, `/admin/users/[userId]`, `/admin/users/[userId]/edit` (platform admin only)
 
-## Admin Shell
-- All `/admin/*` routes share:
-  - Left sidebar (desktop), topbar with user menu, mobile horizontal nav chips.
-  - Server-side admin guard remains enforced in layout.
-
-## Admin Routes
-- `/admin` (overview)
-- `/admin/users`
-- `/admin/users/[userId]`
-- `/admin/users/[userId]/edit`
-- `/admin/groups`
-- `/admin/groups/new`
-- `/admin/groups/[groupId]`
-- `/admin/groups/[groupId]/edit`
-- `/admin/polls`
-- `/admin/polls/new`
-- `/admin/polls/[pollId]`
-- `/admin/polls/[pollId]/edit`
-- `/admin/fundraising`
-- `/admin/fundraising/new`
-- `/admin/fundraising/[campaignId]`
-- `/admin/fundraising/[campaignId]/edit`
-- `/admin/fundraising/[campaignId]/contribute`
-- `/admin/events`
-- `/admin/events/new`
-- `/admin/events/[eventId]`
-- `/admin/events/[eventId]/edit`
-- `/admin/posts`
-- `/admin/posts/new`
-- `/admin/posts/[postId]`
-- `/admin/posts/[postId]/edit`
+## Platform Admin Shell
+- `/platform`
+  - access requires `platform_admin` (or legacy `admin` compatibility).
+  - platform neighborhood management dashboard.
+  - includes neighborhood creation form and neighborhood list.
 
 ## Rendering Contract
-- SSR-first reads from services on all list/detail pages.
-- Mutations stay in client components through tRPC mutation hooks.
-- Permission checks remain server-side in services/layouts/pages.
+- SSR-first reads from services.
+- All writes through tRPC mutations.
+- Service layer owns validation, permissions, and tenant scoping.

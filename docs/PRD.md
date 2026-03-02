@@ -1,115 +1,85 @@
 # Product Requirements Document — VecinoHub
 
 ## 1) Overview
-Build a neighborhood administration web app where residents (organized by house groups) can manage membership, vote on polls, and report/confirm fundraising contributions (cash or wire transfer). Product name: VecinoHub. Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, shadcn/ui, PostgreSQL, better-auth.
+VecinoHub is a multi-neighborhood administration web app where residents (organized by house groups) can manage membership, vote on polls, submit fundraising contributions, and consume neighborhood announcements/events.
+
+Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, PostgreSQL, better-auth.
 
 ## 2) Goals
-- Allow secure email-based registration and login.
-- Allow users to configure a public username and profile photo for display.
-- Manage residents by house groups with clear role-based access.
-- Enable group-based voting.
-- Track fundraising campaigns and contributions (wire transfer or cash).
- - Support goal-based campaigns with per-group amounts derived from active groups.
-- Provide a shared events board for upcoming neighborhood events.
-- Provide admin-authored news/posts for neighborhood-wide updates.
+- Support multiple neighborhoods in a single deployment.
+- Introduce a clear 3-level access model:
+  - `platform_admin` (global management)
+  - `neighborhood_admin` (management scoped to one neighborhood)
+  - `neighbor` (resident experience)
+- Keep resident dashboard flows intact while enforcing strict tenant isolation.
+- Preserve group-level delegation with `groups.admin_user_id` for membership operations.
 
-## 3) Non-Goals (for now)
-- External payment processing integrations.
-- Advanced permissions or custom roles beyond user/admin.
-- Mobile apps.
+## 3) Non-Goals (Current Iteration)
+- Billing, tenant provisioning APIs, or per-neighborhood custom domains.
+- Custom role builders beyond platform/neighborhood/group scope.
+- Native mobile applications.
 
-## 4) Users & Roles (MVP)
-- **User**: basic access; view own groups; submit contribution proof.
-- **Admin**: system-level admin; manage users, groups, polls, fundraising campaigns, and confirmations.
+## 4) User and Role Model
 
-House group roles:
-- Each group (house) has a **Group Admin** who can add/remove members in their group.
+### System role (`users.role`)
+- `user`
+- `platform_admin`
+
+### Neighborhood membership role (`neighborhood_memberships.role`)
+- `neighbor`
+- `neighborhood_admin`
+
+### Group delegation
+- `groups.admin_user_id` remains active for local member management.
 
 ## 5) Core Entities
-- **User**: email, username, profile photo, name, role (user/admin), status, auth identity.
-- **House Group**: name/identifier, address (optional), group admin.
-- **Group Membership**: user + group + status. Users may belong to multiple groups.
-- **Poll**: title, description, options, status (draft/active/closed), createdBy.
-- **Poll Option**: label, optional description, optional amount.
-- **Vote**: groupId + pollId + choice (one per group, overwrite allowed until closed).
-- **Fundraising Campaign**: title, description, goalAmount, per-group amount (derived), due date, createdBy.
-- **Fundraising Contribution**: groupId + campaignId + submittedBy + method (cash/wire transfer) + amount + status (submitted/confirmed/rejected) + confirmedBy + proof details.
-- **Event**: title, description, date/time, location (optional), createdBy.
-- **Post**: title, content, status (draft/published), publishedAt, createdBy.
+- `users`
+- `neighborhoods`
+- `neighborhood_memberships`
+- `groups`
+- `group_memberships`
+- `polls`, `poll_options`, `votes`
+- `fundraising_campaigns`, `fundraising_contributions`
+- `events`
+- `posts`
 
-Wire transfer proof details:
-- Reference number
-- Date
-- Amount
+All domain entities (`groups`, `polls`, `fundraising_campaigns`, `events`, `posts`) are neighborhood-scoped.
 
-## 6) Key Flows
-### Registration/Login
-- Email-based signup via better-auth.
-- User assigned default role (user) until elevated by admin.
+## 6) Core Flows
 
-### Group Management
-- Admin creates house groups.
-- Admin assigns a group admin.
-- Group admin adds/removes members in their group.
+### Platform administration
+- Create and update neighborhoods.
+- Assign/revoke neighborhood admin role through neighborhood memberships.
+- Manage global user system roles and statuses.
 
-### Voting
-- Admin creates poll (draft).
-- Admin configures poll options in the poll detail view (draft only).
-- Admin launches poll to active state (options locked).
-- Each house group can cast one vote; subsequent votes overwrite until poll closes.
-- Admin can close, re-open, or reset a poll to draft (reset clears votes).
-- Votes are visible to admins; group sees their own vote status.
+### Neighborhood administration
+- Manage groups and group memberships within authorized neighborhoods only.
+- Manage neighborhood polls, campaigns, events, and posts.
+- Read and operate only within their neighborhood boundaries.
 
-### Fundraising & Contributions
-- Admin creates fundraising campaign with a goal amount.
-- Per-group amount is derived from `goalAmount / active groups`.
-- House group member submits one or more contributions (cash or wire transfer).
-- Each contribution includes an amount; wire transfer requires reference + date.
-- Contributions can be deleted by the submitter while the campaign is open.
-- Admin confirms, rejects, or updates contribution status.
+### Resident dashboard
+- Access dashboard only for groups where user is an active member.
+- View and participate in neighborhood-scoped polls, fundraising, events, and posts.
+- Update own profile and switch active neighborhood context when member of multiple neighborhoods.
 
-### User Profiles
-- Users set a public username and profile photo.
-- UI uses username/photo instead of email for display.
+## 7) Permission Summary
+- `platform_admin`: full cross-neighborhood read/write and user role management.
+- `neighborhood_admin`: CRUD for neighborhood content and group management only in authorized neighborhoods.
+- `neighbor`: read/participate flows for own neighborhood/group permissions.
+- `group admin`: member add/remove only in owned group.
 
-### Events
-- Admins create events with title, date/time, and optional location.
-- Users can view upcoming events.
+## 8) Route Model
+- Resident: `/dashboard`, `/dashboard/[groupId]/*`
+- Neighborhood admin shell: `/admin/*`
+- Platform admin shell: `/platform/*`
 
-### News/Posts
-- Admins author and publish posts for neighborhood-wide updates.
-- Users can read published posts.
+## 9) Success Criteria
+- Platform admin can create/manage neighborhoods.
+- Neighborhood admins cannot access or modify foreign neighborhood data.
+- Residents cannot access admin/platform shells.
+- No cross-tenant leaks in service-level read/write flows.
+- `npm run lint` and `npm run build` pass after migration and refactor.
 
-## 7) Permissions Matrix (High Level)
-- **User**: view own groups; submit contributions; update own profile; view events and posts.
-- **Admin**: full access, including managing events and posts.
-- **Group Admin**: manage membership in their group.
-
-## 8) MVP Screens
-- Auth (login/register)
-- Dashboard (role-based summary)
-- Profile settings
-- Group page (members, role actions)
-- Polls (list, view, vote, results)
-- Fundraising (campaigns list, submit contribution, admin confirm)
-- Events (list, detail)
-- News/Posts (list, detail, admin editor)
-
-## 9) Data & API
-- API via tRPC, serialized with SuperJSON.
-- DB via Drizzle + Postgres.
-- Core tables: users, groups, memberships, polls, poll_options, votes, fundraising_campaigns, fundraising_contributions, events, posts.
-
-## 10) Auditing & History
-- Track createdBy and confirmedBy on sensitive actions.
-- Preserve contribution history (no hard delete).
-
-## 11) Success Metrics
-- % of houses with assigned group admin.
-- Poll participation rate by group.
-- Time to confirm contributions.
-
-## 12) Open Questions
-- Should group admins also be allowed to create polls or campaigns in MVP?
-- Should users see other groups they belong to in a combined dashboard or separate views?
-- What minimum details are required for cash contribution proof?
+## 10) Open Follow-ups
+- Whether legacy `admin` system role compatibility should be fully removed after transition window.
+- Whether route-level neighborhood slug (`/n/[slug]`) should become canonical in a future release.

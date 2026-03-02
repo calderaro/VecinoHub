@@ -22,7 +22,12 @@ export const usersRouter = createTRPCRouter({
       }
     }),
   updateRole: protectedProcedure
-    .input(z.object({ userId: z.string().uuid(), role: z.enum(["user", "admin"]) }))
+    .input(
+      z.object({
+        userId: z.string().uuid(),
+        role: z.enum(["user", "admin", "platform_admin"]),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
         return await updateUserRole(getServiceContext(ctx), input);

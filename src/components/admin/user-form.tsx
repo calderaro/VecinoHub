@@ -10,21 +10,30 @@ import { useToast } from "@/components/ui/toast";
 import { StatusBadge } from "@/components/ui-v3";
 
 type UserFormProps = {
+  adminBasePath?: string;
   userId: string;
   name: string;
   email: string;
   username: string | null;
-  role: "user" | "admin";
+  role: "user" | "admin" | "platform_admin";
   status: "active" | "inactive";
 };
 
-export function UserForm({ userId, name, email, username, role, status }: UserFormProps) {
+export function UserForm({
+  adminBasePath = "/admin",
+  userId,
+  name,
+  email,
+  username,
+  role,
+  status,
+}: UserFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const t = useTranslations("admin.userForm");
   const tUsers = useTranslations("admin.usersTable");
 
-  const [nextRole, setNextRole] = useState<"user" | "admin">(role);
+  const [nextRole, setNextRole] = useState<"user" | "admin" | "platform_admin">(role);
   const [nextStatus, setNextStatus] = useState<"active" | "inactive">(status);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +54,7 @@ export function UserForm({ userId, name, email, username, role, status }: UserFo
       }
 
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/users/${userId}`);
+      router.push(`${adminBasePath}/users/${userId}`);
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : t("saveError");
@@ -123,12 +132,15 @@ export function UserForm({ userId, name, email, username, role, status }: UserFo
                     id="user-role"
                     className="vh-v3-focus w-full appearance-none rounded-lg border border-stone-200 bg-white py-2.5 pl-3 pr-8 text-sm text-stone-700 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
                     value={nextRole}
-                    onChange={(event) => setNextRole(event.target.value as "user" | "admin")}
+                    onChange={(event) =>
+                      setNextRole(event.target.value as "user" | "admin" | "platform_admin")
+                    }
                     disabled={isDisabled}
                     data-testid="user-form-role"
                   >
                     <option value="user">{tUsers("roles.user")}</option>
                     <option value="admin">{tUsers("roles.admin")}</option>
+                    <option value="platform_admin">{tUsers("roles.platform_admin")}</option>
                   </select>
                   <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
                 </div>
@@ -159,7 +171,7 @@ export function UserForm({ userId, name, email, username, role, status }: UserFo
           <div className="hidden items-center justify-between pt-2 sm:flex">
             <button
               type="button"
-              onClick={() => router.push(`/admin/users/${userId}`)}
+              onClick={() => router.push(`${adminBasePath}/users/${userId}`)}
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200"
               disabled={isDisabled}
             >
@@ -190,7 +202,10 @@ export function UserForm({ userId, name, email, username, role, status }: UserFo
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-stone-400">{t("fields.role")}</span>
-                <StatusBadge variant={nextRole} label={tUsers(`roles.${nextRole}`)} />
+                <StatusBadge
+                  variant={nextRole}
+                  label={nextRole === "platform_admin" ? tUsers("roles.platform_admin") : tUsers(`roles.${nextRole}`)}
+                />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-stone-400">{t("fields.status")}</span>
@@ -204,7 +219,7 @@ export function UserForm({ userId, name, email, username, role, status }: UserFo
       <div className="fixed bottom-0 left-0 right-0 z-30 flex gap-3 border-t border-stone-200 bg-white px-4 py-3 sm:hidden">
         <button
           type="button"
-          onClick={() => router.push(`/admin/users/${userId}`)}
+          onClick={() => router.push(`${adminBasePath}/users/${userId}`)}
           disabled={isDisabled}
           className="flex-1 rounded-lg bg-stone-100 py-2.5 text-sm font-medium text-stone-600 disabled:opacity-50"
         >

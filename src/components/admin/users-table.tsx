@@ -13,7 +13,7 @@ type AdminUser = {
   username: string | null;
   email: string;
   image: string | null;
-  role: "user" | "admin";
+  role: "user" | "admin" | "platform_admin";
   status: "active" | "inactive";
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -28,6 +28,7 @@ export function UsersTable({
   query,
   role,
   status,
+  adminBasePath = "/admin",
 }: {
   users: AdminUser[];
   totalUsers: number;
@@ -37,6 +38,7 @@ export function UsersTable({
   query: string;
   role: string;
   status: string;
+  adminBasePath?: string;
 }) {
   const t = useTranslations("admin.usersTable");
 
@@ -76,6 +78,7 @@ export function UsersTable({
               <option value="">{t("roles.all")}</option>
               <option value="user">{t("roles.user")}</option>
               <option value="admin">{t("roles.admin")}</option>
+              <option value="platform_admin">{t("roles.platform_admin")}</option>
             </select>
             <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
           </div>
@@ -138,7 +141,7 @@ export function UsersTable({
                     >
                       <td className="px-5 py-3.5">
                         <Link
-                          href={`/admin/users/${user.id}`}
+                          href={`${adminBasePath}/users/${user.id}`}
                           className="group flex items-center gap-3"
                           data-testid={`user-list-detail-${user.id}`}
                         >
@@ -166,7 +169,14 @@ export function UsersTable({
                         </Link>
                       </td>
                       <td className="px-4 py-3.5">
-                        <StatusBadge variant={user.role} label={t(`roles.${user.role}`)} />
+                        <StatusBadge
+                          variant={user.role === "platform_admin" ? "admin" : user.role}
+                          label={
+                            user.role === "platform_admin"
+                              ? t("roles.platform_admin")
+                              : t(`roles.${user.role}`)
+                          }
+                        />
                       </td>
                       <td className="px-4 py-3.5">
                         <StatusBadge variant={user.status} label={t(`statuses.${user.status}`)} />
@@ -196,7 +206,7 @@ export function UsersTable({
             {currentPage > 1 ? (
               <Link
                 className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
-                href={`/admin/users?${new URLSearchParams({
+                href={`${adminBasePath}/users?${new URLSearchParams({
                   q: query || "",
                   role: role || "",
                   status: status || "",
@@ -213,7 +223,7 @@ export function UsersTable({
             {currentPage < totalPages ? (
               <Link
                 className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
-                href={`/admin/users?${new URLSearchParams({
+                href={`${adminBasePath}/users?${new URLSearchParams({
                   q: query || "",
                   role: role || "",
                   status: status || "",

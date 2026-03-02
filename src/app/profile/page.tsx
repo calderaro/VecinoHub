@@ -6,6 +6,10 @@ import { ArrowLeftIcon } from "lucide-react";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { UserMenu } from "@/components/user-menu";
 import { listUserGroups } from "@/services/groups";
+import {
+  hasNeighborhoodAdminRole,
+  listNeighborhoodAdminOptions,
+} from "@/services/neighborhoods";
 import { getUserProfile } from "@/services/users";
 import { getSession } from "@/server/auth";
 import { normalizeLanguage } from "@/lib/locale";
@@ -18,9 +22,18 @@ export default async function ProfilePage() {
   }
 
 
-  const [profile, groups] = await Promise.all([
+  const serviceContext = { user: session.user };
+  const unscopedContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: null,
+    },
+  };
+  const [profile, groups, canAccessAdmin, adminNeighborhoods] = await Promise.all([
     getUserProfile({ user: session.user }),
-    listUserGroups({ user: session.user }),
+    listUserGroups(unscopedContext),
+    hasNeighborhoodAdminRole(serviceContext),
+    listNeighborhoodAdminOptions(serviceContext),
   ]);
   const t = await getTranslations("profile");
 
@@ -43,6 +56,9 @@ export default async function ProfilePage() {
               role: session.user.role,
             }}
             groups={groups.map((group) => ({ id: group.id, name: group.name }))}
+            neighborhoods={adminNeighborhoods}
+            showAdminLink={canAccessAdmin}
+            variant="dashboard-v2"
           />
         </div>
       </header>

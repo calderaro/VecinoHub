@@ -6,6 +6,7 @@ import { pollsRouter } from "./routers/polls";
 import { fundraisingRouter } from "./routers/fundraising";
 import { eventsRouter } from "./routers/events";
 import { postsRouter } from "./routers/posts";
+import { neighborhoodsRouter } from "./routers/neighborhoods";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   fundraising: fundraisingRouter,
   events: eventsRouter,
   posts: postsRouter,
+  neighborhoods: neighborhoodsRouter,
 });
 
 export type AppRouter = typeof appRouter;

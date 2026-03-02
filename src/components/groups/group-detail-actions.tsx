@@ -7,7 +7,13 @@ import { useTranslations } from "next-intl";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
-export function GroupDetailActions({ groupId }: { groupId: string }) {
+export function GroupDetailActions({
+  groupId,
+  adminBasePath = "/admin",
+}: {
+  groupId: string;
+  adminBasePath?: string;
+}) {
   const router = useRouter();
   const { addToast } = useToast();
   const t = useTranslations("admin.groupActions");
@@ -16,7 +22,7 @@ export function GroupDetailActions({ groupId }: { groupId: string }) {
   const removeGroup = trpc.groups.remove.useMutation({
     onSuccess: () => {
       addToast(t("deletedToast"), "success");
-      router.push("/admin/groups");
+      router.push(`${adminBasePath}/groups`);
       router.refresh();
     },
     onError: (err) => addToast(err.message, "error"),

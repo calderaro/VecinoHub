@@ -19,6 +19,7 @@ type PublishSetting = "immediate" | "draft" | "scheduled";
 
 type PostFormProps = {
   mode: "create" | "edit";
+  adminBasePath?: string;
   postId?: string;
   initialTitle?: string;
   initialContent?: string;
@@ -30,6 +31,7 @@ const inputBase =
 
 export function PostForm({
   mode,
+  adminBasePath = "/admin",
   postId,
   initialTitle = "",
   initialContent = "",
@@ -84,7 +86,7 @@ export function PostForm({
           status: resolvedStatus,
         });
         addToast(t("createdToast"), "success");
-        router.push("/admin/posts");
+        router.push(`${adminBasePath}/posts`);
         return;
       }
 
@@ -108,7 +110,7 @@ export function PostForm({
       }
 
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/posts/${postId}`);
+      router.push(`${adminBasePath}/posts/${postId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("saveError");
       setError(message);
@@ -274,7 +276,13 @@ export function PostForm({
           <div className="hidden items-center justify-between pt-2 sm:flex">
             <button
               type="button"
-              onClick={() => router.push(mode === "create" ? "/admin/posts" : `/admin/posts/${postId}`)}
+              onClick={() =>
+                router.push(
+                  mode === "create"
+                    ? `${adminBasePath}/posts`
+                    : `${adminBasePath}/posts/${postId}`
+                )
+              }
               className="rounded-lg px-4 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200"
               disabled={isDisabled}
             >
@@ -347,7 +355,13 @@ export function PostForm({
       <div className="fixed bottom-0 left-0 right-0 z-30 flex gap-3 border-t border-stone-200 bg-white px-4 py-3 sm:hidden">
         <button
           type="button"
-          onClick={() => router.push(mode === "create" ? "/admin/posts" : `/admin/posts/${postId}`)}
+          onClick={() =>
+            router.push(
+              mode === "create"
+                ? `${adminBasePath}/posts`
+                : `${adminBasePath}/posts/${postId}`
+            )
+          }
           className="flex-1 rounded-lg bg-stone-100 py-2.5 text-sm font-medium text-stone-600"
           disabled={isDisabled}
         >

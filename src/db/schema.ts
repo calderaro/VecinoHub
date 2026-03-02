@@ -13,8 +13,20 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const roleEnum = pgEnum("role", ["user", "admin"]);
+export const roleEnum = pgEnum("role", ["user", "admin", "platform_admin"]);
 export const userStatusEnum = pgEnum("user_status", ["active", "inactive"]);
+export const neighborhoodStatusEnum = pgEnum("neighborhood_status", [
+  "active",
+  "inactive",
+]);
+export const neighborhoodRoleEnum = pgEnum("neighborhood_role", [
+  "neighbor",
+  "neighborhood_admin",
+]);
+export const neighborhoodMembershipStatusEnum = pgEnum(
+  "neighborhood_membership_status",
+  ["active", "inactive"]
+);
 export const membershipStatusEnum = pgEnum("membership_status", ["active", "inactive"]);
 export const pollStatusEnum = pgEnum("poll_status", ["draft", "active", "closed"]);
 export const contributionMethodEnum = pgEnum("contribution_method", ["cash", "wire_transfer"]);
@@ -118,10 +130,61 @@ export const verifications = pgTable(
   (table) => [index("verifications_identifier_idx").on(table.identifier)]
 );
 
+export const neighborhoods = pgTable(
+  "neighborhoods",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    status: neighborhoodStatusEnum("status").notNull().default("active"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("neighborhoods_slug_unique").on(sql`lower(${table.slug})`),
+    index("neighborhoods_status_idx").on(table.status),
+  ]
+);
+
+export const neighborhoodMemberships = pgTable(
+  "neighborhood_memberships",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    userId: uuid("user_id").notNull(),
+    role: neighborhoodRoleEnum("role").notNull().default("neighbor"),
+    status: neighborhoodMembershipStatusEnum("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("neighborhood_memberships_neighborhood_user_unique").on(
+      table.neighborhoodId,
+      table.userId
+    ),
+    index("neighborhood_memberships_neighborhood_id_idx").on(table.neighborhoodId),
+    index("neighborhood_memberships_user_id_idx").on(table.userId),
+    index("neighborhood_memberships_neighborhood_role_idx").on(
+      table.neighborhoodId,
+      table.role
+    ),
+  ]
+);
+
 export const groups = pgTable(
   "groups",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
     name: text("name").notNull(),
     address: text("address"),
     adminUserId: uuid("admin_user_id").notNull(),
@@ -132,7 +195,10 @@ export const groups = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index("groups_admin_user_id_idx").on(table.adminUserId)]
+  (table) => [
+    index("groups_neighborhood_id_idx").on(table.neighborhoodId),
+    index("groups_admin_user_id_idx").on(table.adminUserId),
+  ]
 );
 
 export const groupMemberships = pgTable(
@@ -159,19 +225,24 @@ export const groupMemberships = pgTable(
   ]
 );
 
-export const polls = pgTable("polls", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: pollStatusEnum("status").notNull().default("draft"),
-  createdBy: uuid("created_by").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const polls = pgTable(
+  "polls",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    status: pollStatusEnum("status").notNull().default("draft"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("polls_neighborhood_id_idx").on(table.neighborhoodId)]
+);
 
 export const pollOptions = pgTable(
   "poll_options",
@@ -205,22 +276,27 @@ export const votes = pgTable(
   ]
 );
 
-export const fundraisingCampaigns = pgTable("fundraising_campaigns", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-  goalAmount: numeric("goal_amount", { precision: 12, scale: 2 }).notNull(),
-  dueDate: date("due_date"),
-  status: campaignStatusEnum("status").notNull().default("open"),
-  createdBy: uuid("created_by").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const fundraisingCampaigns = pgTable(
+  "fundraising_campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    goalAmount: numeric("goal_amount", { precision: 12, scale: 2 }).notNull(),
+    dueDate: date("due_date"),
+    status: campaignStatusEnum("status").notNull().default("open"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("fundraising_campaigns_neighborhood_id_idx").on(table.neighborhoodId)]
+);
 
 export const fundraisingContributions = pgTable(
   "fundraising_contributions",
@@ -253,6 +329,7 @@ export const events = pgTable(
   "events",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
     title: text("title").notNull(),
     description: text("description"),
     startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
@@ -266,13 +343,17 @@ export const events = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index("events_starts_at_idx").on(table.startsAt)]
+  (table) => [
+    index("events_neighborhood_id_idx").on(table.neighborhoodId),
+    index("events_starts_at_idx").on(table.startsAt),
+  ]
 );
 
 export const posts = pgTable(
   "posts",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
     title: text("title").notNull(),
     content: text("content").notNull(),
     status: postStatusEnum("status").notNull().default("draft"),
@@ -286,6 +367,7 @@ export const posts = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("posts_neighborhood_id_idx").on(table.neighborhoodId),
     index("posts_status_idx").on(table.status),
     index("posts_published_at_idx").on(table.publishedAt),
   ]

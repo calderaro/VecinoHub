@@ -18,6 +18,7 @@ export const postsRouter = createTRPCRouter({
     .input(
       z
         .object({
+          neighborhoodId: z.string().uuid().optional(),
           query: z.string().optional(),
           status: z.enum(["draft", "published"]).optional(),
           limit: z.number().int().min(1).max(100).optional(),
@@ -44,6 +45,7 @@ export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
+        neighborhoodId: z.string().uuid().optional(),
         title: z.string().min(1),
         content: z.string().min(1),
         status: z.enum(["draft", "published"]).optional(),

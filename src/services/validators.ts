@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const idSchema = z.string().uuid();
-export const roleSchema = z.enum(["user", "admin"]);
+export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
+export const roleSchema = systemRoleSchema;
+export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
+export const neighborhoodStatusSchema = z.enum(["active", "inactive"]);
 export const statusSchema = z.enum(["active", "inactive"]);
 export const preferredLanguageSchema = z.enum(["es", "en"]);
 export const contributionMethodSchema = z.enum(["cash", "wire_transfer"]);

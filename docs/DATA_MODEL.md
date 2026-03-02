@@ -1,7 +1,11 @@
 # Data Model
 
 ## Enums
-- `role`: `user`, `admin`
+- `role`: `user`, `admin`, `platform_admin` (legacy `admin` retained for transition compatibility)
+- `user_status`: `active`, `inactive`
+- `neighborhood_status`: `active`, `inactive`
+- `neighborhood_role`: `neighbor`, `neighborhood_admin`
+- `neighborhood_membership_status`: `active`, `inactive`
 - `membership_status`: `active`, `inactive`
 - `poll_status`: `draft`, `active`, `closed`
 - `contribution_method`: `cash`, `wire_transfer`
@@ -11,19 +15,40 @@
 
 ## users
 - `id` (pk)
-- `email` (unique)
-- `username` (unique, case-insensitive)
+- `email` (unique, case-insensitive)
+- `username` (unique, case-insensitive, nullable)
 - `name`
-- `image` (profile photo)
+- `image` (nullable)
+- `preferred_language`
 - `role`
 - `status`
 - `created_at`
 - `updated_at`
 
-## groups
+## neighborhoods
 - `id` (pk)
 - `name`
-- `address` (optional)
+- `slug` (unique, case-insensitive)
+- `status`
+- `created_by` (fk -> users.id)
+- `created_at`
+- `updated_at`
+
+## neighborhood_memberships
+- `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `user_id` (fk -> users.id)
+- `role`
+- `status`
+- `created_at`
+- `updated_at`
+- Unique: (`neighborhood_id`, `user_id`)
+
+## groups
+- `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `name`
+- `address` (nullable)
 - `admin_user_id` (fk -> users.id)
 - `created_at`
 - `updated_at`
@@ -39,8 +64,9 @@
 
 ## polls
 - `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
 - `title`
-- `description`
+- `description` (nullable)
 - `status`
 - `created_by` (fk -> users.id)
 - `created_at`
@@ -50,8 +76,8 @@
 - `id` (pk)
 - `poll_id` (fk -> polls.id)
 - `label`
-- `description` (optional)
-- `amount` (optional)
+- `description` (nullable)
+- `amount` (nullable)
 - `sort_order`
 
 ## votes
@@ -65,12 +91,13 @@
 
 ## fundraising_campaigns
 - `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
 - `title`
-- `description`
+- `description` (nullable)
+- `amount` (derived per-group)
 - `goal_amount`
-- `amount` (derived per-group amount)
-- `due_date`
-- `status` (open, closed)
+- `due_date` (nullable)
+- `status`
 - `created_by` (fk -> users.id)
 - `created_at`
 - `updated_at`
@@ -80,48 +107,47 @@
 - `campaign_id` (fk -> fundraising_campaigns.id)
 - `group_id` (fk -> groups.id)
 - `submitted_by` (fk -> users.id)
-- `method` (cash, wire_transfer)
+- `method`
 - `amount`
 - `wire_reference` (nullable)
 - `wire_date` (nullable)
 - `wire_amount` (nullable)
-- `status` (submitted, confirmed, rejected)
+- `status`
 - `confirmed_by` (fk -> users.id, nullable)
 - `created_at`
 - `updated_at`
-  
-Note: multiple contributions per group are allowed.
 
 ## events
 - `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
 - `title`
-- `description` (optional)
+- `description` (nullable)
 - `starts_at`
-- `ends_at` (optional)
-- `location` (optional)
+- `ends_at` (nullable)
+- `location` (nullable)
 - `created_by` (fk -> users.id)
 - `created_at`
 - `updated_at`
 
 ## posts
 - `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
 - `title`
 - `content`
-- `status` (draft, published)
+- `status`
 - `published_at` (nullable)
 - `created_by` (fk -> users.id)
 - `created_at`
 - `updated_at`
 
-## Indexes
-- `users.email`
-- `users.username` (case-insensitive)
-- `group_memberships.group_id`
-- `group_memberships.user_id`
-- `votes.poll_id`
-- `votes.group_id`
-- `fundraising_contributions.campaign_id`
-- `fundraising_contributions.group_id`
-- `events.starts_at`
-- `posts.status`
-- `posts.published_at`
+## Key Constraints and Indexing Notes
+- All neighborhood-scoped domain tables enforce `neighborhood_id IS NOT NULL`.
+- Service-layer validations enforce cross-table neighborhood consistency (poll/group vote, campaign/group contribution).
+- Critical indexes include:
+  - `neighborhoods.lower(slug)` unique
+  - `neighborhood_memberships(neighborhood_id, user_id)` unique
+  - `groups.neighborhood_id`
+  - `polls.neighborhood_id`
+  - `fundraising_campaigns.neighborhood_id`
+  - `events.neighborhood_id`
+  - `posts.neighborhood_id`

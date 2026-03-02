@@ -7,15 +7,76 @@ import {
   groups,
   fundraisingContributions,
   fundraisingCampaigns,
+  neighborhoods,
   users,
 } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireAdmin, requireGroupMember } from "./guards";
+import {
+  isPlatformAdmin,
+  listNeighborhoodAdminIdsForUser,
+  listNeighborhoodIdsForUser,
+  requireGroupMember,
+  requireNeighborhoodAdminOrPlatform,
+  requirePlatformAdmin,
+} from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, contributionMethodSchema } from "./validators";
 
+function combineFilters<T>(filters: Array<T | undefined>) {
+  const filtered = filters.filter((filter): filter is T => Boolean(filter));
+  if (filtered.length === 0) {
+    return undefined;
+  }
+
+  const [first, ...rest] = filtered;
+  return and(first as never, ...(rest as never[]));
+}
+
+async function getCampaignScope(campaignId: string) {
+  const campaign = await db
+    .select({
+      id: fundraisingCampaigns.id,
+      neighborhoodId: fundraisingCampaigns.neighborhoodId,
+      status: fundraisingCampaigns.status,
+    })
+    .from(fundraisingCampaigns)
+    .where(eq(fundraisingCampaigns.id, campaignId))
+    .limit(1);
+
+  if (!campaign[0]) {
+    throw new ServiceError("Campaign not found", "NOT_FOUND");
+  }
+
+  return campaign[0];
+}
+
+async function requireCampaignAdminScope(ctx: ServiceContext, campaignId: string) {
+  const campaign = await getCampaignScope(campaignId);
+  if (!campaign.neighborhoodId) {
+    requirePlatformAdmin(ctx);
+    return campaign;
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, campaign.neighborhoodId);
+  return campaign;
+}
+
+async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
+    throw new ServiceError("Admin access required", "FORBIDDEN");
+  }
+
+  return neighborhoodAdminIds;
+}
+
 const createCampaignSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   title: z.string().min(1),
   description: z.string().optional(),
   goalAmount: z.string().min(1),
@@ -26,14 +87,33 @@ export async function createCampaign(
   ctx: ServiceContext,
   input: z.input<typeof createCampaignSchema>
 ) {
-  requireAdmin(ctx);
-  const { title, description, goalAmount, dueDate } =
+  const { neighborhoodId, title, description, goalAmount, dueDate } =
     createCampaignSchema.parse(input);
+  let resolvedNeighborhoodId = neighborhoodId;
+  if (!resolvedNeighborhoodId) {
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    resolvedNeighborhoodId = neighborhoodAdminIds?.[0];
+  }
+  if (!resolvedNeighborhoodId && isPlatformAdmin(ctx)) {
+    const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
+    resolvedNeighborhoodId = firstNeighborhood[0]?.id;
+  }
+  if (!resolvedNeighborhoodId) {
+    throw new ServiceError("Neighborhood is required", "INVALID");
+  }
+
+  await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
   const activeGroupsResult = await db
     .select({ value: countDistinct(groupMemberships.groupId) })
     .from(groupMemberships)
-    .where(eq(groupMemberships.status, "active"));
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      and(
+        eq(groupMemberships.status, "active"),
+        eq(groups.neighborhoodId, resolvedNeighborhoodId)
+      )
+    );
   const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
   const perGroupAmount =
     activeGroups > 0
@@ -43,6 +123,7 @@ export async function createCampaign(
   const created = await db
     .insert(fundraisingCampaigns)
     .values({
+      neighborhoodId: resolvedNeighborhoodId,
       title,
       description,
       amount: perGroupAmount,
@@ -69,16 +150,24 @@ export async function updateCampaign(
   ctx: ServiceContext,
   input: z.input<typeof updateCampaignSchema>
 ) {
-  requireAdmin(ctx);
   const { campaignId, goalAmount, ...data } =
     updateCampaignSchema.parse(input);
+  const campaign = await requireCampaignAdminScope(ctx, campaignId);
 
   let amount: string | undefined;
   if (goalAmount) {
     const activeGroupsResult = await db
       .select({ value: countDistinct(groupMemberships.groupId) })
       .from(groupMemberships)
-      .where(eq(groupMemberships.status, "active"));
+      .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+      .where(
+        campaign.neighborhoodId
+          ? and(
+              eq(groupMemberships.status, "active"),
+              eq(groups.neighborhoodId, campaign.neighborhoodId)
+            )
+          : eq(groupMemberships.status, "active")
+      );
     const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
     amount =
       activeGroups > 0
@@ -113,8 +202,8 @@ export async function closeCampaign(
   ctx: ServiceContext,
   input: z.input<typeof closeCampaignSchema>
 ) {
-  requireAdmin(ctx);
   const { campaignId } = closeCampaignSchema.parse(input);
+  await requireCampaignAdminScope(ctx, campaignId);
 
   const updated = await db
     .update(fundraisingCampaigns)
@@ -166,10 +255,13 @@ export async function submitContribution(
     throw new ServiceError(message, "INVALID");
   }
   const parsed = parsedResult.data;
-  await requireGroupMember(ctx, parsed.groupId);
+  const groupScope = await requireGroupMember(ctx, parsed.groupId);
 
   const campaign = await db
-    .select({ status: fundraisingCampaigns.status })
+    .select({
+      status: fundraisingCampaigns.status,
+      neighborhoodId: fundraisingCampaigns.neighborhoodId,
+    })
     .from(fundraisingCampaigns)
     .where(eq(fundraisingCampaigns.id, parsed.campaignId))
     .limit(1);
@@ -180,6 +272,15 @@ export async function submitContribution(
 
   if (campaign[0].status !== "open") {
     throw new ServiceError("Campaign is closed", "INVALID");
+  }
+
+  if (campaign[0].neighborhoodId && groupScope.neighborhoodId) {
+    if (campaign[0].neighborhoodId !== groupScope.neighborhoodId) {
+      throw new ServiceError(
+        "Group and campaign belong to different neighborhoods",
+        "FORBIDDEN"
+      );
+    }
   }
 
   const created = await db
@@ -224,8 +325,18 @@ export async function deleteContribution(
     throw new ServiceError("Contribution not found", "NOT_FOUND");
   }
 
-  if (ctx.user.role !== "admin" && contribution[0].submittedBy !== ctx.user.id) {
-    throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
+  const campaignScope = await getCampaignScope(contribution[0].campaignId);
+  const isOwner = contribution[0].submittedBy === ctx.user.id;
+
+  if (!isOwner && !isPlatformAdmin(ctx)) {
+    if (!campaignScope.neighborhoodId) {
+      throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
+    }
+
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    if (!neighborhoodAdminIds || !neighborhoodAdminIds.includes(campaignScope.neighborhoodId)) {
+      throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
+    }
   }
 
   const campaign = await db
@@ -263,7 +374,6 @@ export async function updateContributionStatus(
   ctx: ServiceContext,
   input: z.input<typeof updateContributionStatusSchema>
 ) {
-  requireAdmin(ctx);
   const { contributionId, status } = updateContributionStatusSchema.parse(input);
 
   const contribution = await db
@@ -278,6 +388,8 @@ export async function updateContributionStatus(
   if (!contribution[0]) {
     throw new ServiceError("Contribution not found", "NOT_FOUND");
   }
+
+  await requireCampaignAdminScope(ctx, contribution[0].campaignId);
 
   const campaign = await db
     .select({ status: fundraisingCampaigns.status })
@@ -340,8 +452,13 @@ export async function rejectContribution(
 }
 
 export async function listCampaigns(ctx: ServiceContext) {
-  if (ctx.user.role === "admin") {
+  if (isPlatformAdmin(ctx)) {
     return db.select().from(fundraisingCampaigns);
+  }
+
+  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+  if (!neighborhoodIds || neighborhoodIds.length === 0) {
+    return [];
   }
 
   const memberships = await db
@@ -355,7 +472,10 @@ export async function listCampaigns(ctx: ServiceContext) {
     return [];
   }
 
-  const campaigns = await db.select().from(fundraisingCampaigns);
+  const campaigns = await db
+    .select()
+    .from(fundraisingCampaigns)
+    .where(inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds));
   const contributions = await db
     .select()
     .from(fundraisingContributions)
@@ -368,6 +488,7 @@ export async function listCampaigns(ctx: ServiceContext) {
 }
 
 const listCampaignsPagedSchema = z.object({
+  neighborhoodId: idSchema.optional(),
   query: z.string().optional(),
   status: z.enum(["open", "closed"]).optional(),
   limit: z.number().int().positive().max(100).default(10),
@@ -378,19 +499,28 @@ export async function listCampaignsPaged(
   ctx: ServiceContext,
   input: z.input<typeof listCampaignsPagedSchema>
 ) {
-  const { query, status, limit, offset } = listCampaignsPagedSchema.parse(input);
+  const { neighborhoodId, query, status, limit, offset } =
+    listCampaignsPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
 
-  const searchFilter = search
-    ? ilike(fundraisingCampaigns.title, search)
+  const searchFilter = search ? ilike(fundraisingCampaigns.title, search) : undefined;
+  const statusFilter = status ? eq(fundraisingCampaigns.status, status) : undefined;
+  let scopeFilter = neighborhoodId
+    ? eq(fundraisingCampaigns.neighborhoodId, neighborhoodId)
     : undefined;
-  const statusFilter = status
-    ? eq(fundraisingCampaigns.status, status)
-    : undefined;
-  const combinedFilter =
-    searchFilter && statusFilter
-      ? and(searchFilter, statusFilter)
-      : (searchFilter ?? statusFilter);
+
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      return { items: [], total: 0 };
+    }
+
+    scopeFilter = scopeFilter
+      ? and(scopeFilter, inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds))
+      : inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds);
+  }
+
+  const combinedFilter = combineFilters([searchFilter, statusFilter, scopeFilter]);
 
   const rows = await db
     .select({
@@ -424,10 +554,28 @@ export async function getCampaignProgressByIds(
   ctx: ServiceContext,
   input: z.input<typeof campaignProgressSchema>
 ) {
-  requireAdmin(ctx);
   const { campaignIds } = campaignProgressSchema.parse(input);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
 
   if (campaignIds.length === 0) {
+    return new Map<string, { raisedAmount: number; pendingCount: number }>();
+  }
+
+  let allowedCampaignIds = campaignIds;
+  if (!isPlatformAdmin(ctx)) {
+    const scopedCampaigns = await db
+      .select({ id: fundraisingCampaigns.id })
+      .from(fundraisingCampaigns)
+      .where(
+        and(
+          inArray(fundraisingCampaigns.id, campaignIds),
+          inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
+        )
+      );
+    allowedCampaignIds = scopedCampaigns.map((row) => row.id);
+  }
+
+  if (allowedCampaignIds.length === 0) {
     return new Map<string, { raisedAmount: number; pendingCount: number }>();
   }
 
@@ -438,7 +586,7 @@ export async function getCampaignProgressByIds(
       pendingCount: sql<number>`SUM(CASE WHEN ${fundraisingContributions.status} = 'submitted' THEN 1 ELSE 0 END)`,
     })
     .from(fundraisingContributions)
-    .where(inArray(fundraisingContributions.campaignId, campaignIds))
+    .where(inArray(fundraisingContributions.campaignId, allowedCampaignIds))
     .groupBy(fundraisingContributions.campaignId);
 
   return new Map(
@@ -478,7 +626,7 @@ export async function getCampaignDetail(
     creatorName: campaignRows[0].creatorName,
   };
 
-  if (ctx.user.role === "admin") {
+  if (isPlatformAdmin(ctx)) {
     const contributions = await db
       .select({
         id: fundraisingContributions.id,
@@ -506,6 +654,37 @@ export async function getCampaignDetail(
     return { ...campaign, contributions };
   }
 
+  if (campaign.neighborhoodId) {
+    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+    if (neighborhoodAdminIds && neighborhoodAdminIds.includes(campaign.neighborhoodId)) {
+      const contributions = await db
+        .select({
+          id: fundraisingContributions.id,
+          campaignId: fundraisingContributions.campaignId,
+          groupId: fundraisingContributions.groupId,
+          groupName: groups.name,
+          submittedBy: fundraisingContributions.submittedBy,
+          submittedByName: users.name,
+          submittedByEmail: users.email,
+          method: fundraisingContributions.method,
+          amount: fundraisingContributions.amount,
+          wireReference: fundraisingContributions.wireReference,
+          wireDate: fundraisingContributions.wireDate,
+          wireAmount: fundraisingContributions.wireAmount,
+          status: fundraisingContributions.status,
+          confirmedBy: fundraisingContributions.confirmedBy,
+          createdAt: fundraisingContributions.createdAt,
+          updatedAt: fundraisingContributions.updatedAt,
+        })
+        .from(fundraisingContributions)
+        .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
+        .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
+        .where(eq(fundraisingContributions.campaignId, campaignId));
+
+      return { ...campaign, contributions };
+    }
+  }
+
   const memberships = await db
     .select({ groupId: groupMemberships.groupId })
     .from(groupMemberships)
@@ -531,11 +710,18 @@ export async function getCampaignDetail(
 }
 
 export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
   const openCampaigns = await db
     .select()
     .from(fundraisingCampaigns)
-    .where(eq(fundraisingCampaigns.status, "open"));
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(fundraisingCampaigns.status, "open")
+        : and(
+            eq(fundraisingCampaigns.status, "open"),
+            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    );
 
   if (openCampaigns.length === 0) {
     return [];
@@ -564,13 +750,24 @@ export async function getCampaignParticipation(
   ctx: ServiceContext,
   input: z.input<typeof campaignParticipationSchema>
 ) {
-  requireAdmin(ctx);
   const { campaignId } = campaignParticipationSchema.parse(input);
+  const campaign = await requireCampaignAdminScope(ctx, campaignId);
 
-  const activeGroupsResult = await db
-    .select({ value: countDistinct(groupMemberships.groupId) })
-    .from(groupMemberships)
-    .where(eq(groupMemberships.status, "active"));
+  const activeGroupsResult = campaign.neighborhoodId
+    ? await db
+        .select({ value: countDistinct(groupMemberships.groupId) })
+        .from(groupMemberships)
+        .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+        .where(
+          and(
+            eq(groupMemberships.status, "active"),
+            eq(groups.neighborhoodId, campaign.neighborhoodId)
+          )
+        )
+    : await db
+        .select({ value: countDistinct(groupMemberships.groupId) })
+        .from(groupMemberships)
+        .where(eq(groupMemberships.status, "active"));
 
   const contributingGroupsResult = await db
     .select({ value: countDistinct(fundraisingContributions.groupId) })
@@ -591,17 +788,35 @@ export async function getCampaignParticipation(
 }
 
 export async function getFundraisingStats(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
+  const scopeFilter = isPlatformAdmin(ctx)
+    ? undefined
+    : inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? []);
 
   const openCampaignsResult = await db
     .select({ value: count() })
     .from(fundraisingCampaigns)
-    .where(eq(fundraisingCampaigns.status, "open"));
+    .where(combineFilters([eq(fundraisingCampaigns.status, "open"), scopeFilter]));
 
+  const contributionsScopeFilter = isPlatformAdmin(ctx)
+    ? undefined
+    : inArray(fundraisingContributions.campaignId,
+        (
+          await db
+            .select({ id: fundraisingCampaigns.id })
+            .from(fundraisingCampaigns)
+            .where(inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? []))
+        ).map((row) => row.id)
+      );
   const pendingContributionsResult = await db
     .select({ value: count() })
     .from(fundraisingContributions)
-    .where(eq(fundraisingContributions.status, "submitted"));
+    .where(
+      combineFilters([
+        eq(fundraisingContributions.status, "submitted"),
+        contributionsScopeFilter,
+      ])
+    );
 
   return {
     openCampaigns: Number(openCampaignsResult[0]?.value ?? 0),
@@ -610,12 +825,19 @@ export async function getFundraisingStats(ctx: ServiceContext) {
 }
 
 export async function listOpenCampaignsWithProgress(ctx: ServiceContext) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
 
   const openCampaigns = await db
     .select()
     .from(fundraisingCampaigns)
-    .where(eq(fundraisingCampaigns.status, "open"));
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(fundraisingCampaigns.status, "open")
+        : and(
+            eq(fundraisingCampaigns.status, "open"),
+            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    );
 
   if (openCampaigns.length === 0) {
     return [];
@@ -669,7 +891,7 @@ export async function listOpenCampaignsWithProgress(ctx: ServiceContext) {
 }
 
 export async function listPendingContributions(ctx: ServiceContext, limit = 10) {
-  requireAdmin(ctx);
+  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
 
   const rows = await db
     .select({
@@ -685,7 +907,14 @@ export async function listPendingContributions(ctx: ServiceContext, limit = 10) 
       fundraisingCampaigns,
       eq(fundraisingContributions.campaignId, fundraisingCampaigns.id)
     )
-    .where(eq(fundraisingContributions.status, "submitted"))
+    .where(
+      isPlatformAdmin(ctx)
+        ? eq(fundraisingContributions.status, "submitted")
+        : and(
+            eq(fundraisingContributions.status, "submitted"),
+            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
+          )
+    )
     .orderBy(fundraisingContributions.createdAt)
     .limit(limit);
 

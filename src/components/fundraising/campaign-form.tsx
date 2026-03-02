@@ -18,6 +18,7 @@ import { StatusBadge } from "@/components/ui-v3";
 
 type CampaignFormProps = {
   mode: "create" | "edit";
+  adminBasePath?: string;
   campaignId?: string;
   initialTitle?: string;
   initialDescription?: string | null;
@@ -61,6 +62,7 @@ function toDateInput(value?: string | null) {
 
 export function CampaignForm({
   mode,
+  adminBasePath = "/admin",
   campaignId,
   initialTitle = "",
   initialDescription = "",
@@ -95,7 +97,9 @@ export function CampaignForm({
   const resolvedStatus = mode === "edit" ? status : "open";
   const statusVariant = resolvedStatus === "open" ? "open" : "ended";
   const cancelHref =
-    mode === "create" ? "/admin/fundraising" : `/admin/fundraising/${campaignId ?? ""}`;
+    mode === "create"
+      ? `${adminBasePath}/fundraising`
+      : `${adminBasePath}/fundraising/${campaignId ?? ""}`;
 
   async function handleSubmit() {
     setError(null);
@@ -116,7 +120,7 @@ export function CampaignForm({
           dueDate: dueDateValue,
         });
         addToast(t("createdToast"), "success");
-        router.push("/admin/fundraising");
+        router.push(`${adminBasePath}/fundraising`);
         return;
       }
 
@@ -134,7 +138,7 @@ export function CampaignForm({
         status,
       });
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/fundraising/${campaignId}`);
+      router.push(`${adminBasePath}/fundraising/${campaignId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("saveError");
       setError(message);

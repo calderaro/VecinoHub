@@ -2,73 +2,63 @@
 
 ## Conventions
 - All mutations go through tRPC.
-- All read-only data should use services directly in SSR pages where possible.
+- SSR pages call services directly for read-heavy flows.
+- Routers stay thin and delegate validation/business logic to services.
 
 ## Routers
 
 ### auth
 - `auth.getSession` (query)
-  - Returns current session and user.
+
+### neighborhoods
+- `neighborhoods.list` (query)
+  - `platform_admin`: all neighborhoods
+  - others: only neighborhoods where user has active membership
+- `neighborhoods.getById` (query)
+- `neighborhoods.create` (mutation, `platform_admin`)
+- `neighborhoods.update` (mutation, `platform_admin`)
+- `neighborhoods.listMembers` (query, neighborhood admin or platform admin)
+- `neighborhoods.setMemberRole` (mutation, neighborhood admin or platform admin)
+- `neighborhoods.updateMembershipStatus` (mutation, neighborhood admin or platform admin)
+- `neighborhoods.setActiveContext` (mutation, authenticated)
+  - sets/clears `vh_active_neighborhood` cookie
 
 ### users
-- `users.list` (query, admin)
-- `users.updateRole` (mutation, admin)
-- `users.updateStatus` (mutation, admin)
-- `users.updateProfile` (mutation, user)
+- `users.list` (query, `platform_admin`)
+- `users.updateRole` (mutation, `platform_admin`)
+- `users.updateStatus` (mutation, `platform_admin`)
+- `users.updateProfile` (mutation, authenticated user)
 
 ### groups
-- `groups.list` (query, admin)
-- `groups.create` (mutation, admin)
-- `groups.update` (mutation, admin)
-- `groups.remove` (mutation, admin)
-- `groups.assignAdmin` (mutation, admin)
-- `groups.addMember` (mutation, group admin)
-- `groups.removeMember` (mutation, group admin)
+- `groups.list` (query, scoped by neighborhood permissions)
+- `groups.create` (mutation, neighborhood admin or platform admin)
+- `groups.update` (mutation, neighborhood admin/platform or group admin as allowed)
+- `groups.remove` (mutation, neighborhood admin or platform admin)
+- `groups.assignAdmin` (mutation, neighborhood admin or platform admin)
+- `groups.addMember` (mutation, group admin/neighborhood admin/platform)
+- `groups.removeMember` (mutation, group admin/neighborhood admin/platform)
 
 ### polls
-- `polls.create` (mutation, admin)
-- `polls.update` (mutation, admin)
-- `polls.close` (mutation, admin)
-- `polls.reopen` (mutation, admin)
-- `polls.reset` (mutation, admin)
-- `polls.addOption` (mutation, admin)
-- `polls.updateOption` (mutation, admin)
-- `polls.removeOption` (mutation, admin)
+- `polls.create` / `polls.update` / `polls.close` / `polls.reopen` / `polls.reset` (mutation, neighborhood admin or platform admin)
+- `polls.addOption` / `polls.updateOption` / `polls.removeOption` (mutation, neighborhood admin or platform admin)
 - `polls.vote` (mutation, group member)
+- `polls.list` / `polls.get` (query, neighborhood scoped)
 
 ### fundraising
-- `fundraising.createCampaign` (mutation, admin)
-- `fundraising.updateCampaign` (mutation, admin)
-- `fundraising.closeCampaign` (mutation, admin)
-- `fundraising.submitContribution` (mutation, group member)
-- `fundraising.confirmContribution` (mutation, admin)
-- `fundraising.rejectContribution` (mutation, admin)
-- `fundraising.deleteContribution` (mutation, group member/admin)
-- `fundraising.updateContributionStatus` (mutation, admin)
+- `fundraising.createCampaign` / `fundraising.updateCampaign` / `fundraising.closeCampaign` (mutation, neighborhood admin or platform admin)
+- `fundraising.submitContribution` / `fundraising.deleteContribution` (mutation, group member with scope checks)
+- `fundraising.confirmContribution` / `fundraising.rejectContribution` / `fundraising.updateContributionStatus` (mutation, neighborhood admin or platform admin)
+- list/detail/progress/stats queries are neighborhood scoped
 
 ### events
-- `events.list` (query)
-- `events.get` (query)
-- `events.create` (mutation, admin)
-- `events.update` (mutation, admin)
-- `events.remove` (mutation, admin)
+- `events.list` / `events.get` (query, neighborhood scoped)
+- `events.create` / `events.update` / `events.remove` (mutation, neighborhood admin or platform admin)
 
 ### posts
-- `posts.list` (query)
-- `posts.get` (query)
-- `posts.create` (mutation, admin)
-- `posts.update` (mutation, admin)
-- `posts.publish` (mutation, admin)
-- `posts.unpublish` (mutation, admin)
-- `posts.remove` (mutation, admin)
+- `posts.list` / `posts.get` (query, neighborhood scoped)
+- `posts.create` / `posts.update` / `posts.publish` / `posts.unpublish` / `posts.remove` (mutation, neighborhood admin or platform admin)
 
-## Inputs (High Level)
-- `groups.create`: name, address, adminUserId
-- `groups.addMember`: groupId, email (or userId)
-- `polls.create`: title, description
-- `polls.vote`: pollId, groupId, optionId
-- `fundraising.createCampaign`: title, description, goalAmount, dueDate
-- `fundraising.submitContribution`: campaignId, groupId, method, amount, wireReference?, wireDate?
-- `users.updateProfile`: username, image
-- `events.create`: title, startsAt, endsAt?, location?, description?
-- `posts.create`: title, content, status?
+## Input Notes (high level)
+- Neighborhood-scoped creates accept optional `neighborhoodId`; if omitted, services resolve from active context/admin memberships.
+- Cross-entity writes enforce neighborhood consistency server-side.
+- `users.updateRole` accepts `user | admin | platform_admin` for compatibility during transition.

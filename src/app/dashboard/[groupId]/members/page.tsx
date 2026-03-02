@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { GroupMembers } from "@/components/groups/group-members";
 import { getGroupById, listGroupMembers } from "@/services/groups";
+import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function MembersPage({
@@ -18,14 +19,16 @@ export default async function MembersPage({
 
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
-  const group = await getGroupById(serviceContext, {
-    groupId: resolvedParams.groupId,
-  });
-  const members = await listGroupMembers(serviceContext, {
-    groupId: resolvedParams.groupId,
-  });
-  const canManage =
-    session.user.role === "admin" || group.adminUserId === session.user.id;
+  const [group, members, hasAdminAccess] = await Promise.all([
+    getGroupById(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+    listGroupMembers(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+    hasNeighborhoodAdminRole(serviceContext),
+  ]);
+  const canManage = hasAdminAccess || group.adminUserId === session.user.id;
   const t = await getTranslations("dashboard.membersPage");
 
   return (

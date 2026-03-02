@@ -27,6 +27,7 @@ type PollOptionDraft = {
 
 type PollFormProps = {
   mode: "create" | "edit";
+  adminBasePath?: string;
   pollId?: string;
   initialTitle?: string;
   initialDescription?: string | null;
@@ -54,6 +55,7 @@ function createOptionDraft(overrides?: Partial<PollOptionDraft>): PollOptionDraf
 
 export function PollForm({
   mode,
+  adminBasePath = "/admin",
   pollId,
   initialTitle = "",
   initialDescription = "",
@@ -94,7 +96,8 @@ export function PollForm({
   const isValid = mode === "create" ? isCreateValid : isEditValid;
   const isDisabled = createPoll.isPending || updatePoll.isPending;
   const previewStatus = mode === "create" ? "draft" : status;
-  const cancelHref = mode === "create" ? "/admin/polls" : `/admin/polls/${pollId ?? ""}`;
+  const cancelHref =
+    mode === "create" ? `${adminBasePath}/polls` : `${adminBasePath}/polls/${pollId ?? ""}`;
 
   async function handleSubmit() {
     setError(null);
@@ -122,7 +125,7 @@ export function PollForm({
         });
 
         addToast(t("createdToast"), "success");
-        router.push("/admin/polls");
+        router.push(`${adminBasePath}/polls`);
         return;
       }
 
@@ -139,7 +142,7 @@ export function PollForm({
       });
 
       addToast(t("updatedToast"), "success");
-      router.push(`/admin/polls/${pollId}`);
+      router.push(`${adminBasePath}/polls/${pollId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("saveError");
       setError(message);

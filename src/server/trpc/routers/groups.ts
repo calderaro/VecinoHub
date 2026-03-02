@@ -34,6 +34,7 @@ export const groupsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
+        neighborhoodId: z.string().uuid().optional(),
         name: z.string().min(1),
         address: z.string().optional(),
         adminUserId: z.string().uuid(),

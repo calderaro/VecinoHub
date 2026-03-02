@@ -16,6 +16,7 @@ export const eventsRouter = createTRPCRouter({
     .input(
       z
         .object({
+          neighborhoodId: z.string().uuid().optional(),
           query: z.string().optional(),
           limit: z.number().int().min(1).max(100).optional(),
           offset: z.number().int().min(0).optional(),
@@ -41,6 +42,7 @@ export const eventsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
+        neighborhoodId: z.string().uuid().optional(),
         title: z.string().min(1),
         description: z.string().optional(),
         startsAt: z.date(),
