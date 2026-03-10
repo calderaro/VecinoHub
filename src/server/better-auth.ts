@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, magicLink } from "better-auth/plugins";
+import { sql } from "drizzle-orm";
 import nodemailer from "nodemailer";
 
 import { db } from "@/db";
@@ -39,6 +40,50 @@ const mailFrom =
 
 let warnedMissingSmtp = false;
 let smtpTransporter: nodemailer.Transporter | null = null;
+
+function buildBaseUsername(name: string) {
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/\.{2,}/g, ".")
+    .replace(/^\.|\.$/g, "");
+
+  const fallback = normalized || "vecino";
+  const expanded = fallback.length >= 3 ? fallback : `${fallback}.user`;
+
+  return expanded.slice(0, 32).replace(/\.$/, "") || "vecino";
+}
+
+function buildUsernameCandidate(base: string, suffix: number) {
+  if (suffix === 0) {
+    return base;
+  }
+
+  const suffixText = `.${suffix}`;
+  const trimmedBase = base.slice(0, Math.max(3, 32 - suffixText.length)).replace(/\.$/, "");
+  return `${trimmedBase}${suffixText}`;
+}
+
+async function generateUniqueUsername(name: string) {
+  const base = buildBaseUsername(name);
+
+  for (let suffix = 0; suffix < 10_000; suffix += 1) {
+    const candidate = buildUsernameCandidate(base, suffix);
+    const existing = await db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(sql`lower(${schema.users.username}) = lower(${candidate})`)
+      .limit(1);
+
+    if (!existing[0]) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Unable to generate a unique username.");
+}
 
 function getSmtpTransporter() {
   if (!smtpHost || !smtpUser || !smtpPass) {
@@ -183,6 +228,25 @@ export const auth = betterAuth({
   advanced: {
     database: {
       generateId: false,
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        async before(user) {
+          if ("username" in user && typeof user.username === "string" && user.username.trim()) {
+            return;
+          }
+
+          const username = await generateUniqueUsername(user.name);
+          return {
+            data: {
+              ...user,
+              username,
+            },
+          };
+        },
+      },
     },
   },
   database: drizzleAdapter(db, {

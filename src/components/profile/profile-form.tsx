@@ -27,18 +27,21 @@ export function ProfileForm({
   const router = useRouter();
   const { addToast } = useToast();
   const t = useTranslations("profile");
+  const [fullName, setFullName] = useState(name);
   const [username, setUsername] = useState(initialUsername ?? "");
   const [preferredLanguage, setPreferredLanguage] = useState(
     initialPreferredLanguage
   );
   const [isSaving, setIsSaving] = useState(false);
 
+  const fullNameTrimmed = fullName.trim();
+  const isNameValid = fullNameTrimmed.length > 0 && fullNameTrimmed.length <= 120;
   const usernameTrimmed = username.trim();
   const isUsernameValid =
     usernameTrimmed.length >= 3 &&
     usernameTrimmed.length <= 32 &&
     usernamePattern.test(usernameTrimmed);
-  const canSubmit = isUsernameValid && !isSaving;
+  const canSubmit = isNameValid && isUsernameValid && !isSaving;
 
   const updateProfile = trpc.users.updateProfile.useMutation();
 
@@ -54,6 +57,7 @@ export function ProfileForm({
         setIsSaving(true);
         try {
           await updateProfile.mutateAsync({
+            name: fullNameTrimmed,
             username: usernameTrimmed,
             preferredLanguage,
           });
@@ -80,7 +84,7 @@ export function ProfileForm({
           <Image
             className="h-16 w-16 rounded-full border border-stone-200 object-cover"
             src={initialImage}
-            alt={usernameTrimmed || name}
+            alt={usernameTrimmed || fullNameTrimmed}
             width={64}
             height={64}
             sizes="64px"
@@ -88,13 +92,32 @@ export function ProfileForm({
           />
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-600 text-lg font-semibold text-white">
-            {(usernameTrimmed?.[0] ?? name?.[0] ?? "?").toUpperCase()}
+            {(usernameTrimmed?.[0] ?? fullNameTrimmed?.[0] ?? "?").toUpperCase()}
           </div>
         )}
         <div>
-          <p className="text-sm font-medium text-stone-800">{name}</p>
+          <p className="text-sm font-medium text-stone-800">{fullNameTrimmed}</p>
           <p className="text-xs text-stone-500">{email}</p>
         </div>
+      </div>
+
+      <div>
+        <label className="space-y-2 text-sm text-stone-700">
+          <span>{t("nameLabel")}</span>
+          <input
+            className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+            data-testid="profile-name"
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            placeholder={t("namePlaceholder")}
+            required
+          />
+          {!isNameValid ? (
+            <p className="text-xs text-red-600">
+              {t("nameError")}
+            </p>
+          ) : null}
+        </label>
       </div>
 
       <div>

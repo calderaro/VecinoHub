@@ -9,6 +9,7 @@ import { requireAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
 import type { ServiceContext } from "./types";
 import {
   idSchema,
+  nameSchema,
   preferredLanguageSchema,
   roleSchema,
   statusSchema,
@@ -374,17 +375,19 @@ export async function getUserProfile(ctx: ServiceContext) {
 
 const updateProfileSchema = z
   .object({
+    name: nameSchema.optional(),
     username: usernameSchema.optional(),
     image: z.string().url().max(2048).nullable().optional(),
     preferredLanguage: preferredLanguageSchema.optional(),
   })
   .refine(
     (data) =>
+      data.name !== undefined ||
       data.username !== undefined ||
       data.image !== undefined ||
       data.preferredLanguage !== undefined,
     {
-      message: "Profile updates require a username, image, or language preference.",
+      message: "Profile updates require a name, username, image, or language preference.",
     }
   );
 
@@ -392,7 +395,7 @@ export async function updateUserProfile(
   ctx: ServiceContext,
   input: z.input<typeof updateProfileSchema>
 ) {
-  const { username, image, preferredLanguage } = updateProfileSchema.parse(input);
+  const { name, username, image, preferredLanguage } = updateProfileSchema.parse(input);
 
   if (username) {
     const existing = await db
@@ -412,6 +415,9 @@ export async function updateUserProfile(
   }
 
   const updates: Partial<typeof users.$inferInsert> = {};
+  if (name !== undefined) {
+    updates.name = name;
+  }
   if (username !== undefined) {
     updates.username = username;
   }

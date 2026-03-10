@@ -41,7 +41,7 @@
 
 ## Profile
 - `/profile`
-  - profile form (username/language).
+  - profile form (full name, username, language).
   - includes `UserMenu` with group + neighborhood switching.
 
 ## Neighborhood Admin Shell

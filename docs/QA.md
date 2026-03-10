@@ -48,7 +48,7 @@
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Events: create/edit/delete and list/detail render correctly.
 - Posts: create/edit/publish/unpublish/delete flows work.
-- Profile update (username/language) still works.
+- Profile update (full name/username/language) still works.
 - Neighbor dashboard pages and shared resident components render correctly in both Spanish and English after switching language from `/profile`.
 
 ## UI and Accessibility

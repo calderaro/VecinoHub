@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const idSchema = z.string().uuid();
+export const nameSchema = z.string().trim().min(1).max(120);
 export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
 export const roleSchema = systemRoleSchema;
 export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
