@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { groupMemberships, groups, users } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireAdmin } from "./guards";
+import { requireAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
 import type { ServiceContext } from "./types";
 import {
   idSchema,
@@ -77,6 +77,101 @@ export async function listUsersPaged(
     .where(combinedFilter);
 
   return { items, total: Number(totalResult[0]?.value ?? 0) };
+}
+
+const listNeighborhoodGroupUsersPagedSchema = z.object({
+  neighborhoodId: idSchema,
+  query: z.string().optional(),
+  role: roleSchema.optional(),
+  status: statusSchema.optional(),
+  limit: z.number().int().positive().max(100).default(10),
+  offset: z.number().int().min(0).default(0),
+});
+
+export async function listNeighborhoodGroupUsersPaged(
+  ctx: ServiceContext,
+  input: z.input<typeof listNeighborhoodGroupUsersPagedSchema>
+) {
+  const { neighborhoodId, query, role, status, limit, offset } =
+    listNeighborhoodGroupUsersPagedSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+
+  const search = query ? `%${query}%` : undefined;
+  const searchFilter = search
+    ? or(
+        ilike(users.name, search),
+        ilike(users.email, search),
+        ilike(users.username, search)
+      )
+    : undefined;
+  const roleFilter = role ? eq(users.role, role) : undefined;
+  const statusFilter = status ? eq(users.status, status) : undefined;
+  const combinedFilter =
+    searchFilter && roleFilter && statusFilter
+      ? and(searchFilter, roleFilter, statusFilter)
+      : searchFilter && roleFilter
+        ? and(searchFilter, roleFilter)
+        : searchFilter && statusFilter
+          ? and(searchFilter, statusFilter)
+          : roleFilter && statusFilter
+            ? and(roleFilter, statusFilter)
+            : (searchFilter ?? roleFilter ?? statusFilter);
+  const scopedFilter = combinedFilter
+    ? and(
+        eq(groups.neighborhoodId, neighborhoodId),
+        eq(groupMemberships.status, "active"),
+        combinedFilter
+      )
+    : and(eq(groups.neighborhoodId, neighborhoodId), eq(groupMemberships.status, "active"));
+
+  const items = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      username: users.username,
+      email: users.email,
+      image: users.image,
+      role: users.role,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+      groupCount: sql<number>`count(distinct ${groupMemberships.groupId})`,
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .innerJoin(users, eq(groupMemberships.userId, users.id))
+    .where(scopedFilter)
+    .groupBy(
+      users.id,
+      users.name,
+      users.username,
+      users.email,
+      users.image,
+      users.role,
+      users.status,
+      users.createdAt,
+      users.updatedAt
+    )
+    .orderBy(desc(users.updatedAt), desc(users.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const totalResult = await db
+    .select({
+      value: sql<number>`count(distinct ${users.id})`,
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .innerJoin(users, eq(groupMemberships.userId, users.id))
+    .where(scopedFilter);
+
+  return {
+    items: items.map((item) => ({
+      ...item,
+      groupCount: Number(item.groupCount ?? 0),
+    })),
+    total: Number(totalResult[0]?.value ?? 0),
+  };
 }
 
 const userGroupCountsSchema = z.object({

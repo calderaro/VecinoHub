@@ -149,6 +149,7 @@
       "label": "Admin",
       "overview": "Overview",
       "users": "Users",
+      "members": "Members",
       "groups": "Groups",
       "polls": "Polls",
       "fundraising": "Fundraising",
@@ -158,7 +159,7 @@
     "overview": {
       "label": "Administration",
       "title": "Overview",
-      "subtitle": "Activity summary for polls, fundraising, events, and posts.",
+      "subtitle": "Neighborhood activity summary plus access oversight for group users and neighborhood members.",
       "quickCreate": "Quick Create",
       "viewAll": "View all",
       "kpi": {
@@ -184,8 +185,13 @@
         },
         "users": {
           "active": "Active",
-          "suspended": "Suspended",
-          "pending": "Pending"
+          "inactive": "Inactive",
+          "total": "Total"
+        },
+        "members": {
+          "active": "Active",
+          "admins": "Admins",
+          "total": "Total"
         },
         "groups": {
           "active": "Active",
@@ -218,7 +224,54 @@
     "users": {
       "label": "Administration",
       "title": "Users",
-      "subtitle": "Manage access and account permissions."
+      "subtitle": "Only users with an active membership in at least one group in this neighborhood appear here.",
+      "totalGroupUsers": "{count} active group users",
+      "manageNeighborhoodMembers": "Manage neighborhood members"
+    },
+    "members": {
+      "back": "Back to overview",
+      "title": "Neighborhood members",
+      "subtitle": "This list only shows users who already hold a neighborhood role. Use the dialog to assign a neighborhood role to an existing user.",
+      "stats": {
+        "members": "Members",
+        "active": "Active",
+        "admins": "Admins"
+      },
+      "showingFirst": "Showing the first {count} members."
+    },
+    "neighborhoodMembersManager": {
+      "title": "Neighborhood roles",
+      "add": "Assign role",
+      "empty": "No users hold a neighborhood role yet.",
+      "roles": {
+        "neighbor": "Neighbor",
+        "neighborhood_admin": "Neighborhood admin"
+      },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "systemRoles": {
+        "user": "User",
+        "admin": "Admin",
+        "platform_admin": "Platform admin"
+      },
+      "toasts": {
+        "added": "Neighborhood role assigned.",
+        "roleUpdated": "Neighborhood role updated.",
+        "statusUpdated": "Neighborhood membership updated."
+      },
+      "addDialog": {
+        "title": "Assign neighborhood role",
+        "subtitle": "Enter the email of an existing user and choose the neighborhood role to assign.",
+        "emailLabel": "User email",
+        "emailPlaceholder": "user@example.com",
+        "emailRequired": "Enter an existing user email before saving.",
+        "roleLabel": "Neighborhood role",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "submit": "Assign role"
+      }
     },
     "usersTable": {
       "title": "Users",

@@ -37,17 +37,21 @@
 - Group members remain read-only in `/dashboard/[groupId]/members`.
 - Group admins can update group details and manage members/roles only for their own group.
 - Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.
+- Neighborhood admins opening `/admin/[neighborhoodId]/users` only see users who hold at least one active group membership in that neighborhood.
+- `/admin/[neighborhoodId]/members` only lists users who already have a neighborhood role.
+- Neighborhood admins can assign a neighborhood role to an existing user from the dialog in `/admin/[neighborhoodId]/members`, then promote/demote neighborhood admins there.
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Events: create/edit/delete and list/detail render correctly.
 - Posts: create/edit/publish/unpublish/delete flows work.
-- Profile update (username/image/language) still works.
+- Profile update (username/language) still works.
 
 ## UI and Accessibility
 - New/updated UI includes test ids:
   - platform neighborhood creation/list
   - platform neighborhood detail/edit/delete
   - platform neighborhood membership management
+  - neighborhood admin members management
   - neighborhood switcher entries in `UserMenu`
 - Keyboard close (`Esc`) still closes `UserMenu`.
 - Responsive checks on:

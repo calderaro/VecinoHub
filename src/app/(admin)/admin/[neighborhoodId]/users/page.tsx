@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { UsersTable } from "@/components/admin/users-table";
-import { getUserGroupCounts, listUsersPaged } from "@/services/users";
+import { listNeighborhoodGroupUsersPaged } from "@/services/users";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -31,10 +32,6 @@ export default async function AdminUsersPage({
     },
   };
 
-  if (session.user.role !== "admin" && session.user.role !== "platform_admin") {
-    redirect(adminBasePath);
-  }
-
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const query =
     typeof resolvedSearchParams.q === "string"
@@ -55,17 +52,17 @@ export default async function AdminUsersPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const usersPaged = await listUsersPaged(serviceContext, {
+  const canOpenDetail =
+    session.user.role === "admin" || session.user.role === "platform_admin";
+
+  const usersPaged = await listNeighborhoodGroupUsersPaged(serviceContext, {
+    neighborhoodId: resolvedParams.neighborhoodId,
     query: query || undefined,
     role: role ? (role as "user" | "admin" | "platform_admin") : undefined,
     status: status ? (status as "active" | "inactive") : undefined,
     limit: PAGE_SIZE,
     offset,
   });
-  const groupCounts = await getUserGroupCounts(
-    serviceContext,
-    { userIds: usersPaged.items.map((user) => user.id) }
-  );
 
   const totalPages = Math.max(1, Math.ceil(usersPaged.total / PAGE_SIZE));
   const t = await getTranslations("admin.users");
@@ -80,20 +77,30 @@ export default async function AdminUsersPage({
           <h1 className="text-xl font-bold text-stone-900" data-testid="admin-users-title">
             {t("title")}
           </h1>
-          <p className="mt-0.5 text-sm text-stone-500">{usersPaged.total} total users</p>
+          <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
+          <p className="mt-1 text-sm text-stone-500">
+            {t("totalGroupUsers", { count: usersPaged.total })}
+          </p>
         </div>
+        <Link
+          href={`${adminBasePath}/members`}
+          className="vh-v3-focus rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+        >
+          {t("manageNeighborhoodMembers")}
+        </Link>
       </header>
 
       <UsersTable
         users={usersPaged.items}
         totalUsers={usersPaged.total}
-        groupCounts={Object.fromEntries(groupCounts.entries())}
+        groupCounts={Object.fromEntries(usersPaged.items.map((user) => [user.id, user.groupCount]))}
         currentPage={page}
         totalPages={totalPages}
         query={query}
         role={role}
         status={status}
         adminBasePath={adminBasePath}
+        canOpenDetail={canOpenDetail}
       />
     </div>
   );

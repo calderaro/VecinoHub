@@ -20,13 +20,13 @@ import {
   getFundraisingStats,
 } from "@/services/fundraising";
 import { listGroupsPaged } from "@/services/groups";
+import { listNeighborhoodMembersPaged, getNeighborhoodById } from "@/services/neighborhoods";
 import {
   listActivePollsWithParticipation,
   getPollsStats,
 } from "@/services/polls";
 import { listRecentPosts, getPostsStats } from "@/services/posts";
-import { getNeighborhoodById } from "@/services/neighborhoods";
-import { listUsersPaged } from "@/services/users";
+import { listNeighborhoodGroupUsersPaged } from "@/services/users";
 import { getSession } from "@/server/auth";
 
 function getDisplayLocale(locale: string) {
@@ -127,8 +127,6 @@ export default async function AdminNeighborhoodPage({
       activeNeighborhoodId: neighborhoodId,
     },
   };
-  const isPlatformAdmin =
-    session.user.role === "admin" || session.user.role === "platform_admin";
 
   const [
     pollsStats,
@@ -140,6 +138,12 @@ export default async function AdminNeighborhoodPage({
     postsStats,
     recentPosts,
     groupsTotal,
+    groupUsersActive,
+    groupUsersInactive,
+    groupUsersTotal,
+    neighborhoodMembersActive,
+    neighborhoodMembersAdmins,
+    neighborhoodMembersTotal,
   ] = await Promise.all([
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
@@ -150,15 +154,41 @@ export default async function AdminNeighborhoodPage({
     getPostsStats(serviceContext),
     listRecentPosts(serviceContext),
     listGroupsPaged(serviceContext, { limit: 1, offset: 0 }),
+    listNeighborhoodGroupUsersPaged(serviceContext, {
+      neighborhoodId,
+      status: "active",
+      limit: 1,
+      offset: 0,
+    }),
+    listNeighborhoodGroupUsersPaged(serviceContext, {
+      neighborhoodId,
+      status: "inactive",
+      limit: 1,
+      offset: 0,
+    }),
+    listNeighborhoodGroupUsersPaged(serviceContext, {
+      neighborhoodId,
+      limit: 1,
+      offset: 0,
+    }),
+    listNeighborhoodMembersPaged(serviceContext, {
+      neighborhoodId,
+      status: "active",
+      limit: 1,
+      offset: 0,
+    }),
+    listNeighborhoodMembersPaged(serviceContext, {
+      neighborhoodId,
+      role: "neighborhood_admin",
+      limit: 1,
+      offset: 0,
+    }),
+    listNeighborhoodMembersPaged(serviceContext, {
+      neighborhoodId,
+      limit: 1,
+      offset: 0,
+    }),
   ]);
-
-  const [usersActive, usersInactive, usersTotal] = isPlatformAdmin
-    ? await Promise.all([
-        listUsersPaged(serviceContext, { limit: 1, offset: 0, status: "active" }),
-        listUsersPaged(serviceContext, { limit: 1, offset: 0, status: "inactive" }),
-        listUsersPaged(serviceContext, { limit: 1, offset: 0 }),
-      ])
-    : [{ total: 0 }, { total: 0 }, { total: 0 }];
 
   return (
     <div
@@ -183,7 +213,7 @@ export default async function AdminNeighborhoodPage({
       </header>
 
       <section
-        className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6"
+        className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-7"
         data-testid="admin-overview-stats"
       >
         <KpiCard
@@ -257,28 +287,51 @@ export default async function AdminNeighborhoodPage({
           ]}
         />
 
-        {isPlatformAdmin ? (
-          <KpiCard
-            href={`${adminBasePath}/users`}
-            title={tNav("users")}
-            icon={<UsersIcon className="h-4.5 w-4.5 text-rose-600" />}
-            iconBg="bg-rose-50"
-            testId="admin-overview-stats-users"
-            stats={[
-              { label: t("kpi.users.active"), value: usersActive.total, color: "text-teal-600" },
-              {
-                label: t("kpi.users.suspended"),
-                value: usersInactive.total,
-                color: "text-red-500",
-              },
-              {
-                label: t("kpi.users.pending"),
-                value: Math.max(usersTotal.total - usersActive.total - usersInactive.total, 0),
-                color: "text-amber-600",
-              },
-            ]}
-          />
-        ) : null}
+        <KpiCard
+          href={`${adminBasePath}/users`}
+          title={tNav("users")}
+          icon={<UsersIcon className="h-4.5 w-4.5 text-rose-600" />}
+          iconBg="bg-rose-50"
+          testId="admin-overview-stats-users"
+          stats={[
+            { label: t("kpi.users.active"), value: groupUsersActive.total, color: "text-teal-600" },
+            {
+              label: t("kpi.users.inactive"),
+              value: groupUsersInactive.total,
+              color: "text-red-500",
+            },
+            {
+              label: t("kpi.users.total"),
+              value: groupUsersTotal.total,
+              color: "text-stone-900",
+            },
+          ]}
+        />
+
+        <KpiCard
+          href={`${adminBasePath}/members`}
+          title={tNav("members")}
+          icon={<UsersIcon className="h-4.5 w-4.5 text-sky-600" />}
+          iconBg="bg-sky-50"
+          testId="admin-overview-stats-members"
+          stats={[
+            {
+              label: t("kpi.members.active"),
+              value: neighborhoodMembersActive.total,
+              color: "text-teal-600",
+            },
+            {
+              label: t("kpi.members.admins"),
+              value: neighborhoodMembersAdmins.total,
+              color: "text-sky-600",
+            },
+            {
+              label: t("kpi.members.total"),
+              value: neighborhoodMembersTotal.total,
+              color: "text-stone-900",
+            },
+          ]}
+        />
 
         <KpiCard
           href={`${adminBasePath}/groups`}

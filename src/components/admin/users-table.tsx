@@ -29,6 +29,7 @@ export function UsersTable({
   role,
   status,
   adminBasePath = "/admin",
+  canOpenDetail = true,
 }: {
   users: AdminUser[];
   totalUsers: number;
@@ -39,6 +40,7 @@ export function UsersTable({
   role: string;
   status: string;
   adminBasePath?: string;
+  canOpenDetail?: boolean;
 }) {
   const t = useTranslations("admin.usersTable");
 
@@ -132,6 +134,31 @@ export function UsersTable({
               <tbody className="divide-y divide-stone-100">
                 {users.map((user) => {
                   const displayName = user.username ?? user.name;
+                  const content = (
+                    <div className="group flex items-center gap-3">
+                      {user.image ? (
+                        <Image
+                          className="h-8 w-8 rounded-full border border-stone-200 object-cover"
+                          src={user.image}
+                          alt={displayName}
+                          width={32}
+                          height={32}
+                          sizes="32px"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
+                          {(displayName?.[0] ?? "?").toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-stone-900 transition-colors group-hover:text-teal-700">
+                          {displayName}
+                        </p>
+                        <p className="text-xs text-stone-400">{user.email}</p>
+                      </div>
+                    </div>
+                  );
 
                   return (
                     <tr
@@ -140,33 +167,17 @@ export function UsersTable({
                       data-testid={`admin-users-row-${user.id}`}
                     >
                       <td className="px-5 py-3.5">
-                        <Link
-                          href={`${adminBasePath}/users/${user.id}`}
-                          className="group flex items-center gap-3"
-                          data-testid={`user-list-detail-${user.id}`}
-                        >
-                          {user.image ? (
-                            <Image
-                              className="h-8 w-8 rounded-full border border-stone-200 object-cover"
-                              src={user.image}
-                              alt={displayName}
-                              width={32}
-                              height={32}
-                              sizes="32px"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
-                              {(displayName?.[0] ?? "?").toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-stone-900 transition-colors group-hover:text-teal-700">
-                              {displayName}
-                            </p>
-                            <p className="text-xs text-stone-400">{user.email}</p>
-                          </div>
-                        </Link>
+                        {canOpenDetail ? (
+                          <Link
+                            href={`${adminBasePath}/users/${user.id}`}
+                            className="group flex items-center gap-3"
+                            data-testid={`user-list-detail-${user.id}`}
+                          >
+                            {content}
+                          </Link>
+                        ) : (
+                          <div>{content}</div>
+                        )}
                       </td>
                       <td className="px-4 py-3.5">
                         <StatusBadge

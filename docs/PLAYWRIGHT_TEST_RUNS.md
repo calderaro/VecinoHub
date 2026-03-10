@@ -67,11 +67,12 @@ Preconditions:
 
 Steps:
 1. Open `/platform/{neighborhoodId}`.
-2. Fill `platform-neighborhood-add-member-email` with the existing user email.
-3. Select a role in `platform-neighborhood-add-member-role`.
-4. Submit `platform-neighborhood-add-member-submit`.
-5. Change that user via `platform-neighborhood-member-role-{userId}`.
-6. Change that user via `platform-neighborhood-member-status-{userId}`.
+2. Open `platform-neighborhood-add-member`.
+3. Fill `platform-neighborhood-add-member-email` with the existing user email.
+4. Select a role in `platform-neighborhood-add-member-role`.
+5. Submit `platform-neighborhood-add-member-submit`.
+6. Change that user via `platform-neighborhood-member-role-{userId}`.
+7. Change that user via `platform-neighborhood-member-status-{userId}`.
 
 Expected:
 - The user appears in the membership list, role changes persist, and membership status changes persist.
@@ -997,16 +998,38 @@ Expected:
 
 ### Test Run: Admin Users List
 Preconditions:
-- Admin logged in.
+- Neighborhood admin or platform admin logged in.
+- Target neighborhood has at least one grouped user and at least one neighborhood member with no group assignment.
 
 Steps:
-1. Go to /admin/users.
+1. Go to `/admin/{neighborhoodId}/users`.
 2. Use search and filters.
-3. Open a user from the list.
-4. Use detail actions or edit form to update role/status.
+3. Verify only users with at least one active group membership in that neighborhood are listed.
+4. As platform admin, open a user from the list and verify detail/edit still work.
 
 Expected:
-- User detail opens from list links and changes persist after refresh.
+- Neighborhood admins only see grouped users and do not get user detail links.
+- Platform admins can still open user detail from the same list.
+
+### Test Run: Admin Neighborhood Members
+Preconditions:
+- Neighborhood admin or platform admin logged in.
+- Target neighborhood has at least one member.
+
+Steps:
+1. Go to `/admin/{neighborhoodId}/members`.
+2. Verify `admin-members-root` and `admin-members-manager` render.
+3. Verify the list only contains users who already have a neighborhood role.
+4. Open `platform-neighborhood-add-member`.
+5. Add an existing user via `platform-neighborhood-add-member-email` and `platform-neighborhood-add-member-role`.
+6. Submit `platform-neighborhood-add-member-submit`.
+7. Change that user via `platform-neighborhood-member-role-{userId}`.
+8. Change that user via `platform-neighborhood-member-status-{userId}`.
+
+Expected:
+- Neighborhood role assignment happens from the dialog and requires an existing user email.
+- The members list only shows users with a neighborhood role.
+- Neighborhood admin role changes persist after refresh.
 
 ## Feature: Admin CRUD Coverage
 ### Test Run: Admin Edits Group

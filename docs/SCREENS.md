@@ -41,21 +41,28 @@
 
 ## Profile
 - `/profile`
-  - profile form (username/image/language).
+  - profile form (username/language).
   - includes `UserMenu` with group + neighborhood switching.
 
 ## Neighborhood Admin Shell
 - `/admin/*`
   - access requires neighborhood admin membership or platform admin.
-  - users module remains platform-admin only.
 - Routes:
   - `/admin`
-  - `/admin/groups`, `/admin/groups/new`, `/admin/groups/[groupId]`, `/admin/groups/[groupId]/edit`
-  - `/admin/polls`, `/admin/polls/new`, `/admin/polls/[pollId]`, `/admin/polls/[pollId]/edit`
-  - `/admin/fundraising`, `/admin/fundraising/new`, `/admin/fundraising/[campaignId]`, `/admin/fundraising/[campaignId]/edit`, `/admin/fundraising/[campaignId]/contribute`
-  - `/admin/events`, `/admin/events/new`, `/admin/events/[eventId]`, `/admin/events/[eventId]/edit`
-  - `/admin/posts`, `/admin/posts/new`, `/admin/posts/[postId]`, `/admin/posts/[postId]/edit`
-  - `/admin/users`, `/admin/users/[userId]`, `/admin/users/[userId]/edit` (platform admin only)
+  - `/admin/[neighborhoodId]`
+  - `/admin/[neighborhoodId]/groups`, `/admin/[neighborhoodId]/groups/new`, `/admin/[neighborhoodId]/groups/[groupId]`, `/admin/[neighborhoodId]/groups/[groupId]/edit`
+  - `/admin/[neighborhoodId]/polls`, `/admin/[neighborhoodId]/polls/new`, `/admin/[neighborhoodId]/polls/[pollId]`, `/admin/[neighborhoodId]/polls/[pollId]/edit`
+  - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
+  - `/admin/[neighborhoodId]/events`, `/admin/[neighborhoodId]/events/new`, `/admin/[neighborhoodId]/events/[eventId]`, `/admin/[neighborhoodId]/events/[eventId]/edit`
+  - `/admin/[neighborhoodId]/posts`, `/admin/[neighborhoodId]/posts/new`, `/admin/[neighborhoodId]/posts/[postId]`, `/admin/[neighborhoodId]/posts/[postId]/edit`
+  - `/admin/[neighborhoodId]/users`
+    - neighborhood-scoped list of users who hold at least one active group membership in that neighborhood.
+    - neighborhood admins can view the list; platform admins can also open user detail/edit screens.
+  - `/admin/[neighborhoodId]/members`
+    - neighborhood role management for neighbors and neighborhood admins.
+    - only users with a neighborhood membership appear in the list.
+    - assigning a neighborhood role is done through a dialog that asks for an existing user email plus the target role.
+  - `/admin/[neighborhoodId]/users/[userId]`, `/admin/[neighborhoodId]/users/[userId]/edit` (platform admin only)
 
 ## Platform Admin Shell
 - `/platform`

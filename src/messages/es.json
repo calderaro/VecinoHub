@@ -149,6 +149,7 @@
       "label": "Admin",
       "overview": "Resumen",
       "users": "Usuarios",
+      "members": "Miembros",
       "groups": "Grupos",
       "polls": "Votaciones",
       "fundraising": "Recaudación",
@@ -158,7 +159,7 @@
     "overview": {
       "label": "Administración",
       "title": "Resumen",
-      "subtitle": "Resumen de actividad de votaciones, recaudación, eventos y publicaciones.",
+      "subtitle": "Resumen de actividad del vecindario y supervisión de acceso para usuarios de grupos y miembros de la colonia.",
       "quickCreate": "Crear rápido",
       "viewAll": "Ver todo",
       "kpi": {
@@ -184,8 +185,13 @@
         },
         "users": {
           "active": "Activo",
-          "suspended": "Suspendido",
-          "pending": "Pendiente"
+          "inactive": "Inactivo",
+          "total": "Total"
+        },
+        "members": {
+          "active": "Activos",
+          "admins": "Administradores",
+          "total": "Total"
         },
         "groups": {
           "active": "Activo",
@@ -218,7 +224,54 @@
     "users": {
       "label": "Administración",
       "title": "Usuarios",
-      "subtitle": "Administra accesos y permisos de cuenta."
+      "subtitle": "Aquí solo aparecen usuarios con una membresía activa en al menos un grupo dentro de esta colonia.",
+      "totalGroupUsers": "{count} usuarios activos en grupos",
+      "manageNeighborhoodMembers": "Administrar miembros de la colonia"
+    },
+    "members": {
+      "back": "Volver al resumen",
+      "title": "Miembros de la colonia",
+      "subtitle": "Esta lista solo muestra usuarios que ya tienen un rol en la colonia. Usa el diálogo para asignar un rol de colonia a un usuario existente.",
+      "stats": {
+        "members": "Miembros",
+        "active": "Activos",
+        "admins": "Administradores"
+      },
+      "showingFirst": "Mostrando los primeros {count} miembros."
+    },
+    "neighborhoodMembersManager": {
+      "title": "Roles de colonia",
+      "add": "Asignar rol",
+      "empty": "Ningún usuario tiene un rol de colonia todavía.",
+      "roles": {
+        "neighbor": "Vecino",
+        "neighborhood_admin": "Admin de colonia"
+      },
+      "statuses": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "systemRoles": {
+        "user": "Usuario",
+        "admin": "Admin",
+        "platform_admin": "Admin de plataforma"
+      },
+      "toasts": {
+        "added": "Rol de colonia asignado.",
+        "roleUpdated": "Rol de colonia actualizado.",
+        "statusUpdated": "Membresía de colonia actualizada."
+      },
+      "addDialog": {
+        "title": "Asignar rol de colonia",
+        "subtitle": "Ingresa el correo de un usuario existente y elige el rol de colonia que quieres asignar.",
+        "emailLabel": "Correo del usuario",
+        "emailPlaceholder": "usuario@ejemplo.com",
+        "emailRequired": "Ingresa el correo de un usuario existente antes de guardar.",
+        "roleLabel": "Rol de colonia",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "submit": "Asignar rol"
+      }
     },
     "usersTable": {
       "title": "Usuarios",
