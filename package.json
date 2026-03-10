@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "seed": "tsx scripts/seed.ts",
     "backfill:neighborhoods": "tsx scripts/backfill-neighborhoods.ts",
     "db:generate": "drizzle-kit generate",
@@ -22,7 +24,7 @@
     "better-auth": "^1.4.16",
     "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.575.0",
-    "next": "16.1.4",
+    "next": "16.1.6",
     "next-intl": "^4.7.0",
     "nodemailer": "^8.0.1",
     "pg": "^8.17.2",
@@ -39,14 +41,22 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.2.3",
-    "drizzle-kit": "^0.31.8",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9",
-    "eslint-config-next": "16.1.4",
+    "eslint-config-next": "16.1.6",
     "pixelmatch": "^7.1.0",
     "playwright": "^1.58.2",
+    "pg-mem": "^3.0.14",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "minimatch": "^3.1.4",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^9.0.7"
+    }
   }
 }

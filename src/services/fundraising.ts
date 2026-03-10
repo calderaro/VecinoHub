@@ -18,6 +18,7 @@ import {
   listNeighborhoodIdsForUser,
   requireGroupMember,
   requireNeighborhoodAdminOrPlatform,
+  requireNeighborhoodMember,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
@@ -73,6 +74,25 @@ async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
   }
 
   return neighborhoodAdminIds;
+}
+
+async function listActiveGroupIdsForUserInNeighborhood(
+  userId: string,
+  neighborhoodId: string
+) {
+  const rows = await db
+    .select({ groupId: groupMemberships.groupId })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      and(
+        eq(groupMemberships.userId, userId),
+        eq(groupMemberships.status, "active"),
+        eq(groups.neighborhoodId, neighborhoodId)
+      )
+    );
+
+  return rows.map((row) => row.groupId);
 }
 
 const createCampaignSchema = z.object({
@@ -464,7 +484,14 @@ export async function listCampaigns(ctx: ServiceContext) {
   const memberships = await db
     .select({ groupId: groupMemberships.groupId })
     .from(groupMemberships)
-    .where(eq(groupMemberships.userId, ctx.user.id));
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(
+      and(
+        eq(groupMemberships.userId, ctx.user.id),
+        eq(groupMemberships.status, "active"),
+        inArray(groups.neighborhoodId, neighborhoodIds)
+      )
+    );
 
   const groupIds = memberships.map((membership) => membership.groupId);
 
@@ -683,30 +710,32 @@ export async function getCampaignDetail(
 
       return { ...campaign, contributions };
     }
-  }
 
-  const memberships = await db
-    .select({ groupId: groupMemberships.groupId })
-    .from(groupMemberships)
-    .where(eq(groupMemberships.userId, ctx.user.id));
+    await requireNeighborhoodMember(ctx, campaign.neighborhoodId);
 
-  const groupIds = memberships.map((membership) => membership.groupId);
-
-  if (groupIds.length === 0) {
-    throw new ServiceError("Membership required", "FORBIDDEN");
-  }
-
-  const contributions = await db
-    .select()
-    .from(fundraisingContributions)
-    .where(
-      and(
-        eq(fundraisingContributions.campaignId, campaignId),
-        inArray(fundraisingContributions.groupId, groupIds)
-      )
+    const groupIds = await listActiveGroupIdsForUserInNeighborhood(
+      ctx.user.id,
+      campaign.neighborhoodId
     );
 
-  return { ...campaign, contributions };
+    if (groupIds.length === 0) {
+      throw new ServiceError("Membership required", "FORBIDDEN");
+    }
+
+    const contributions = await db
+      .select()
+      .from(fundraisingContributions)
+      .where(
+        and(
+          eq(fundraisingContributions.campaignId, campaignId),
+          inArray(fundraisingContributions.groupId, groupIds)
+        )
+      );
+
+    return { ...campaign, contributions };
+  }
+
+  throw new ServiceError("Campaign not found", "NOT_FOUND");
 }
 
 export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {

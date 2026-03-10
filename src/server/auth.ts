@@ -1,10 +1,15 @@
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { users } from "@/db/schema";
 
 import { auth } from "./better-auth";
 
 export type SessionUser = {
   id: string;
   role: "user" | "admin" | "platform_admin";
+  status: "active" | "inactive";
   username: string | null;
   image: string | null;
   preferredLanguage: "es" | "en";
@@ -39,10 +44,27 @@ export async function getSession(): Promise<Session> {
     return null;
   }
 
+  const sessionStatus =
+    (sessionResult.user as { status?: SessionUser["status"] }).status;
+  const userStatus =
+    sessionStatus ??
+    (
+      await db
+        .select({ status: users.status })
+        .from(users)
+        .where(eq(users.id, sessionResult.user.id))
+        .limit(1)
+    )[0]?.status;
+
+  if (userStatus !== "active") {
+    return null;
+  }
+
   return {
     user: {
       id: sessionResult.user.id,
       role: sessionResult.user.role as SessionUser["role"],
+      status: userStatus,
       username: (sessionResult.user as { username?: string }).username ?? null,
       image: sessionResult.user.image ?? null,
       preferredLanguage:

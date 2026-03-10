@@ -3,6 +3,8 @@
 ## Regression Gates
 - `npm run lint` passes.
 - `npm run build` passes.
+- `npm test` passes.
+- Single test runs with `npm test -- tests/services/fundraising.test.ts`.
 - `npm run db:migrate` applies successfully on a clean DB.
 
 ## Auth and Base Navigation
@@ -11,6 +13,10 @@
 - Sign-up requires email OTP verification before access to `/dashboard`.
 - Unverified users attempting password login receive a new verification OTP and can complete verification from `/login`.
 - Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
+- Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
+- Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
+- Inactive users are denied access after deactivation, even if they had an existing session before the status change.
+- Inactive users cannot create new sessions through password, magic-link, OTP, or social sign-in flows.
 
 ## Role Access Matrix
 - Platform admin can access `/platform` and `/admin/*`.
@@ -25,7 +31,10 @@
 - Neighborhood admin cannot create neighborhoods.
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
+- Residents cannot open `/dashboard/[groupId]/fundraising/[campaignId]` for a campaign outside an active neighborhood/group relationship.
 - Group member operations reject cross-neighborhood group/user combinations.
+- Removing or inactivating a neighborhood membership immediately revokes stale group-admin manage access in that neighborhood.
+- Removing or inactivating a neighborhood membership also revokes stale read access to group detail and member lists.
 
 ## Active Neighborhood Context
 - User with memberships in multiple neighborhoods can switch neighborhood in `UserMenu`.
@@ -45,7 +54,10 @@
 - Neighborhood admins can assign a neighborhood role to an existing user from the dialog in `/admin/[neighborhoodId]/members`, then promote/demote neighborhood admins there.
 - `/admin/[neighborhoodId]/members` provides dialog-based edit and remove actions for each listed neighborhood admin.
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
+- Poll voting rejects option ids that belong to a different poll and preserves the existing valid vote.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
+- Former or inactive group memberships do not expose contributions in fundraising detail pages.
+- Re-adding a neighborhood membership does not automatically restore prior group memberships or group-admin access.
 - Events: create/edit/delete and list/detail render correctly.
 - Posts: create/edit/publish/unpublish/delete flows work.
 - Profile update (full name/username/language) still works.

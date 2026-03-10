@@ -398,6 +398,20 @@ export async function voteInPoll(
     }
   }
 
+  const option = await db
+    .select({ id: pollOptions.id, pollId: pollOptions.pollId })
+    .from(pollOptions)
+    .where(eq(pollOptions.id, optionId))
+    .limit(1);
+
+  if (!option[0]) {
+    throw new ServiceError("Option not found", "NOT_FOUND");
+  }
+
+  if (option[0].pollId !== pollId) {
+    throw new ServiceError("Option does not belong to poll", "INVALID");
+  }
+
   const existingVote = await db
     .select({ id: votes.id })
     .from(votes)

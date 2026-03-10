@@ -2,7 +2,7 @@ import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { groupMemberships, groups, users } from "@/db/schema";
+import { groupMemberships, groups, sessions, users } from "@/db/schema";
 
 import { ServiceError } from "./errors";
 import { requireAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
@@ -337,11 +337,23 @@ export async function updateUserStatus(
   requireAdmin(ctx);
   const { userId, status } = updateStatusSchema.parse(input);
 
-  const updated = await db
-    .update(users)
-    .set({ status })
-    .where(eq(users.id, userId))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const userRows = await tx
+      .update(users)
+      .set({ status })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!userRows[0]) {
+      return [];
+    }
+
+    if (status === "inactive") {
+      await tx.delete(sessions).where(eq(sessions.userId, userId));
+    }
+
+    return userRows;
+  });
 
   if (!updated[0]) {
     throw new ServiceError("User not found", "NOT_FOUND");

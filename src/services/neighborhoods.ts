@@ -426,16 +426,43 @@ export async function updateNeighborhoodMembershipStatus(
   const { neighborhoodId, userId, status } = updateMembershipStatusSchema.parse(input);
   await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
-  const updated = await db
-    .update(neighborhoodMemberships)
-    .set({ status })
-    .where(
-      and(
-        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
-        eq(neighborhoodMemberships.userId, userId)
+  const updated = await db.transaction(async (tx) => {
+    const membershipRows = await tx
+      .update(neighborhoodMemberships)
+      .set({ status })
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
       )
-    )
-    .returning();
+      .returning();
+
+    if (membershipRows[0] && status === "inactive") {
+      const scopedGroups = await tx
+        .select({ id: groups.id })
+        .from(groups)
+        .where(eq(groups.neighborhoodId, neighborhoodId));
+
+      const groupIds = scopedGroups.map((group) => group.id);
+      if (groupIds.length > 0) {
+        await tx
+          .update(groupMemberships)
+          .set({
+            status: "inactive",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(groupMemberships.userId, userId),
+              inArray(groupMemberships.groupId, groupIds)
+            )
+          );
+      }
+    }
+
+    return membershipRows;
+  });
 
   if (!updated[0]) {
     throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");
@@ -462,19 +489,46 @@ export async function updateNeighborhoodMember(
   const { neighborhoodId, userId, role, status } = updateNeighborhoodMemberSchema.parse(input);
   await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
-  const updated = await db
-    .update(neighborhoodMemberships)
-    .set({
-      ...(role ? { role } : {}),
-      ...(status ? { status } : {}),
-    })
-    .where(
-      and(
-        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
-        eq(neighborhoodMemberships.userId, userId)
+  const updated = await db.transaction(async (tx) => {
+    const membershipRows = await tx
+      .update(neighborhoodMemberships)
+      .set({
+        ...(role ? { role } : {}),
+        ...(status ? { status } : {}),
+      })
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
       )
-    )
-    .returning();
+      .returning();
+
+    if (membershipRows[0] && status === "inactive") {
+      const scopedGroups = await tx
+        .select({ id: groups.id })
+        .from(groups)
+        .where(eq(groups.neighborhoodId, neighborhoodId));
+
+      const groupIds = scopedGroups.map((group) => group.id);
+      if (groupIds.length > 0) {
+        await tx
+          .update(groupMemberships)
+          .set({
+            status: "inactive",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(groupMemberships.userId, userId),
+              inArray(groupMemberships.groupId, groupIds)
+            )
+          );
+      }
+    }
+
+    return membershipRows;
+  });
 
   if (!updated[0]) {
     throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");
@@ -495,15 +549,42 @@ export async function removeNeighborhoodMember(
   const { neighborhoodId, userId } = removeNeighborhoodMemberSchema.parse(input);
   await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
-  const deleted = await db
-    .delete(neighborhoodMemberships)
-    .where(
-      and(
-        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
-        eq(neighborhoodMemberships.userId, userId)
+  const deleted = await db.transaction(async (tx) => {
+    const deletedRows = await tx
+      .delete(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
       )
-    )
-    .returning();
+      .returning();
+
+    if (deletedRows[0]) {
+      const scopedGroups = await tx
+        .select({ id: groups.id })
+        .from(groups)
+        .where(eq(groups.neighborhoodId, neighborhoodId));
+
+      const groupIds = scopedGroups.map((group) => group.id);
+      if (groupIds.length > 0) {
+        await tx
+          .update(groupMemberships)
+          .set({
+            status: "inactive",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(groupMemberships.userId, userId),
+              inArray(groupMemberships.groupId, groupIds)
+            )
+          );
+      }
+    }
+
+    return deletedRows;
+  });
 
   if (!deleted[0]) {
     throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");

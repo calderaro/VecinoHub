@@ -177,6 +177,8 @@ export async function requireGroupAdminOrAdmin(
 
   const group = await resolveGroupAccess(ctx, groupId);
   if (group.neighborhoodId) {
+    await requireNeighborhoodMember(ctx, group.neighborhoodId);
+
     const neighborhoodAdminMembership = await db
       .select({ id: neighborhoodMemberships.id })
       .from(neighborhoodMemberships)

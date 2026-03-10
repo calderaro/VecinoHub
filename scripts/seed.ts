@@ -26,24 +26,31 @@ type SeedUser = {
   role: "user" | "admin" | "platform_admin";
 };
 
+const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+const seedUserPassword = process.env.SEED_USER_PASSWORD;
+
+if (!seedAdminPassword || !seedUserPassword) {
+  throw new Error("SEED_ADMIN_PASSWORD and SEED_USER_PASSWORD must be set to run the seed script.");
+}
+
 const seedUsers: SeedUser[] = [
   {
     email: "admin@vecinohub.local",
-    password: "Admin123!",
+    password: seedAdminPassword,
     name: "Vecino Platform Admin",
     username: "vecino_admin",
     role: "platform_admin",
   },
   {
     email: "ana@vecinohub.local",
-    password: "User123!",
+    password: seedUserPassword,
     name: "Ana Perez",
     username: "ana_perez",
     role: "user",
   },
   {
     email: "luis@vecinohub.local",
-    password: "User123!",
+    password: seedUserPassword,
     name: "Luis Romero",
     username: "luis_romero",
     role: "user",

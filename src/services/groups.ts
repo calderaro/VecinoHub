@@ -11,6 +11,7 @@ import {
   listNeighborhoodAdminIdsForUser,
   listNeighborhoodIdsForUser,
   requireGroupAdminOrAdmin,
+  requireNeighborhoodMember,
   requireNeighborhoodAdminOrPlatform,
   requirePlatformAdmin,
   resolveGroupAccess,
@@ -129,6 +130,10 @@ async function getViewerGroupAccess(
   groupId: string,
   neighborhoodId: string
 ) {
+  if (!isPlatformAdmin(ctx)) {
+    await requireNeighborhoodMember(ctx, neighborhoodId);
+  }
+
   const membership = await db
     .select({
       role: groupMemberships.role,

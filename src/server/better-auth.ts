@@ -1,8 +1,8 @@
-import { betterAuth } from "better-auth";
+import { APIError, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, magicLink } from "better-auth/plugins";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import nodemailer from "nodemailer";
 
 import { db } from "@/db";
@@ -85,6 +85,20 @@ async function generateUniqueUsername(name: string) {
   throw new Error("Unable to generate a unique username.");
 }
 
+async function requireActiveUser(userId: string) {
+  const user = await db
+    .select({
+      status: schema.users.status,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, userId))
+    .limit(1);
+
+  if (!user[0] || user[0].status !== "active") {
+    throw new APIError("FORBIDDEN", { message: "Account is inactive" });
+  }
+}
+
 function getSmtpTransporter() {
   if (!smtpHost || !smtpUser || !smtpPass) {
     return null;
@@ -105,6 +119,23 @@ function getSmtpTransporter() {
   return smtpTransporter;
 }
 
+function requireSmtpTransporter() {
+  const transporter = getSmtpTransporter();
+
+  if (!transporter) {
+    if (!warnedMissingSmtp) {
+      warnedMissingSmtp = true;
+      console.warn(
+        "[auth] Auth email delivery is disabled because SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.",
+      );
+    }
+
+    throw new Error("Auth email delivery is not configured.");
+  }
+
+  return transporter;
+}
+
 async function sendMagicLinkEmail({
   email,
   url,
@@ -112,19 +143,7 @@ async function sendMagicLinkEmail({
   email: string;
   url: string;
 }) {
-  const transporter = getSmtpTransporter();
-
-  if (!transporter) {
-    if (!warnedMissingSmtp) {
-      warnedMissingSmtp = true;
-      console.warn(
-        "[auth] Magic link email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.",
-      );
-    }
-
-    console.info(`[auth] Magic link for ${email}: ${url}`);
-    return;
-  }
+  const transporter = requireSmtpTransporter();
 
   await transporter.sendMail({
     from: mailFrom,
@@ -142,19 +161,7 @@ async function sendPasswordResetEmail({
   email: string;
   url: string;
 }) {
-  const transporter = getSmtpTransporter();
-
-  if (!transporter) {
-    if (!warnedMissingSmtp) {
-      warnedMissingSmtp = true;
-      console.warn(
-        "[auth] Password reset email skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
-      );
-    }
-
-    console.info(`[auth] Password reset link for ${email}: ${url}`);
-    return;
-  }
+  const transporter = requireSmtpTransporter();
 
   await transporter.sendMail({
     from: mailFrom,
@@ -174,25 +181,13 @@ async function sendEmailOtp({
   otp: string;
   type: "sign-in" | "email-verification" | "forget-password";
 }) {
-  const transporter = getSmtpTransporter();
+  const transporter = requireSmtpTransporter();
   const purpose =
     type === "forget-password"
       ? "password reset"
       : type === "email-verification"
         ? "email verification"
         : "sign in";
-
-  if (!transporter) {
-    if (!warnedMissingSmtp) {
-      warnedMissingSmtp = true;
-      console.warn(
-        "[auth] Email OTP skipped: SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM."
-      );
-    }
-
-    console.info(`[auth] OTP (${type}) for ${email}: ${otp}`);
-    return;
-  }
 
   await transporter.sendMail({
     from: mailFrom,
@@ -224,7 +219,11 @@ export const auth = betterAuth({
   },
   socialProviders:
     Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
-  rateLimit: { enabled: false },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 10,
+  },
   advanced: {
     database: {
       generateId: false,
@@ -245,6 +244,13 @@ export const auth = betterAuth({
               username,
             },
           };
+        },
+      },
+    },
+    session: {
+      create: {
+        async before(session) {
+          await requireActiveUser(session.userId);
         },
       },
     },
@@ -320,6 +326,11 @@ export const auth = betterAuth({
     nextCookies(),
     magicLink({
       expiresIn: authMagicLinkExpiresInSeconds,
+      rateLimit: {
+        window: 60,
+        max: 5,
+      },
+      storeToken: "hashed",
       sendMagicLink: async ({ email, url }) => {
         await sendMagicLinkEmail({ email, url });
       },
@@ -329,6 +340,7 @@ export const auth = betterAuth({
       expiresIn: authEmailOtpExpiresInSeconds,
       allowedAttempts: 5,
       overrideDefaultEmailVerification: true,
+      storeOTP: "hashed",
       sendVerificationOTP: async ({ email, otp, type }) => {
         await sendEmailOtp({ email, otp, type });
       },
