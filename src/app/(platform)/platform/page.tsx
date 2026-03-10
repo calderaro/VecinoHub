@@ -53,22 +53,31 @@ export default async function PlatformPage() {
             {neighborhoods.items.map((neighborhood) => (
               <li
                 key={neighborhood.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+                className="px-5 py-3"
                 data-testid={`platform-neighborhood-row-${neighborhood.id}`}
               >
-                <div>
-                  <p className="text-sm font-semibold text-stone-900">{neighborhood.name}</p>
-                  <p className="text-xs text-stone-500">/{neighborhood.slug}</p>
-                </div>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    neighborhood.status === "active"
-                      ? "bg-teal-50 text-teal-700 ring-1 ring-teal-200"
-                      : "bg-stone-100 text-stone-600 ring-1 ring-stone-200"
-                  }`}
+                <Link
+                  href={`/platform/${neighborhood.id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg transition-colors hover:bg-stone-50"
+                  data-testid={`platform-neighborhood-link-${neighborhood.id}`}
                 >
-                  {neighborhood.status}
-                </span>
+                  <div>
+                    <p className="text-sm font-semibold text-stone-900">{neighborhood.name}</p>
+                    <p className="text-xs text-stone-500">/{neighborhood.slug}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        neighborhood.status === "active"
+                          ? "bg-teal-50 text-teal-700 ring-1 ring-teal-200"
+                          : "bg-stone-100 text-stone-600 ring-1 ring-stone-200"
+                      }`}
+                    >
+                      {neighborhood.status}
+                    </span>
+                    <span className="text-xs font-medium text-stone-400">View details</span>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>

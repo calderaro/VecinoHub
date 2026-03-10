@@ -8,6 +8,9 @@
 ## Auth and Base Navigation
 - Signed-out users hitting `/dashboard`, `/admin`, `/platform` redirect to `/login`.
 - Signed-in users can open `UserMenu` and sign out from any page header using it.
+- Sign-up requires email OTP verification before access to `/dashboard`.
+- Unverified users attempting password login receive a new verification OTP and can complete verification from `/login`.
+- Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
 
 ## Role Access Matrix
 - Platform admin can access `/platform` and `/admin/*`.
@@ -17,6 +20,8 @@
 
 ## Multi-Neighborhood Isolation
 - Platform admin can create a new neighborhood in `/platform`.
+- Platform admin can open `/platform/[neighborhoodId]`, edit the neighborhood, and delete it from the detail screen.
+- Platform admin can add an existing user to a neighborhood and change neighborhood membership role/status from `/platform/[neighborhoodId]`.
 - Neighborhood admin cannot create neighborhoods.
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
@@ -38,6 +43,8 @@
 ## UI and Accessibility
 - New/updated UI includes test ids:
   - platform neighborhood creation/list
+  - platform neighborhood detail/edit/delete
+  - platform neighborhood membership management
   - neighborhood switcher entries in `UserMenu`
 - Keyboard close (`Esc`) still closes `UserMenu`.
 - Responsive checks on:

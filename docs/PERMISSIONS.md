@@ -11,7 +11,7 @@
 - Client-provided neighborhood identifiers are validated against actor permissions.
 
 ## Platform Admin
-- Create/update neighborhoods.
+- Create/update/delete neighborhoods.
 - Manage global users (role/status).
 - Full CRUD across groups, polls, fundraising, events, posts.
 - Assign/revoke neighborhood admin memberships.

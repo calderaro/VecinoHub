@@ -45,6 +45,65 @@ Steps:
 Expected:
 - New neighborhood is created and listed immediately after refresh.
 
+### Test Run: Platform Admin Opens Neighborhood Details
+Preconditions:
+- Logged in as `platform_admin`.
+- At least one neighborhood exists.
+
+Steps:
+1. Go to `/platform`.
+2. Click one row or `platform-neighborhood-link-{id}`.
+3. Verify `platform-neighborhood-detail-root` renders.
+4. Verify the members section renders or shows `platform-neighborhood-members-empty`.
+
+Expected:
+- User reaches `/platform/{neighborhoodId}` and can inspect neighborhood metadata plus users.
+
+### Test Run: Platform Admin Manages Neighborhood Members
+Preconditions:
+- Logged in as `platform_admin`.
+- At least one neighborhood exists.
+- An existing app user exists that is not yet in the target neighborhood.
+
+Steps:
+1. Open `/platform/{neighborhoodId}`.
+2. Fill `platform-neighborhood-add-member-email` with the existing user email.
+3. Select a role in `platform-neighborhood-add-member-role`.
+4. Submit `platform-neighborhood-add-member-submit`.
+5. Change that user via `platform-neighborhood-member-role-{userId}`.
+6. Change that user via `platform-neighborhood-member-status-{userId}`.
+
+Expected:
+- The user appears in the membership list, role changes persist, and membership status changes persist.
+
+### Test Run: Platform Admin Edits Neighborhood
+Preconditions:
+- Logged in as `platform_admin`.
+- At least one neighborhood exists.
+
+Steps:
+1. Open `/platform/{neighborhoodId}`.
+2. Click `platform-neighborhood-edit`.
+3. Update `platform-neighborhood-edit-name` or `platform-neighborhood-edit-slug`.
+4. Submit `platform-neighborhood-edit-submit`.
+
+Expected:
+- User returns to the detail page and sees updated values.
+
+### Test Run: Platform Admin Deletes Neighborhood
+Preconditions:
+- Logged in as `platform_admin`.
+- Create a disposable neighborhood for this run.
+
+Steps:
+1. Open `/platform/{neighborhoodId}` for the disposable neighborhood.
+2. Click `platform-neighborhood-delete`.
+3. Confirm deletion in the dialog.
+4. Verify redirect back to `/platform`.
+
+Expected:
+- Neighborhood is removed from the platform list and related neighborhood-scoped data is deleted.
+
 ### Test Run: Neighborhood Admin Cannot Access Platform
 Preconditions:
 - Logged in as neighborhood admin (non-platform).
@@ -151,17 +210,31 @@ Auth:
 - auth-login-password
 - auth-login-magic-link
 - auth-reset-request
-- auth-reset-otp
-- auth-reset-password
-- auth-reset-submit
 - auth-login-notice
 - auth-login-submit
 - auth-login-error
 - auth-register-name
 - auth-register-email
 - auth-register-password
+- auth-register-verification-email
+- auth-register-otp
+- auth-register-otp-verify
+- auth-register-otp-resend
+- auth-register-otp-back
 - auth-register-submit
 - auth-register-error
+- forgot-password-card
+- forgot-password-email
+- forgot-password-request
+- forgot-password-email-readonly
+- forgot-password-otp
+- forgot-password-new-password
+- forgot-password-confirm-password
+- forgot-password-back
+- forgot-password-submit
+- forgot-password-back-login
+- forgot-password-error
+- forgot-password-notice
 
 Navigation:
 - nav-dashboard
@@ -411,15 +484,20 @@ Expected:
 ### Test Run: Register New User
 Preconditions:
 - No existing user with the test email.
+- SMTP is configured, or server logs are accessible for the OTP in dev.
 
 Steps:
 1. Go to `/register` and verify redirect to `/login?tab=signup`.
 2. Fill `auth-register-name`, `auth-register-email`, `auth-register-password`.
 3. Submit registration with `auth-register-submit`.
-4. Verify redirect to `/dashboard`.
+4. Verify `auth-register-verification-email` shows the submitted email.
+5. Fill `auth-register-otp` with the received OTP.
+6. Submit with `auth-register-otp-verify`.
+7. Verify redirect to `/dashboard`.
 
 Expected:
-- User is logged in and sees dashboard shell.
+- User is not logged in before OTP verification.
+- After OTP verification, the session is active and the dashboard shell loads.
 
 ### Test Run: Login and Logout
 Preconditions:
@@ -495,15 +573,18 @@ Preconditions:
 
 Steps:
 1. Go to `/login`.
-2. Fill `auth-login-email`.
-3. Click `auth-reset-request` to send OTP.
-4. Fill `auth-reset-otp` with received OTP.
-5. Fill `auth-reset-password` with a new password.
-6. Click `auth-reset-submit`.
-7. Verify `auth-login-notice` confirms password reset success.
+2. Click `auth-reset-request` and verify navigation to `/forgot-password`.
+3. Fill `forgot-password-email`.
+4. Click `forgot-password-request`.
+5. Verify `forgot-password-email-readonly` shows the submitted email.
+6. Fill `forgot-password-otp` with the received OTP.
+7. Fill `forgot-password-new-password`.
+8. Fill `forgot-password-confirm-password`.
+9. Click `forgot-password-submit`.
+10. Verify redirect to `/dashboard`.
 
 Expected:
-- Password reset completes via OTP without leaving `/login`.
+- Password reset completes on `/forgot-password`, creates a session, and redirects to `/dashboard`.
 
 ## Feature: Groups
 ### Test Run: Admin Creates Group

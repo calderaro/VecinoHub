@@ -5,6 +5,12 @@
   - Signed-out users: landing page.
   - Signed-in users: redirect to `/dashboard`.
 - `/login`
+  - combined auth screen for sign-in and sign-up.
+  - sign-up requires email OTP confirmation before session creation.
+- `/forgot-password`
+  - dedicated two-step password reset flow.
+  - first step requests OTP by email.
+  - second step collects OTP, new password, and password confirmation.
 - `/register` -> redirects to `/login?tab=signup`
 
 ## Resident Dashboard
@@ -54,6 +60,12 @@
   - access requires `platform_admin` (or legacy `admin` compatibility).
   - platform neighborhood management dashboard.
   - includes neighborhood creation form and neighborhood list.
+- `/platform/[neighborhoodId]`
+  - platform neighborhood detail screen.
+  - shows neighborhood metadata, editable neighborhood member list, add-user form, edit entry, and delete confirmation flow.
+- `/platform/[neighborhoodId]/edit`
+  - platform neighborhood edit screen.
+  - updates name, slug, and status.
 
 ## Rendering Contract
 - SSR-first reads from services.

@@ -2,10 +2,12 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 
 import {
+  addNeighborhoodMemberByEmail,
   createNeighborhood,
   getNeighborhoodById,
   listNeighborhoodMembersPaged,
   listNeighborhoodsPaged,
+  removeNeighborhood,
   setActiveNeighborhoodContext,
   setNeighborhoodMemberRole,
   updateNeighborhood,
@@ -56,6 +58,21 @@ export const neighborhoodsRouter = createTRPCRouter({
         handleServiceError(error);
       }
     }),
+  addMemberByEmail: protectedProcedure
+    .input(
+      z.object({
+        neighborhoodId: z.string().uuid(),
+        email: z.string().email(),
+        role: z.enum(["neighbor", "neighborhood_admin"]).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await addNeighborhoodMemberByEmail(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
   update: protectedProcedure
     .input(
       z.object({
@@ -68,6 +85,15 @@ export const neighborhoodsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         return await updateNeighborhood(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  remove: protectedProcedure
+    .input(z.object({ neighborhoodId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await removeNeighborhood(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

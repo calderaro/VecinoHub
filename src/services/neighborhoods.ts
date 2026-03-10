@@ -2,7 +2,20 @@ import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 import { z } from "zod";
 
 import { db } from "@/db";
-import { neighborhoodMemberships, neighborhoods, users } from "@/db/schema";
+import {
+  events,
+  fundraisingCampaigns,
+  fundraisingContributions,
+  groupMemberships,
+  groups,
+  neighborhoodMemberships,
+  neighborhoods,
+  pollOptions,
+  polls,
+  posts,
+  users,
+  votes,
+} from "@/db/schema";
 
 import { ServiceError } from "./errors";
 import {
@@ -213,6 +226,76 @@ export async function updateNeighborhood(
   return updated[0];
 }
 
+const removeNeighborhoodSchema = z.object({
+  neighborhoodId: idSchema,
+});
+
+export async function removeNeighborhood(
+  ctx: ServiceContext,
+  input: z.input<typeof removeNeighborhoodSchema>
+) {
+  requirePlatformAdmin(ctx);
+  const { neighborhoodId } = removeNeighborhoodSchema.parse(input);
+
+  const existing = await db
+    .select({ id: neighborhoods.id })
+    .from(neighborhoods)
+    .where(eq(neighborhoods.id, neighborhoodId))
+    .limit(1);
+
+  if (!existing[0]) {
+    throw new ServiceError("Neighborhood not found", "NOT_FOUND");
+  }
+
+  await db.transaction(async (tx) => {
+    const [pollRows, campaignRows, groupRows] = await Promise.all([
+      tx.select({ id: polls.id }).from(polls).where(eq(polls.neighborhoodId, neighborhoodId)),
+      tx
+        .select({ id: fundraisingCampaigns.id })
+        .from(fundraisingCampaigns)
+        .where(eq(fundraisingCampaigns.neighborhoodId, neighborhoodId)),
+      tx.select({ id: groups.id }).from(groups).where(eq(groups.neighborhoodId, neighborhoodId)),
+    ]);
+
+    const pollIds = pollRows.map((row) => row.id);
+    const campaignIds = campaignRows.map((row) => row.id);
+    const groupIds = groupRows.map((row) => row.id);
+
+    if (pollIds.length > 0) {
+      await tx.delete(votes).where(inArray(votes.pollId, pollIds));
+      await tx.delete(pollOptions).where(inArray(pollOptions.pollId, pollIds));
+      await tx.delete(polls).where(inArray(polls.id, pollIds));
+    }
+
+    if (campaignIds.length > 0) {
+      await tx
+        .delete(fundraisingContributions)
+        .where(inArray(fundraisingContributions.campaignId, campaignIds));
+      await tx
+        .delete(fundraisingCampaigns)
+        .where(inArray(fundraisingCampaigns.id, campaignIds));
+    }
+
+    if (groupIds.length > 0) {
+      await tx.delete(votes).where(inArray(votes.groupId, groupIds));
+      await tx
+        .delete(fundraisingContributions)
+        .where(inArray(fundraisingContributions.groupId, groupIds));
+      await tx.delete(groupMemberships).where(inArray(groupMemberships.groupId, groupIds));
+      await tx.delete(groups).where(inArray(groups.id, groupIds));
+    }
+
+    await tx.delete(events).where(eq(events.neighborhoodId, neighborhoodId));
+    await tx.delete(posts).where(eq(posts.neighborhoodId, neighborhoodId));
+    await tx
+      .delete(neighborhoodMemberships)
+      .where(eq(neighborhoodMemberships.neighborhoodId, neighborhoodId));
+    await tx.delete(neighborhoods).where(eq(neighborhoods.id, neighborhoodId));
+  });
+
+  return { neighborhoodId };
+}
+
 const setMembershipRoleSchema = z.object({
   neighborhoodId: idSchema,
   userId: idSchema,
@@ -258,6 +341,76 @@ export async function setNeighborhoodMemberRole(
     .returning();
 
   return updated[0];
+}
+
+const addMemberByEmailSchema = z.object({
+  neighborhoodId: idSchema,
+  email: z.string().trim().email(),
+  role: neighborhoodRoleSchema.default("neighbor"),
+});
+
+export async function addNeighborhoodMemberByEmail(
+  ctx: ServiceContext,
+  input: z.input<typeof addMemberByEmailSchema>
+) {
+  const { neighborhoodId, email, role } = addMemberByEmailSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+
+  const userRows = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      username: users.username,
+      image: users.image,
+      role: users.role,
+    })
+    .from(users)
+    .where(sql`lower(${users.email}) = lower(${email})`)
+    .limit(1);
+
+  const user = userRows[0];
+  if (!user) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  await setNeighborhoodMemberRole(ctx, {
+    neighborhoodId,
+    userId: user.id,
+    role,
+  });
+
+  const membershipRows = await db
+    .select({
+      membershipRole: neighborhoodMemberships.role,
+      membershipStatus: neighborhoodMemberships.status,
+      createdAt: neighborhoodMemberships.createdAt,
+    })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.userId, user.id)
+      )
+    )
+    .limit(1);
+
+  const membership = membershipRows[0];
+  if (!membership) {
+    throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");
+  }
+
+  return {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    username: user.username,
+    image: user.image,
+    systemRole: user.role,
+    membershipRole: membership.membershipRole,
+    membershipStatus: membership.membershipStatus,
+    createdAt: membership.createdAt,
+  };
 }
 
 const updateMembershipStatusSchema = z.object({
@@ -373,8 +526,13 @@ export async function getNeighborhoodById(
   }
 
   const row = await db
-    .select()
+    .select({
+      neighborhood: neighborhoods,
+      creatorName: users.name,
+      creatorEmail: users.email,
+    })
     .from(neighborhoods)
+    .leftJoin(users, eq(neighborhoods.createdBy, users.id))
     .where(eq(neighborhoods.id, neighborhoodId))
     .limit(1);
 
@@ -382,7 +540,11 @@ export async function getNeighborhoodById(
     throw new ServiceError("Neighborhood not found", "NOT_FOUND");
   }
 
-  return row[0];
+  return {
+    ...row[0].neighborhood,
+    creatorName: row[0].creatorName,
+    creatorEmail: row[0].creatorEmail,
+  };
 }
 
 const slugSchema = z.object({ slug: z.string().trim().min(1) });
