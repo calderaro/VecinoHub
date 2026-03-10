@@ -260,6 +260,10 @@
       "updatedAt": "Actualizado",
       "membershipsTitle": "Membresías en grupos",
       "noMemberships": "Este usuario no está asignado a ningún grupo.",
+      "membershipRoles": {
+        "group_admin": "Admin del grupo",
+        "group_member": "Miembro del grupo"
+      },
       "stats": {
         "totalMemberships": "Membresías totales",
         "activeMemberships": "Membresías activas",
@@ -320,14 +324,14 @@
     },
     "groupDetail": {
       "badge": {
-        "admin": "Admin del grupo",
-        "member": "Miembro"
+        "group_admin": "Admin del grupo",
+        "group_member": "Miembro del grupo"
       },
       "edit": "Editar",
       "membersTitle": "Miembros",
       "back": "Volver a grupos",
       "groupLabel": "Grupo vecinal",
-      "adminLabel": "Admin:",
+      "adminLabel": "Admins:",
       "createdLabel": "Creado",
       "status": {
         "active": "Activo",
@@ -350,7 +354,7 @@
       "createTitle": "Crear grupo",
       "editTitle": "Editar grupo",
       "nameRequired": "El nombre del grupo es obligatorio.",
-      "validationError": "Nombre y admin son obligatorios.",
+      "validationError": "El nombre del grupo es obligatorio.",
       "updatedToast": "Grupo actualizado.",
       "updateError": "No se pudo actualizar el grupo.",
       "creating": "Creando...",
@@ -360,15 +364,15 @@
       "fields": {
         "name": "Nombre",
         "address": "Dirección",
-        "adminUserId": "Id del admin"
+        "adminUserId": "Id del admin inicial del grupo (opcional)"
       },
       "createdToast": "Grupo creado.",
       "saveErrorTitle": "No se pudo guardar el grupo",
       "cancel": "Cancelar",
       "namePlaceholder": "ej. Residentes Torre A",
       "addressPlaceholder": "Calle, edificio y referencias del grupo",
-      "adminPlaceholder": "Id del usuario administrador (UUID)",
-      "adminHint": "Asigna el usuario que administrará miembros y configuración.",
+      "adminPlaceholder": "Id del admin inicial del grupo (UUID)",
+      "adminHint": "Déjalo vacío para crear el grupo sin miembros. Después podrás agregar miembros y asignar roles.",
       "preview": {
         "newGroup": "Nuevo grupo",
         "noAddress": "Sin dirección registrada",
@@ -379,7 +383,7 @@
       "tips": {
         "title": "Sugerencias",
         "name": "Usa un nombre de grupo fácil de identificar para residentes.",
-        "owner": "Confirma el id del administrador antes de guardar la asignación.",
+        "owner": "Puedes dejar vacío el admin inicial y asignar miembros después.",
         "address": "Agrega detalles de ubicación para identificar mejor el grupo."
       }
     },
@@ -897,9 +901,8 @@
         "empty": "Aún no hay miembros.",
         "emptyHint": "Los miembros del grupo aparecerán aquí cuando sean asignados.",
         "roles": {
-          "admin": "admin",
-          "user": "usuario",
-          "platform_admin": "admin de plataforma"
+          "group_admin": "admin del grupo",
+          "group_member": "miembro del grupo"
         }
       }
     },
@@ -922,20 +925,25 @@
       "empty": "Aún no hay miembros.",
       "remove": "Eliminar",
       "roles": {
-        "admin": "admin",
-        "user": "usuario",
-        "platform_admin": "admin de plataforma"
+        "group_admin": "Admin del grupo",
+        "group_member": "Miembro del grupo"
+      },
+      "statuses": {
+        "active": "Activo",
+        "inactive": "Inactivo"
       },
       "toasts": {
         "added": "Miembro agregado al grupo.",
-        "removed": "Miembro eliminado del grupo."
+        "removed": "Miembro eliminado del grupo.",
+        "roleUpdated": "Rol del grupo actualizado."
       },
       "addDialog": {
         "title": "Agregar miembro",
-        "subtitle": "Invita por correo.",
+        "subtitle": "Invita por correo y asigna su rol dentro del grupo.",
         "emailRequired": "El correo es obligatorio.",
         "emailLabel": "Correo",
         "emailPlaceholder": "miembro@email.com",
+        "roleLabel": "Rol",
         "cancel": "Cancelar",
         "add": "Agregar",
         "adding": "Agregando"

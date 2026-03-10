@@ -143,8 +143,8 @@ export default async function DashboardPage({
       id: member.id,
       name,
       email: member.email,
-      role: member.role,
-      roleLabel: t(`members.roles.${member.role}`),
+      role: member.membershipRole,
+      roleLabel: t(`members.roles.${member.membershipRole}`),
       avatarInitial: avatar.initial,
       avatarColorClass: avatar.colorClass,
     };

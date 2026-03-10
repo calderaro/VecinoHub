@@ -56,8 +56,7 @@ export default async function GroupDetailPage({
   const locale = await getLocale();
   const t = await getTranslations("admin.groupDetail");
 
-  const groupWithMeta = group as typeof group & { adminName?: string };
-  const activeMembers = members.filter((member) => member.status === "active").length;
+  const activeMembers = members.filter((member) => member.membershipStatus === "active").length;
   const statusVariant = members.length > 0 ? "active" : "inactive";
 
   return (
@@ -85,7 +84,7 @@ export default async function GroupDetailPage({
                   label={statusVariant === "active" ? t("status.active") : t("status.inactive")}
                 />
                 <span className="text-xs text-stone-400">
-                  {t("adminLabel")} {groupWithMeta.adminName ?? group.adminUserId}
+                  {t("adminLabel")} {group.adminLabel ?? "-"}
                 </span>
                 <span className="text-xs text-stone-400">
                   {t("createdLabel")} {formatDate(group.createdAt, locale)}

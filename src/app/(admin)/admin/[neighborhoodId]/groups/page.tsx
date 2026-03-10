@@ -150,7 +150,10 @@ export default async function GroupsPage({
               </thead>
               <tbody className="divide-y divide-stone-100">
                 {groups.map((group) => {
-                  const groupWithMeta = group as typeof group & { adminName?: string; createdAt?: Date | string };
+                  const groupWithMeta = group as typeof group & {
+                    adminLabel?: string | null;
+                    createdAt?: Date | string;
+                  };
                   const memberCount = memberCounts.get(group.id) ?? 0;
                   const statusVariant = memberCount > 0 ? "active" : "inactive";
 
@@ -175,7 +178,7 @@ export default async function GroupsPage({
                         </Link>
                       </td>
                       <td className="hidden px-4 py-3.5 text-stone-600 sm:table-cell">
-                        {groupWithMeta.adminName ?? group.adminUserId}
+                        {groupWithMeta.adminLabel ?? "-"}
                       </td>
                       <td className="px-4 py-3.5">
                         <StatusBadge

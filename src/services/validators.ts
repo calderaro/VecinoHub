@@ -4,6 +4,7 @@ export const idSchema = z.string().uuid();
 export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
 export const roleSchema = systemRoleSchema;
 export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
+export const groupRoleSchema = z.enum(["group_member", "group_admin"]);
 export const neighborhoodStatusSchema = z.enum(["active", "inactive"]);
 export const statusSchema = z.enum(["active", "inactive"]);
 export const preferredLanguageSchema = z.enum(["es", "en"]);

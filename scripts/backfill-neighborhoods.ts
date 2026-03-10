@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -129,9 +129,16 @@ async function main() {
   }
 
   const groupAdmins = await db
-    .select({ userId: groups.adminUserId })
-    .from(groups)
-    .where(eq(groups.neighborhoodId, defaultNeighborhoodId));
+    .select({ userId: groupMemberships.userId })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groups.id, groupMemberships.groupId))
+    .where(
+      and(
+        eq(groups.neighborhoodId, defaultNeighborhoodId),
+        eq(groupMemberships.role, "group_admin"),
+        eq(groupMemberships.status, "active")
+      )
+    );
 
   const uniqueGroupAdminIds = Array.from(new Set(groupAdmins.map((row) => row.userId)));
   if (uniqueGroupAdminIds.length > 0) {

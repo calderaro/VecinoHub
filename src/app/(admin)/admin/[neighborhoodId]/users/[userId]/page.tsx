@@ -164,10 +164,16 @@ export default async function AdminUserDetailPage({
                     <p className="truncate text-sm font-medium text-stone-900">{membership.groupName}</p>
                     <p className="truncate text-xs text-stone-400">{membership.groupAddress ?? "-"}</p>
                   </div>
-                  <StatusBadge
-                    variant={membership.membershipStatus}
-                    label={membership.membershipStatus === "active" ? tTable("statuses.active") : tTable("statuses.inactive")}
-                  />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge
+                      variant={membership.membershipRole}
+                      label={t(`membershipRoles.${membership.membershipRole}`)}
+                    />
+                    <StatusBadge
+                      variant={membership.membershipStatus}
+                      label={membership.membershipStatus === "active" ? tTable("statuses.active") : tTable("statuses.inactive")}
+                    />
+                  </div>
                 </Link>
               ))}
             </div>

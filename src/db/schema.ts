@@ -27,6 +27,7 @@ export const neighborhoodMembershipStatusEnum = pgEnum(
   "neighborhood_membership_status",
   ["active", "inactive"]
 );
+export const groupRoleEnum = pgEnum("group_role", ["group_member", "group_admin"]);
 export const membershipStatusEnum = pgEnum("membership_status", ["active", "inactive"]);
 export const pollStatusEnum = pgEnum("poll_status", ["draft", "active", "closed"]);
 export const contributionMethodEnum = pgEnum("contribution_method", ["cash", "wire_transfer"]);
@@ -187,7 +188,6 @@ export const groups = pgTable(
     neighborhoodId: uuid("neighborhood_id").notNull(),
     name: text("name").notNull(),
     address: text("address"),
-    adminUserId: uuid("admin_user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -195,10 +195,7 @@ export const groups = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [
-    index("groups_neighborhood_id_idx").on(table.neighborhoodId),
-    index("groups_admin_user_id_idx").on(table.adminUserId),
-  ]
+  (table) => [index("groups_neighborhood_id_idx").on(table.neighborhoodId)]
 );
 
 export const groupMemberships = pgTable(
@@ -207,6 +204,7 @@ export const groupMemberships = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     groupId: uuid("group_id").notNull(),
     userId: uuid("user_id").notNull(),
+    role: groupRoleEnum("role").notNull().default("group_member"),
     status: membershipStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -222,6 +220,7 @@ export const groupMemberships = pgTable(
     ),
     index("group_memberships_group_id_idx").on(table.groupId),
     index("group_memberships_user_id_idx").on(table.userId),
+    index("group_memberships_group_role_idx").on(table.groupId, table.role),
   ]
 );
 

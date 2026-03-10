@@ -260,6 +260,10 @@
       "updatedAt": "Updated",
       "membershipsTitle": "Group memberships",
       "noMemberships": "This user is not assigned to any groups.",
+      "membershipRoles": {
+        "group_admin": "Group admin",
+        "group_member": "Group member"
+      },
       "stats": {
         "totalMemberships": "Total memberships",
         "activeMemberships": "Active memberships",
@@ -320,14 +324,14 @@
     },
     "groupDetail": {
       "badge": {
-        "admin": "Group admin",
-        "member": "Member"
+        "group_admin": "Group admin",
+        "group_member": "Group member"
       },
       "edit": "Edit",
       "membersTitle": "Members",
       "back": "Back to groups",
       "groupLabel": "Neighborhood Group",
-      "adminLabel": "Admin:",
+      "adminLabel": "Admins:",
       "createdLabel": "Created",
       "status": {
         "active": "Active",
@@ -350,7 +354,7 @@
       "createTitle": "Create group",
       "editTitle": "Edit group",
       "nameRequired": "Group name is required.",
-      "validationError": "Name and admin user id are required.",
+      "validationError": "Group name is required.",
       "updatedToast": "Group details updated.",
       "updateError": "Unable to update group.",
       "creating": "Creating...",
@@ -360,15 +364,15 @@
       "fields": {
         "name": "Name",
         "address": "Address",
-        "adminUserId": "Admin user id"
+        "adminUserId": "Initial group admin user id (optional)"
       },
       "createdToast": "Group created.",
       "saveErrorTitle": "Failed to save group",
       "cancel": "Cancel",
       "namePlaceholder": "e.g. Building A Residents",
       "addressPlaceholder": "Street, building, apartment references",
-      "adminPlaceholder": "Admin user id (UUID)",
-      "adminHint": "Assign the user who will manage members and settings.",
+      "adminPlaceholder": "Initial group admin user id (UUID)",
+      "adminHint": "Leave this blank to create the group without members. You can add members and assign roles later.",
       "preview": {
         "newGroup": "New Group",
         "noAddress": "No address provided",
@@ -379,7 +383,7 @@
       "tips": {
         "title": "Tips",
         "name": "Use a recognizable group name for residents.",
-        "owner": "Confirm the admin user id before saving ownership.",
+        "owner": "You can leave the initial group admin empty and assign members later.",
         "address": "Add location details to help residents identify the group."
       }
     },
@@ -897,9 +901,8 @@
         "empty": "No members yet.",
         "emptyHint": "Group members will appear here once assigned.",
         "roles": {
-          "admin": "admin",
-          "user": "user",
-          "platform_admin": "platform admin"
+          "group_admin": "group admin",
+          "group_member": "group member"
         }
       }
     },
@@ -922,20 +925,25 @@
       "empty": "No members yet.",
       "remove": "Remove",
       "roles": {
-        "admin": "admin",
-        "user": "user",
-        "platform_admin": "platform admin"
+        "group_admin": "Group admin",
+        "group_member": "Group member"
+      },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "toasts": {
         "added": "Member added to the group.",
-        "removed": "Member removed from the group."
+        "removed": "Member removed from the group.",
+        "roleUpdated": "Group role updated."
       },
       "addDialog": {
         "title": "Add group member",
-        "subtitle": "Invite a member by their email address.",
+        "subtitle": "Invite a member by their email address and assign their group role.",
         "emailRequired": "Email is required.",
         "emailLabel": "Email",
         "emailPlaceholder": "member@email.com",
+        "roleLabel": "Role",
         "cancel": "Cancel",
         "add": "Add member",
         "adding": "Adding"

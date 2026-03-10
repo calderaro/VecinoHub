@@ -155,7 +155,7 @@ export async function listNeighborhoodAdminIdsForUser(ctx: ServiceContext) {
 
 export async function resolveGroupAccess(ctx: ServiceContext, groupId: string) {
   const group = await db
-    .select({ adminUserId: groups.adminUserId, neighborhoodId: groups.neighborhoodId })
+    .select({ neighborhoodId: groups.neighborhoodId })
     .from(groups)
     .where(eq(groups.id, groupId))
     .limit(1);
@@ -176,28 +176,39 @@ export async function requireGroupAdminOrAdmin(
   }
 
   const group = await resolveGroupAccess(ctx, groupId);
-  if (group.adminUserId === ctx.user.id) {
-    return;
+  if (group.neighborhoodId) {
+    const neighborhoodAdminMembership = await db
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, ctx.user.id),
+          eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
+          eq(neighborhoodMemberships.role, "neighborhood_admin"),
+          eq(neighborhoodMemberships.status, "active")
+        )
+      )
+      .limit(1);
+
+    if (neighborhoodAdminMembership[0]) {
+      return;
+    }
   }
 
-  if (!group.neighborhoodId) {
-    throw new ServiceError("Group admin access required", "FORBIDDEN");
-  }
-
-  const neighborhoodAdminMembership = await db
-    .select({ id: neighborhoodMemberships.id })
-    .from(neighborhoodMemberships)
+  const membership = await db
+    .select({ id: groupMemberships.id })
+    .from(groupMemberships)
     .where(
       and(
-        eq(neighborhoodMemberships.userId, ctx.user.id),
-        eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
-        eq(neighborhoodMemberships.role, "neighborhood_admin"),
-        eq(neighborhoodMemberships.status, "active")
+        eq(groupMemberships.groupId, groupId),
+        eq(groupMemberships.userId, ctx.user.id),
+        eq(groupMemberships.role, "group_admin"),
+        eq(groupMemberships.status, "active")
       )
     )
     .limit(1);
 
-  if (!neighborhoodAdminMembership[0]) {
+  if (!membership[0]) {
     throw new ServiceError("Group admin access required", "FORBIDDEN");
   }
 }
@@ -214,7 +225,8 @@ export async function requireGroupMember(ctx: ServiceContext, groupId: string) {
     .where(
       and(
         eq(groupMemberships.groupId, groupId),
-        eq(groupMemberships.userId, ctx.user.id)
+        eq(groupMemberships.userId, ctx.user.id),
+        eq(groupMemberships.status, "active")
       )
     )
     .limit(1);

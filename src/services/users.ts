@@ -135,8 +135,14 @@ export async function getUserById(
 
   const managedTotals = await db
     .select({ total: count() })
-    .from(groups)
-    .where(eq(groups.adminUserId, userId));
+    .from(groupMemberships)
+    .where(
+      and(
+        eq(groupMemberships.userId, userId),
+        eq(groupMemberships.role, "group_admin"),
+        eq(groupMemberships.status, "active")
+      )
+    );
 
   return {
     ...user,
@@ -162,6 +168,7 @@ export async function listUserMemberships(
   const rows = await db
     .select({
       membershipId: groupMemberships.id,
+      membershipRole: groupMemberships.role,
       membershipStatus: groupMemberships.status,
       createdAt: groupMemberships.createdAt,
       groupId: groups.id,

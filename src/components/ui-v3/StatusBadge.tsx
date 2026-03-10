@@ -19,6 +19,8 @@ type StatusBadgeVariant =
   | "rejected"
   | "suspended"
   | "admin"
+  | "group_admin"
+  | "group_member"
   | "platform_admin"
   | "moderator"
   | "resident"
@@ -45,6 +47,8 @@ const statusStyles: Record<StatusBadgeVariant, string> = {
   rejected: "bg-red-50 text-red-600 ring-red-200",
   suspended: "bg-red-50 text-red-600 ring-red-200",
   admin: "bg-violet-50 text-violet-700 ring-violet-200",
+  group_admin: "bg-violet-50 text-violet-700 ring-violet-200",
+  group_member: "bg-stone-100 text-stone-600 ring-stone-200",
   platform_admin: "bg-violet-50 text-violet-700 ring-violet-200",
   moderator: "bg-blue-50 text-blue-700 ring-blue-200",
   resident: "bg-stone-100 text-stone-600 ring-stone-200",

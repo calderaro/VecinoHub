@@ -192,13 +192,11 @@ async function main() {
       {
         name: "Casa 101",
         address: "Calle Principal 101",
-        adminUserId: ana.id,
         neighborhoodId: centroNeighborhood.id,
       },
       {
         name: "Casa 202",
         address: "Calle Principal 202",
-        adminUserId: luis.id,
         neighborhoodId: surNeighborhood.id,
       },
     ])
@@ -207,11 +205,11 @@ async function main() {
   const [casa101, casa202] = createdGroups;
 
   await db.insert(groupMemberships).values([
-    { groupId: casa101.id, userId: admin.id },
-    { groupId: casa101.id, userId: ana.id },
-    { groupId: casa202.id, userId: admin.id },
-    { groupId: casa202.id, userId: luis.id },
-    { groupId: casa202.id, userId: ana.id },
+    { groupId: casa101.id, userId: admin.id, role: "group_member" },
+    { groupId: casa101.id, userId: ana.id, role: "group_admin" },
+    { groupId: casa202.id, userId: admin.id, role: "group_member" },
+    { groupId: casa202.id, userId: luis.id, role: "group_admin" },
+    { groupId: casa202.id, userId: ana.id, role: "group_member" },
   ]);
 
   const [poll] = await db

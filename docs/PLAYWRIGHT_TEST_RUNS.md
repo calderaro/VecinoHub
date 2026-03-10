@@ -141,6 +141,47 @@ Expected:
 
 If seeding does not create users, create them via the UI in the Auth runs.
 
+## Feature: Group Roles and Memberships
+
+### Test Run: Group Admin Manages Own Group
+Preconditions:
+- Logged in as a user with an active `group_admin` membership for the target group.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Verify `group-members-add` is visible.
+3. Add an existing user with `group-members-add`, `group-members-add-role`, and `group-members-add-submit`.
+4. Change that user via `group-members-role-{userId}`.
+5. Remove that user with the remove action.
+
+Expected:
+- The group admin can add/remove members and switch `group_member` / `group_admin` roles only inside their own group.
+
+### Test Run: Group Member Is Read Only
+Preconditions:
+- Logged in as a user with an active `group_member` membership for the target group.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Verify the members list renders.
+3. Verify `group-members-add` is not present.
+4. Verify no `group-members-role-{userId}` control is shown.
+
+Expected:
+- The group member can read the roster but cannot change membership or roles.
+
+### Test Run: Neighborhood Admin Manages Group Roles
+Preconditions:
+- Logged in as a `neighborhood_admin` for the target group neighborhood.
+
+Steps:
+1. Open `/dashboard/{groupId}/members` or `/admin/{neighborhoodId}/groups/{groupId}`.
+2. Change a member role via `group-members-role-{userId}`.
+3. Refresh the page.
+
+Expected:
+- The updated group role persists, even when the acting user is not a member of that group.
+
 ## Playwright MCP Selector Guidance
 Use these selector patterns to keep tests stable:
 
@@ -601,20 +642,34 @@ Steps:
 Expected:
 - Group is created and visible in list and detail page.
 
+### Test Run: Admin Creates Group Without Members
+Preconditions:
+- Admin logged in.
+
+Steps:
+1. Go to /admin/groups/new.
+2. Enter group name and optional address.
+3. Leave the Admin User field empty.
+4. Save.
+5. Open group detail.
+
+Expected:
+- Group is created successfully with zero members and no group admins assigned yet.
+
 ### Test Run: Admin Assigns Group Admin
 Preconditions:
 - Admin logged in.
 - A group exists.
-- A member user exists with known user id.
+- A member user exists with known user id or email.
 
 Steps:
-1. Go to /admin/groups/{groupId}/edit.
-2. Enter the admin user id in the Admin User field.
-3. Save.
-4. Open group detail and verify badge and admin user id.
+1. Go to /dashboard/{groupId}/members or /admin/{neighborhoodId}/groups/{groupId}.
+2. Add the user if they are not already in the group.
+3. Change that user via `group-members-role-{userId}` to `group_admin`.
+4. Refresh and open group detail.
 
 Expected:
-- Group admin is assigned and shown in the group detail.
+- Group admin role is assigned and shown in the group detail.
 
 ### Test Run: Group Admin Adds Member
 Preconditions:
@@ -961,7 +1016,7 @@ Preconditions:
 
 Steps:
 1. Go to /admin/groups/{groupId}/edit.
-2. Change name or admin user id.
+2. Change name or address.
 3. Save.
 
 Expected:

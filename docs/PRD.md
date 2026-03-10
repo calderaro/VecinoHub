@@ -12,7 +12,7 @@ Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, PostgreSQL, bett
   - `neighborhood_admin` (management scoped to one neighborhood)
   - `neighbor` (resident experience)
 - Keep resident dashboard flows intact while enforcing strict tenant isolation.
-- Preserve group-level delegation with `groups.admin_user_id` for membership operations.
+- Preserve group-level delegation with per-group membership roles.
 
 ## 3) Non-Goals (Current Iteration)
 - Billing, tenant provisioning APIs, or per-neighborhood custom domains.
@@ -29,8 +29,9 @@ Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, PostgreSQL, bett
 - `neighbor`
 - `neighborhood_admin`
 
-### Group delegation
-- `groups.admin_user_id` remains active for local member management.
+### Group membership role (`group_memberships.role`)
+- `group_member`
+- `group_admin`
 
 ## 5) Core Entities
 - `users`
@@ -66,7 +67,8 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `events`, `post
 - `platform_admin`: full cross-neighborhood read/write and user role management.
 - `neighborhood_admin`: CRUD for neighborhood content and group management only in authorized neighborhoods.
 - `neighbor`: read/participate flows for own neighborhood/group permissions.
-- `group admin`: member add/remove only in owned group.
+- `group_admin`: manage only their own group details, members, and group roles.
+- `group_member`: read-only access for their own group.
 
 ## 8) Route Model
 - Resident: `/dashboard`, `/dashboard/[groupId]/*`

@@ -2,12 +2,12 @@ import { z } from "zod";
 
 import {
   addMember,
-  assignGroupAdmin,
   createGroup,
   deleteGroup,
   listGroupMembers,
   listUserGroups,
   removeMember,
+  setGroupMemberRole,
   updateGroup,
 } from "@/services/groups";
 
@@ -37,7 +37,7 @@ export const groupsRouter = createTRPCRouter({
         neighborhoodId: z.string().uuid().optional(),
         name: z.string().min(1),
         address: z.string().optional(),
-        adminUserId: z.string().uuid(),
+        adminUserId: z.string().uuid().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -71,11 +71,17 @@ export const groupsRouter = createTRPCRouter({
         handleServiceError(error);
       }
     }),
-  assignAdmin: protectedProcedure
-    .input(z.object({ groupId: z.string().uuid(), adminUserId: z.string().uuid() }))
+  setMemberRole: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string().uuid(),
+        userId: z.string().uuid(),
+        role: z.enum(["group_member", "group_admin"]),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await assignGroupAdmin(getServiceContext(ctx), input);
+        return await setGroupMemberRole(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }
@@ -87,6 +93,7 @@ export const groupsRouter = createTRPCRouter({
           groupId: z.string().uuid(),
           userId: z.string().uuid().optional(),
           email: z.string().email().optional(),
+          role: z.enum(["group_member", "group_admin"]).optional(),
         })
         .refine((data) => data.userId || data.email, {
           message: "User id or email is required",

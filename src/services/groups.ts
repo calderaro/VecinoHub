@@ -16,14 +16,166 @@ import {
   resolveGroupAccess,
 } from "./guards";
 import type { ServiceContext } from "./types";
-import { idSchema } from "./validators";
+import { groupRoleSchema, idSchema } from "./validators";
 
 const createGroupSchema = z.object({
   neighborhoodId: idSchema.optional(),
   name: z.string().min(1),
   address: z.string().optional(),
-  adminUserId: idSchema,
+  adminUserId: idSchema.optional(),
 });
+
+async function assertUserExists(userId: string) {
+  const user = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user[0]) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+}
+
+async function ensureNeighborhoodMembership(
+  neighborhoodId: string,
+  userId: string
+) {
+  const existing = await db
+    .select({ id: neighborhoodMemberships.id })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.userId, userId)
+      )
+    )
+    .limit(1);
+
+  if (existing[0]) {
+    await db
+      .update(neighborhoodMemberships)
+      .set({ status: "active", updatedAt: new Date() })
+      .where(eq(neighborhoodMemberships.id, existing[0].id));
+    return;
+  }
+
+  await db.insert(neighborhoodMemberships).values({
+    neighborhoodId,
+    userId,
+    role: "neighbor",
+    status: "active",
+  });
+}
+
+async function listGroupAdminSummaries(groupIds: string[]) {
+  const summaries = new Map<
+    string,
+    {
+      adminUserIds: string[];
+      adminNames: string[];
+      adminLabel: string | null;
+    }
+  >();
+
+  if (groupIds.length === 0) {
+    return summaries;
+  }
+
+  const rows = await db
+    .select({
+      groupId: groupMemberships.groupId,
+      userId: users.id,
+      name: users.name,
+    })
+    .from(groupMemberships)
+    .innerJoin(users, eq(users.id, groupMemberships.userId))
+    .where(
+      and(
+        inArray(groupMemberships.groupId, groupIds),
+        eq(groupMemberships.role, "group_admin"),
+        eq(groupMemberships.status, "active")
+      )
+    );
+
+  for (const row of rows) {
+    const current = summaries.get(row.groupId) ?? {
+      adminUserIds: [],
+      adminNames: [],
+      adminLabel: null,
+    };
+
+    if (!current.adminUserIds.includes(row.userId)) {
+      current.adminUserIds.push(row.userId);
+    }
+
+    if (row.name && !current.adminNames.includes(row.name)) {
+      current.adminNames.push(row.name);
+    }
+
+    current.adminLabel =
+      current.adminNames.length > 0
+        ? current.adminNames.join(", ")
+        : current.adminUserIds.join(", ");
+
+    summaries.set(row.groupId, current);
+  }
+
+  return summaries;
+}
+
+async function getViewerGroupAccess(
+  ctx: ServiceContext,
+  groupId: string,
+  neighborhoodId: string
+) {
+  const membership = await db
+    .select({
+      role: groupMemberships.role,
+      status: groupMemberships.status,
+    })
+    .from(groupMemberships)
+    .where(
+      and(
+        eq(groupMemberships.groupId, groupId),
+        eq(groupMemberships.userId, ctx.user.id),
+        eq(groupMemberships.status, "active")
+      )
+    )
+    .limit(1);
+
+  const viewerMembershipRole = membership[0]?.role ?? null;
+
+  if (isPlatformAdmin(ctx)) {
+    return {
+      viewerMembershipRole,
+      viewerCanManage: true,
+    };
+  }
+
+  const neighborhoodAdmin = await db
+    .select({ id: neighborhoodMemberships.id })
+    .from(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.role, "neighborhood_admin"),
+        eq(neighborhoodMemberships.status, "active")
+      )
+    )
+    .limit(1);
+
+  if (!viewerMembershipRole && !neighborhoodAdmin[0]) {
+    throw new ServiceError("Membership required", "FORBIDDEN");
+  }
+
+  return {
+    viewerMembershipRole,
+    viewerCanManage:
+      Boolean(neighborhoodAdmin[0]) || viewerMembershipRole === "group_admin",
+  };
+}
 
 export async function createGroup(
   ctx: ServiceContext,
@@ -36,11 +188,9 @@ export async function createGroup(
     resolvedNeighborhoodId = neighborhoodAdminIds?.[0];
   }
 
-  if (!resolvedNeighborhoodId) {
-    if (isPlatformAdmin(ctx)) {
-      const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
-      resolvedNeighborhoodId = firstNeighborhood[0]?.id;
-    }
+  if (!resolvedNeighborhoodId && isPlatformAdmin(ctx)) {
+    const firstNeighborhood = await db.select({ id: neighborhoods.id }).from(neighborhoods).limit(1);
+    resolvedNeighborhoodId = firstNeighborhood[0]?.id;
   }
 
   if (!resolvedNeighborhoodId) {
@@ -49,20 +199,14 @@ export async function createGroup(
 
   await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
-  const admin = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.id, adminUserId))
-    .limit(1);
-
-  if (!admin[0]) {
-    throw new ServiceError("Admin user not found", "NOT_FOUND");
+  if (adminUserId) {
+    await assertUserExists(adminUserId);
   }
 
   return db.transaction(async (tx) => {
     const created = await tx
       .insert(groups)
-      .values({ neighborhoodId: resolvedNeighborhoodId, name, address, adminUserId })
+      .values({ neighborhoodId: resolvedNeighborhoodId, name, address })
       .returning();
 
     const group = created[0];
@@ -70,22 +214,33 @@ export async function createGroup(
       throw new ServiceError("Failed to create group", "INVALID");
     }
 
-    await tx
-      .insert(groupMemberships)
-      .values({ groupId: group.id, userId: adminUserId })
-      .onConflictDoNothing();
-
-    await tx
-      .insert(neighborhoodMemberships)
-      .values({
-        neighborhoodId: resolvedNeighborhoodId,
+    if (adminUserId) {
+      await tx.insert(groupMemberships).values({
+        groupId: group.id,
         userId: adminUserId,
-        role: "neighbor",
+        role: "group_admin",
         status: "active",
-      })
-      .onConflictDoNothing();
+      });
 
-    return group;
+      await tx
+        .insert(neighborhoodMemberships)
+        .values({
+          neighborhoodId: resolvedNeighborhoodId,
+          userId: adminUserId,
+          role: "neighbor",
+          status: "active",
+        })
+        .onConflictDoNothing();
+    }
+
+    return {
+      ...group,
+      adminUserIds: adminUserId ? [adminUserId] : [],
+      adminNames: [],
+      adminLabel: null,
+      viewerMembershipRole: null,
+      viewerCanManage: true,
+    };
   });
 }
 
@@ -100,12 +255,7 @@ export async function updateGroup(
   input: z.input<typeof updateGroupSchema>
 ) {
   const { groupId, name, address } = updateGroupSchema.parse(input);
-  const group = await resolveGroupAccess(ctx, groupId);
-  if (!group.neighborhoodId) {
-    requirePlatformAdmin(ctx);
-  } else {
-    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
-  }
+  await requireGroupAdminOrAdmin(ctx, groupId);
 
   const updated = await db
     .update(groups)
@@ -129,12 +279,7 @@ export async function deleteGroup(
   input: z.input<typeof deleteGroupSchema>
 ) {
   const { groupId } = deleteGroupSchema.parse(input);
-  const group = await resolveGroupAccess(ctx, groupId);
-  if (!group.neighborhoodId) {
-    requirePlatformAdmin(ctx);
-  } else {
-    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
-  }
+  await requireGroupAdminOrAdmin(ctx, groupId);
 
   const deleted = await db
     .delete(groups)
@@ -148,48 +293,50 @@ export async function deleteGroup(
   return deleted[0];
 }
 
-const assignGroupAdminSchema = z.object({
+const setGroupMemberRoleSchema = z.object({
   groupId: idSchema,
-  adminUserId: idSchema,
+  userId: idSchema,
+  role: groupRoleSchema,
 });
 
-export async function assignGroupAdmin(
+export async function setGroupMemberRole(
   ctx: ServiceContext,
-  input: z.input<typeof assignGroupAdminSchema>
+  input: z.input<typeof setGroupMemberRoleSchema>
 ) {
-  const { groupId, adminUserId } = assignGroupAdminSchema.parse(input);
+  const { groupId, userId, role } = setGroupMemberRoleSchema.parse(input);
+  await requireGroupAdminOrAdmin(ctx, groupId);
+
   const group = await resolveGroupAccess(ctx, groupId);
-  if (!group.neighborhoodId) {
-    requirePlatformAdmin(ctx);
-  } else {
-    await requireNeighborhoodAdminOrPlatform(ctx, group.neighborhoodId);
-  }
+  await assertUserExists(userId);
 
-  const updated = await db
-    .update(groups)
-    .set({ adminUserId })
-    .where(eq(groups.id, groupId))
-    .returning();
+  const existing = await db
+    .select({ id: groupMemberships.id })
+    .from(groupMemberships)
+    .where(
+      and(
+        eq(groupMemberships.groupId, groupId),
+        eq(groupMemberships.userId, userId)
+      )
+    )
+    .limit(1);
 
-  if (!updated[0]) {
-    throw new ServiceError("Group not found", "NOT_FOUND");
-  }
-
-  await db
-    .insert(groupMemberships)
-    .values({ groupId, userId: adminUserId })
-    .onConflictDoNothing();
+  const updated = existing[0]
+    ? await db
+        .update(groupMemberships)
+        .set({ role, status: "active", updatedAt: new Date() })
+        .where(eq(groupMemberships.id, existing[0].id))
+        .returning()
+    : await db
+        .insert(groupMemberships)
+        .values({ groupId, userId, role, status: "active" })
+        .returning();
 
   if (group.neighborhoodId) {
-    await db
-      .insert(neighborhoodMemberships)
-      .values({
-        neighborhoodId: group.neighborhoodId,
-        userId: adminUserId,
-        role: "neighbor",
-        status: "active",
-      })
-      .onConflictDoNothing();
+    await ensureNeighborhoodMembership(group.neighborhoodId, userId);
+  }
+
+  if (!updated[0]) {
+    throw new ServiceError("Membership not found", "NOT_FOUND");
   }
 
   return updated[0];
@@ -200,6 +347,7 @@ const addMemberSchema = z
     groupId: idSchema,
     userId: idSchema.optional(),
     email: z.string().email().optional(),
+    role: groupRoleSchema.optional(),
   })
   .refine((data) => data.userId || data.email, {
     message: "User id or email is required",
@@ -210,7 +358,7 @@ export async function addMember(
   ctx: ServiceContext,
   input: z.input<typeof addMemberSchema>
 ) {
-  const { groupId, userId, email } = addMemberSchema.parse(input);
+  const { groupId, userId, email, role } = addMemberSchema.parse(input);
   await requireGroupAdminOrAdmin(ctx, groupId);
   const group = await resolveGroupAccess(ctx, groupId);
 
@@ -232,29 +380,42 @@ export async function addMember(
     throw new ServiceError("User is required", "INVALID");
   }
 
-  const membership = await db
-    .insert(groupMemberships)
-    .values({ groupId, userId: resolvedUserId })
-    .onConflictDoNothing()
-    .returning();
+  const existing = await db
+    .select({ id: groupMemberships.id, role: groupMemberships.role })
+    .from(groupMemberships)
+    .where(
+      and(
+        eq(groupMemberships.groupId, groupId),
+        eq(groupMemberships.userId, resolvedUserId)
+      )
+    )
+    .limit(1);
+
+  const membership = existing[0]
+    ? await db
+        .update(groupMemberships)
+        .set({
+          status: "active",
+          role: role ?? existing[0].role,
+          updatedAt: new Date(),
+        })
+        .where(eq(groupMemberships.id, existing[0].id))
+        .returning()
+    : await db
+        .insert(groupMemberships)
+        .values({
+          groupId,
+          userId: resolvedUserId,
+          role: role ?? "group_member",
+          status: "active",
+        })
+        .returning();
 
   if (group.neighborhoodId) {
-    await db
-      .insert(neighborhoodMemberships)
-      .values({
-        neighborhoodId: group.neighborhoodId,
-        userId: resolvedUserId,
-        role: "neighbor",
-        status: "active",
-      })
-      .onConflictDoNothing();
+    await ensureNeighborhoodMembership(group.neighborhoodId, resolvedUserId);
   }
 
-  if (!membership[0]) {
-    return { groupId, userId: resolvedUserId };
-  }
-
-  return membership[0];
+  return membership[0] ?? { groupId, userId: resolvedUserId };
 }
 
 const removeMemberSchema = z.object({
@@ -297,13 +458,10 @@ export async function listUserGroups(ctx: ServiceContext) {
       neighborhoodId: groups.neighborhoodId,
       name: groups.name,
       address: groups.address,
-      adminUserId: groups.adminUserId,
+      membershipRole: groupMemberships.role,
     })
     .from(groups)
-    .innerJoin(
-      groupMemberships,
-      eq(groups.id, groupMemberships.groupId)
-    )
+    .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
     .where(
       and(
         eq(groupMemberships.userId, ctx.user.id),
@@ -342,60 +500,64 @@ export async function listGroupsPaged(
       ? and(searchFilter, neighborhoodFilter)
       : (searchFilter ?? neighborhoodFilter);
 
+  let rows:
+    | Array<{
+        id: string;
+        neighborhoodId: string;
+        name: string;
+        address: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+      }>
+    | [];
+  let total = 0;
+
   if (isPlatformAdmin(ctx)) {
-    const rows = await db
-      .select({
-        group: groups,
-        adminName: users.name,
-      })
-      .from(groups)
-      .leftJoin(users, eq(groups.adminUserId, users.id))
-      .where(scopedFilters)
-      .limit(limit)
-      .offset(offset);
-    const items = rows.map((row) => ({
-      ...row.group,
-      adminName: row.adminName,
-    }));
+    rows = await db.select().from(groups).where(scopedFilters).limit(limit).offset(offset);
     const totalResult = await db
       .select({ value: count() })
       .from(groups)
       .where(scopedFilters);
+    total = Number(totalResult[0]?.value ?? 0);
+  } else {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      return { items: [], total: 0 };
+    }
 
-    return { items, total: Number(totalResult[0]?.value ?? 0) };
+    const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
+    const combinedFilter = scopedFilters
+      ? and(membershipFilter, scopedFilters)
+      : membershipFilter;
+
+    rows = await db
+      .select()
+      .from(groups)
+      .where(combinedFilter)
+      .limit(limit)
+      .offset(offset);
+
+    const totalResult = await db
+      .select({ value: count() })
+      .from(groups)
+      .where(combinedFilter);
+    total = Number(totalResult[0]?.value ?? 0);
   }
 
-  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
-  if (!neighborhoodIds || neighborhoodIds.length === 0) {
-    return { items: [], total: 0 };
-  }
-  const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
-  const combinedFilter = scopedFilters
-    ? and(membershipFilter, scopedFilters)
-    : membershipFilter;
+  const adminSummaries = await listGroupAdminSummaries(rows.map((row) => row.id));
 
-  const items = await db
-    .select({
-      group: groups,
-      adminName: users.name,
-    })
-    .from(groups)
-    .leftJoin(users, eq(groups.adminUserId, users.id))
-    .where(combinedFilter)
-    .limit(limit)
-    .offset(offset);
-
-  const normalizedItems = items.map((row) => ({
-    ...row.group,
-    adminName: row.adminName,
-  }));
-
-  const totalResult = await db
-    .select({ value: count() })
-    .from(groups)
-    .where(combinedFilter);
-
-  return { items: normalizedItems, total: Number(totalResult[0]?.value ?? 0) };
+  return {
+    items: rows.map((row) => {
+      const summary = adminSummaries.get(row.id);
+      return {
+        ...row,
+        adminUserIds: summary?.adminUserIds ?? [],
+        adminNames: summary?.adminNames ?? [],
+        adminLabel: summary?.adminLabel ?? null,
+      };
+    }),
+    total,
+  };
 }
 
 const groupMemberCountsSchema = z.object({
@@ -419,7 +581,12 @@ export async function getGroupMemberCounts(
       total: count(),
     })
     .from(groupMemberships)
-    .where(inArray(groupMemberships.groupId, allowedGroupIds))
+    .where(
+      and(
+        inArray(groupMemberships.groupId, allowedGroupIds),
+        eq(groupMemberships.status, "active")
+      )
+    )
     .groupBy(groupMemberships.groupId);
 
   return new Map(rows.map((row) => [row.groupId, Number(row.total)]));
@@ -435,54 +602,7 @@ export async function listGroupMembers(
 ) {
   const { groupId } = listGroupMembersSchema.parse(input);
   const group = await resolveGroupAccess(ctx, groupId);
-  if (!isPlatformAdmin(ctx)) {
-    if (group.neighborhoodId) {
-      const neighborhoodAdmin = await db
-        .select({ id: neighborhoodMemberships.id })
-        .from(neighborhoodMemberships)
-        .where(
-          and(
-            eq(neighborhoodMemberships.userId, ctx.user.id),
-            eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
-            eq(neighborhoodMemberships.role, "neighborhood_admin"),
-            eq(neighborhoodMemberships.status, "active")
-          )
-        )
-        .limit(1);
-
-      if (!neighborhoodAdmin[0]) {
-        const membership = await db
-          .select({ id: groupMemberships.id })
-          .from(groupMemberships)
-          .where(
-            and(
-              eq(groupMemberships.groupId, groupId),
-              eq(groupMemberships.userId, ctx.user.id)
-            )
-          )
-          .limit(1);
-
-        if (!membership[0]) {
-          throw new ServiceError("Membership required", "FORBIDDEN");
-        }
-      }
-    } else {
-      const membership = await db
-        .select({ id: groupMemberships.id })
-        .from(groupMemberships)
-        .where(
-          and(
-            eq(groupMemberships.groupId, groupId),
-            eq(groupMemberships.userId, ctx.user.id)
-          )
-        )
-        .limit(1);
-
-      if (!membership[0]) {
-        throw new ServiceError("Membership required", "FORBIDDEN");
-      }
-    }
-  }
+  await getViewerGroupAccess(ctx, groupId, group.neighborhoodId);
 
   return db
     .select({
@@ -491,8 +611,10 @@ export async function listGroupMembers(
       username: users.username,
       email: users.email,
       image: users.image,
-      role: users.role,
-      status: users.status,
+      systemRole: users.role,
+      userStatus: users.status,
+      membershipRole: groupMemberships.role,
+      membershipStatus: groupMemberships.status,
     })
     .from(groupMemberships)
     .innerJoin(users, eq(users.id, groupMemberships.userId))
@@ -506,58 +628,23 @@ export async function getGroupById(
   input: z.input<typeof getGroupSchema>
 ) {
   const { groupId } = getGroupSchema.parse(input);
-  const group = await resolveGroupAccess(ctx, groupId);
-  if (!isPlatformAdmin(ctx)) {
-    if (group.neighborhoodId) {
-      const neighborhoodMembership = await db
-        .select({ id: neighborhoodMemberships.id })
-        .from(neighborhoodMemberships)
-        .where(
-          and(
-            eq(neighborhoodMemberships.userId, ctx.user.id),
-            eq(neighborhoodMemberships.neighborhoodId, group.neighborhoodId),
-            eq(neighborhoodMemberships.status, "active")
-          )
-        )
-        .limit(1);
+  const groupAccess = await resolveGroupAccess(ctx, groupId);
+  const viewer = await getViewerGroupAccess(ctx, groupId, groupAccess.neighborhoodId);
 
-      if (!neighborhoodMembership[0]) {
-        throw new ServiceError("Membership required", "FORBIDDEN");
-      }
-    } else {
-      const membership = await db
-        .select({ id: groupMemberships.id })
-        .from(groupMemberships)
-        .where(
-          and(
-            eq(groupMemberships.groupId, groupId),
-            eq(groupMemberships.userId, ctx.user.id)
-          )
-        )
-        .limit(1);
-
-      if (!membership[0]) {
-        throw new ServiceError("Membership required", "FORBIDDEN");
-      }
-    }
-  }
-
-  const rows = await db
-    .select({
-      group: groups,
-      adminName: users.name,
-    })
-    .from(groups)
-    .leftJoin(users, eq(groups.adminUserId, users.id))
-    .where(eq(groups.id, groupId))
-    .limit(1);
+  const rows = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
 
   if (!rows[0]) {
     throw new ServiceError("Group not found", "NOT_FOUND");
   }
 
+  const adminSummary = (await listGroupAdminSummaries([groupId])).get(groupId);
+
   return {
-    ...rows[0].group,
-    adminName: rows[0].adminName,
+    ...rows[0],
+    adminUserIds: adminSummary?.adminUserIds ?? [],
+    adminNames: adminSummary?.adminNames ?? [],
+    adminLabel: adminSummary?.adminLabel ?? null,
+    viewerMembershipRole: viewer.viewerMembershipRole,
+    viewerCanManage: viewer.viewerCanManage,
   };
 }

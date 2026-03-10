@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 
 import { GroupForm } from "@/components/groups/group-form";
 import { getGroupById } from "@/services/groups";
-import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function GroupEditPage({
@@ -29,11 +28,7 @@ export default async function GroupEditPage({
   const group = await getGroupById(serviceContext, {
     groupId: resolvedParams.groupId,
   });
-  const hasAdminAccess = await hasNeighborhoodAdminRole(serviceContext);
-  const canManage =
-    hasAdminAccess || group.adminUserId === session.user.id;
-
-  if (!canManage) {
+  if (!group.viewerCanManage) {
     redirect(`${adminBasePath}/groups/${resolvedParams.groupId}`);
   }
 
@@ -44,7 +39,6 @@ export default async function GroupEditPage({
       groupId={group.id}
       initialName={group.name}
       initialAddress={group.address}
-      initialAdminUserId={group.adminUserId}
     />
   );
 }

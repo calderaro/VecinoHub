@@ -3,7 +3,7 @@
 ## Roles
 - System roles: `user`, `platform_admin` (legacy `admin` treated as platform admin during migration compatibility).
 - Neighborhood membership roles: `neighbor`, `neighborhood_admin`.
-- Group delegation: `groups.admin_user_id`.
+- Group membership roles: `group_member`, `group_admin`.
 
 ## Scope Rules
 - All domain data is neighborhood-scoped.
@@ -18,7 +18,7 @@
 
 ## Neighborhood Admin
 - CRUD for groups, polls, fundraising campaigns, events, and posts only in authorized neighborhoods.
-- Manage group memberships in neighborhood groups.
+- Manage group memberships and group roles in neighborhood groups.
 - Manage neighborhood membership role/status in their neighborhood.
 - Cannot create neighborhoods.
 - Cannot assign `platform_admin` role.
@@ -30,9 +30,13 @@
 - Update own profile.
 - Cannot access `/admin/*` or `/platform/*`.
 
-## Group Admin (Delegated)
-- Add/remove members for owned group.
+## Group Admin
+- Manage their own group details, members, and group roles.
 - No elevated cross-neighborhood privileges.
+
+## Group Member
+- Read-only access for their own group.
+- No group management privileges.
 
 ## Required Server Checks
 - Membership validation before dashboard/group read.

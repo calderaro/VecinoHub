@@ -6,6 +6,7 @@
 - `neighborhood_status`: `active`, `inactive`
 - `neighborhood_role`: `neighbor`, `neighborhood_admin`
 - `neighborhood_membership_status`: `active`, `inactive`
+- `group_role`: `group_member`, `group_admin`
 - `membership_status`: `active`, `inactive`
 - `poll_status`: `draft`, `active`, `closed`
 - `contribution_method`: `cash`, `wire_transfer`
@@ -49,7 +50,6 @@
 - `neighborhood_id` (fk -> neighborhoods.id)
 - `name`
 - `address` (nullable)
-- `admin_user_id` (fk -> users.id)
 - `created_at`
 - `updated_at`
 
@@ -57,6 +57,7 @@
 - `id` (pk)
 - `group_id` (fk -> groups.id)
 - `user_id` (fk -> users.id)
+- `role`
 - `status`
 - `created_at`
 - `updated_at`

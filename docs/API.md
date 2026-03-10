@@ -33,11 +33,11 @@
 
 ### groups
 - `groups.list` (query, scoped by neighborhood permissions)
-- `groups.create` (mutation, neighborhood admin or platform admin)
+ - `groups.create` (mutation, neighborhood admin or platform admin; may be created without any members)
 - `groups.update` (mutation, neighborhood admin/platform or group admin as allowed)
-- `groups.remove` (mutation, neighborhood admin or platform admin)
-- `groups.assignAdmin` (mutation, neighborhood admin or platform admin)
-- `groups.addMember` (mutation, group admin/neighborhood admin/platform)
+- `groups.remove` (mutation, neighborhood admin/platform or group admin as allowed)
+- `groups.setMemberRole` (mutation, group admin/neighborhood admin/platform)
+- `groups.addMember` (mutation, group admin/neighborhood admin/platform; optional `group_member` / `group_admin` role)
 - `groups.removeMember` (mutation, group admin/neighborhood admin/platform)
 
 ### polls

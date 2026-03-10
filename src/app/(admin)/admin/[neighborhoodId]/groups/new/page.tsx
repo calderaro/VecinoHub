@@ -20,7 +20,6 @@ export default async function NewGroupPage({
     <GroupForm
       mode="create"
       adminBasePath={adminBasePath}
-      defaultAdminUserId={session.user.id}
     />
   );
 }

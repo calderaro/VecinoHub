@@ -21,8 +21,6 @@ type GroupFormProps = {
   groupId?: string;
   initialName?: string;
   initialAddress?: string | null;
-  initialAdminUserId?: string;
-  defaultAdminUserId?: string;
 };
 
 const inputBase =
@@ -34,8 +32,6 @@ export function GroupForm({
   groupId,
   initialName = "",
   initialAddress = "",
-  initialAdminUserId = "",
-  defaultAdminUserId = "",
 }: GroupFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
@@ -44,18 +40,15 @@ export function GroupForm({
 
   const [name, setName] = useState(initialName);
   const [address, setAddress] = useState(initialAddress ?? "");
-  const [adminUserId, setAdminUserId] = useState(
-    initialAdminUserId || defaultAdminUserId
-  );
+  const [adminUserId, setAdminUserId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createGroup = trpc.groups.create.useMutation();
   const updateGroup = trpc.groups.update.useMutation();
-  const assignAdmin = trpc.groups.assignAdmin.useMutation();
 
-  const isValid = name.trim().length > 0 && adminUserId.trim().length > 0;
-  const isDisabled =
-    createGroup.isPending || updateGroup.isPending || assignAdmin.isPending;
+  const showAdminUserIdField = mode === "create";
+  const isValid = name.trim().length > 0;
+  const isDisabled = createGroup.isPending || updateGroup.isPending;
   const cancelHref =
     mode === "create" ? `${adminBasePath}/groups` : `${adminBasePath}/groups/${groupId ?? ""}`;
 
@@ -72,7 +65,7 @@ export function GroupForm({
         await createGroup.mutateAsync({
           name: name.trim(),
           address: address.trim() || undefined,
-          adminUserId: adminUserId.trim(),
+          adminUserId: adminUserId.trim() || undefined,
         });
         addToast(t("createdToast"), "success");
         router.push(`${adminBasePath}/groups`);
@@ -89,13 +82,6 @@ export function GroupForm({
         name: name.trim(),
         address: address.trim() || undefined,
       });
-
-      if (adminUserId.trim() !== initialAdminUserId) {
-        await assignAdmin.mutateAsync({
-          groupId,
-          adminUserId: adminUserId.trim(),
-        });
-      }
 
       addToast(t("updatedToast"), "success");
       router.push(`${adminBasePath}/groups/${groupId}`);
@@ -179,31 +165,33 @@ export function GroupForm({
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-            <div className="flex items-center gap-2 border-b border-stone-100 px-5 py-3.5">
-              <ShieldIcon className="h-3.5 w-3.5 text-stone-400" />
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
-                Group owner
-              </h2>
-            </div>
-            <div className="space-y-4 px-5 py-5">
-              <div className="space-y-1.5">
-                <label htmlFor="group-admin-user-id" className="block text-sm font-medium text-stone-700">
-                  {t("fields.adminUserId")} <span className="text-red-400">*</span>
-                </label>
-                <input
-                  id="group-admin-user-id"
-                  className={`${inputBase} border-stone-200 bg-white hover:border-stone-300`}
-                  value={adminUserId}
-                  onChange={(event) => setAdminUserId(event.target.value)}
-                  placeholder={t("adminPlaceholder")}
-                  disabled={isDisabled}
-                  data-testid="group-form-admin"
-                />
-                <p className="text-xs text-stone-400">{t("adminHint")}</p>
+          {showAdminUserIdField ? (
+            <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+              <div className="flex items-center gap-2 border-b border-stone-100 px-5 py-3.5">
+                <ShieldIcon className="h-3.5 w-3.5 text-stone-400" />
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
+                  Group owner
+                </h2>
               </div>
-            </div>
-          </section>
+              <div className="space-y-4 px-5 py-5">
+                <div className="space-y-1.5">
+                  <label htmlFor="group-admin-user-id" className="block text-sm font-medium text-stone-700">
+                    {t("fields.adminUserId")}
+                  </label>
+                  <input
+                    id="group-admin-user-id"
+                    className={`${inputBase} border-stone-200 bg-white hover:border-stone-300`}
+                    value={adminUserId}
+                    onChange={(event) => setAdminUserId(event.target.value)}
+                    placeholder={t("adminPlaceholder")}
+                    disabled={isDisabled}
+                    data-testid="group-form-admin"
+                  />
+                  <p className="text-xs text-stone-400">{t("adminHint")}</p>
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <div className="hidden items-center justify-between pt-2 sm:flex">
             <button
@@ -224,7 +212,7 @@ export function GroupForm({
                 ? createGroup.isPending
                   ? t("creating")
                   : t("createAction")
-                : updateGroup.isPending || assignAdmin.isPending
+                : updateGroup.isPending
                   ? t("saving")
                   : t("saveChanges")}
             </button>
@@ -258,12 +246,14 @@ export function GroupForm({
                   <span className="text-xs text-stone-400">{t("preview.status")}</span>
                   <StatusBadge variant="active" label={t("preview.active")} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-stone-400">{t("fields.adminUserId")}</span>
-                  <span className="text-xs text-stone-600">
-                    {adminUserId.trim() || t("preview.notAssigned")}
-                  </span>
-                </div>
+                {showAdminUserIdField ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-stone-400">{t("fields.adminUserId")}</span>
+                    <span className="text-xs text-stone-600">
+                      {adminUserId.trim() || t("preview.notAssigned")}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -299,7 +289,7 @@ export function GroupForm({
             ? createGroup.isPending
               ? t("creating")
               : t("createAction")
-            : updateGroup.isPending || assignAdmin.isPending
+            : updateGroup.isPending
               ? t("saving")
               : t("saveChanges")}
         </button>

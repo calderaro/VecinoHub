@@ -26,8 +26,10 @@
     - neighborhood switcher (if user has >1 neighborhood)
     - admin/platform entries based on role
 - Resident modules:
-  - `/dashboard/[groupId]/members`
-  - `/dashboard/[groupId]/polls`
+- `/dashboard/[groupId]/members`
+  - read-only for `group_member`.
+  - `group_admin`, `neighborhood_admin`, and `platform_admin` can add/remove members and change group roles.
+- `/dashboard/[groupId]/polls`
   - `/dashboard/[groupId]/polls/[pollId]`
   - `/dashboard/[groupId]/fundraising`
   - `/dashboard/[groupId]/fundraising/[campaignId]`

@@ -33,7 +33,10 @@
 - Clearing active context (platform admin) returns to global scope behavior.
 
 ## Feature Flows
-- Groups: create/edit/delete and member add/remove respect permissions.
+ - Groups: create/edit/delete, including creating an empty group with no members, plus member add/remove and group role changes respect permissions.
+- Group members remain read-only in `/dashboard/[groupId]/members`.
+- Group admins can update group details and manage members/roles only for their own group.
+- Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Events: create/edit/delete and list/detail render correctly.
