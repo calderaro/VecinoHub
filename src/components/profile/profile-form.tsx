@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/lib/trpc";
@@ -28,32 +28,17 @@ export function ProfileForm({
   const { addToast } = useToast();
   const t = useTranslations("profile");
   const [username, setUsername] = useState(initialUsername ?? "");
-  const [image, setImage] = useState(initialImage ?? "");
   const [preferredLanguage, setPreferredLanguage] = useState(
     initialPreferredLanguage
   );
   const [isSaving, setIsSaving] = useState(false);
 
   const usernameTrimmed = username.trim();
-  const imageTrimmed = image.trim();
   const isUsernameValid =
     usernameTrimmed.length >= 3 &&
     usernameTrimmed.length <= 32 &&
     usernamePattern.test(usernameTrimmed);
-
-  const isImageValid = useMemo(() => {
-    if (!imageTrimmed) {
-      return true;
-    }
-    try {
-      new URL(imageTrimmed);
-      return true;
-    } catch {
-      return false;
-    }
-  }, [imageTrimmed]);
-
-  const canSubmit = isUsernameValid && isImageValid && !isSaving;
+  const canSubmit = isUsernameValid && !isSaving;
 
   const updateProfile = trpc.users.updateProfile.useMutation();
 
@@ -70,7 +55,6 @@ export function ProfileForm({
         try {
           await updateProfile.mutateAsync({
             username: usernameTrimmed,
-            image: imageTrimmed ? imageTrimmed : null,
             preferredLanguage,
           });
           setLocaleCookie(preferredLanguage);
@@ -92,10 +76,10 @@ export function ProfileForm({
 
       <div className="space-y-6 px-5 py-6">
       <div className="flex flex-wrap items-center gap-4 border-b border-stone-100 pb-6">
-        {imageTrimmed ? (
+        {initialImage ? (
           <Image
             className="h-16 w-16 rounded-full border border-stone-200 object-cover"
-            src={imageTrimmed}
+            src={initialImage}
             alt={usernameTrimmed || name}
             width={64}
             height={64}
@@ -113,7 +97,7 @@ export function ProfileForm({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div>
         <label className="space-y-2 text-sm text-stone-700">
           <span>{t("usernameLabel")}</span>
           <input
@@ -130,22 +114,6 @@ export function ProfileForm({
           {!isUsernameValid ? (
             <p className="text-xs text-red-600">
               {t("usernameError")}
-            </p>
-          ) : null}
-        </label>
-        <label className="space-y-2 text-sm text-stone-700">
-          <span>{t("photoLabel")}</span>
-          <input
-            className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
-            data-testid="profile-photo"
-            value={image}
-            onChange={(event) => setImage(event.target.value)}
-            placeholder={t("photoPlaceholder")}
-            type="url"
-          />
-          {!isImageValid ? (
-            <p className="text-xs text-red-600">
-              {t("photoError")}
             </p>
           ) : null}
         </label>
