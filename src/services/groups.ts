@@ -456,11 +456,13 @@ export async function listUserGroups(ctx: ServiceContext) {
     .select({
       id: groups.id,
       neighborhoodId: groups.neighborhoodId,
+      neighborhoodName: neighborhoods.name,
       name: groups.name,
       address: groups.address,
       membershipRole: groupMemberships.role,
     })
     .from(groups)
+    .innerJoin(neighborhoods, eq(groups.neighborhoodId, neighborhoods.id))
     .innerJoin(groupMemberships, eq(groups.id, groupMemberships.groupId))
     .where(
       and(
@@ -685,7 +687,20 @@ export async function getGroupById(
   const groupAccess = await resolveGroupAccess(ctx, groupId);
   const viewer = await getViewerGroupAccess(ctx, groupId, groupAccess.neighborhoodId);
 
-  const rows = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
+  const rows = await db
+    .select({
+      id: groups.id,
+      neighborhoodId: groups.neighborhoodId,
+      neighborhoodName: neighborhoods.name,
+      name: groups.name,
+      address: groups.address,
+      createdAt: groups.createdAt,
+      updatedAt: groups.updatedAt,
+    })
+    .from(groups)
+    .innerJoin(neighborhoods, eq(groups.neighborhoodId, neighborhoods.id))
+    .where(eq(groups.id, groupId))
+    .limit(1);
 
   if (!rows[0]) {
     throw new ServiceError("Group not found", "NOT_FOUND");

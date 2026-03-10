@@ -388,16 +388,10 @@
       "membersTitle": "Miembros",
       "back": "Volver a grupos",
       "groupLabel": "Grupo vecinal",
-      "adminLabel": "Admins:",
       "createdLabel": "Creado",
       "status": {
         "active": "Activo",
         "inactive": "Inactivo"
-      },
-      "stats": {
-        "members": "Miembros",
-        "activeMembers": "Miembros activos",
-        "inactiveMembers": "Miembros inactivos"
       }
     },
     "groupFormPage": {
@@ -920,8 +914,6 @@
       "emptyAddress": "Sin dirección"
     },
     "overview": {
-      "label": "Resumen del vecindario",
-      "subtitle": "Resumen del grupo de casas.",
       "posts": {
         "title": "Últimas publicaciones",
         "count": "{count} publicación{count, plural, one {} other {es}} publicada",

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { ChevronRightIcon } from "lucide-react";
 
 import {
   DashboardIntro,
@@ -158,7 +159,15 @@ export default async function DashboardPage({
       className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10"
       data-testid="dashboard-overview-root"
     >
-      <DashboardIntro eyebrow={t("label")} title={group.name} description={t("subtitle")} />
+      <DashboardIntro
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            <span>{group.neighborhoodName}</span>
+            <ChevronRightIcon className="h-6 w-6 text-stone-400" aria-hidden="true" />
+            <span>{group.name}</span>
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <PostsCard

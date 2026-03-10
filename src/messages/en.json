@@ -388,16 +388,10 @@
       "membersTitle": "Members",
       "back": "Back to groups",
       "groupLabel": "Neighborhood Group",
-      "adminLabel": "Admins:",
       "createdLabel": "Created",
       "status": {
         "active": "Active",
         "inactive": "Inactive"
-      },
-      "stats": {
-        "members": "Members",
-        "activeMembers": "Active members",
-        "inactiveMembers": "Inactive members"
       }
     },
     "groupFormPage": {
@@ -920,8 +914,6 @@
       "emptyAddress": "No address set"
     },
     "overview": {
-      "label": "Neighborhood overview",
-      "subtitle": "Overview for this house group.",
       "posts": {
         "title": "Latest Posts",
         "count": "{count} post{count, plural, one {} other {s}} published",

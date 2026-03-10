@@ -56,7 +56,6 @@ export default async function GroupDetailPage({
   const locale = await getLocale();
   const t = await getTranslations("admin.groupDetail");
 
-  const activeMembers = members.filter((member) => member.membershipStatus === "active").length;
   const statusVariant = members.length > 0 ? "active" : "inactive";
 
   return (
@@ -84,9 +83,6 @@ export default async function GroupDetailPage({
                   label={statusVariant === "active" ? t("status.active") : t("status.inactive")}
                 />
                 <span className="text-xs text-stone-400">
-                  {t("adminLabel")} {group.adminLabel ?? "-"}
-                </span>
-                <span className="text-xs text-stone-400">
                   {t("createdLabel")} {formatDate(group.createdAt, locale)}
                 </span>
               </div>
@@ -102,21 +98,6 @@ export default async function GroupDetailPage({
               </Link>
               <GroupDetailActions groupId={group.id} adminBasePath={adminBasePath} />
             </div>
-          </div>
-        </div>
-
-        <div className="grid gap-3 border-b border-stone-100 px-6 py-5 sm:grid-cols-3">
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.members")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{members.length}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.activeMembers")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{activeMembers}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.inactiveMembers")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{members.length - activeMembers}</p>
           </div>
         </div>
 

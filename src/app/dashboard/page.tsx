@@ -106,6 +106,9 @@ export default async function DashboardGroupSelectorPage() {
                 className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition-colors hover:border-teal-300 hover:bg-teal-50/40"
                 data-testid={`dashboard-group-card-${group.id}`}
               >
+                <p className="text-xs font-medium uppercase tracking-wide text-teal-600">
+                  {group.neighborhoodName}
+                </p>
                 <p className="text-base font-semibold text-stone-900">{group.name}</p>
                 <p className="mt-1 text-xs text-stone-500">
                   {group.address ?? tDashboard("emptyAddress")}
