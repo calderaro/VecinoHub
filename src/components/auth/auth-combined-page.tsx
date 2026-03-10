@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { authClient } from "@/lib/auth-client";
@@ -43,6 +43,7 @@ function GoogleIcon() {
 }
 
 export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
+  const pathname = usePathname();
   const router = useRouter();
   const tCombined = useTranslations("auth.combined");
   const tLogin = useTranslations("auth.login");
@@ -55,6 +56,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const [isVerificationResending, setIsVerificationResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
   const [verificationEmail, setVerificationEmail] = useState("");
   const [verificationOtp, setVerificationOtp] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -67,10 +72,19 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     ? `/forgot-password?email=${encodeURIComponent(loginEmail.trim())}`
     : "/forgot-password";
 
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
+
+  function setActiveTab(nextTab: AuthTab) {
+    setTab(nextTab);
+    router.replace(`${pathname}?tab=${nextTab}`, { scroll: false });
+  }
+
   function openEmailVerification(email: string, message?: string) {
     const normalizedEmail = email.trim().toLowerCase();
 
-    setTab("signup");
+    setActiveTab("signup");
     setSignUpStep("verify");
     setVerificationEmail(normalizedEmail);
     setVerificationOtp("");
@@ -84,9 +98,8 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     setError(null);
     setNotice(null);
 
-    const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "").trim();
+    const email = loginEmail.trim();
+    const password = loginPassword.trim();
 
     try {
       const result = await authClient.signIn.email({ email, password });
@@ -106,6 +119,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
         return;
       }
 
+      setLoginPassword("");
       router.push("/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : tLogin("errors.login");
@@ -127,10 +141,9 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     setError(null);
     setNotice(null);
 
-    const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "").trim();
+    const name = signUpName.trim();
+    const email = signUpEmail.trim();
+    const password = signUpPassword.trim();
 
     try {
       const result = await authClient.signUp.email({
@@ -149,6 +162,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
         return;
       }
 
+      setSignUpPassword("");
       setLocaleCookie("es");
       openEmailVerification(email);
     } catch (err) {
@@ -316,7 +330,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
               role="tab"
               aria-selected={tab === "signin"}
               onClick={() => {
-                setTab("signin");
+                setActiveTab("signin");
                 setError(null);
                 setNotice(null);
               }}
@@ -333,7 +347,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
               role="tab"
               aria-selected={tab === "signup"}
               onClick={() => {
-                setTab("signup");
+                setActiveTab("signup");
                 setError(null);
                 setNotice(null);
               }}
@@ -383,7 +397,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   id="auth-email"
                   name="email"
                   type="email"
-                  autoComplete="email"
+                  autoComplete="section-signin email"
                   required
                   value={loginEmail}
                   onChange={(event) => setLoginEmail(event.currentTarget.value)}
@@ -411,8 +425,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   id="auth-password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="section-signin current-password"
                   required
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.currentTarget.value)}
                   data-testid="auth-login-password"
                   className={baseInputClass}
                 />
@@ -542,8 +558,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   id="auth-name"
                   name="name"
                   type="text"
-                  autoComplete="name"
+                  autoComplete="section-signup name"
                   required
+                  value={signUpName}
+                  onChange={(event) => setSignUpName(event.currentTarget.value)}
                   data-testid="auth-register-name"
                   className={baseInputClass}
                 />
@@ -559,8 +577,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   id="auth-signup-email"
                   name="email"
                   type="email"
-                  autoComplete="email"
+                  autoComplete="section-signup email"
                   required
+                  value={signUpEmail}
+                  onChange={(event) => setSignUpEmail(event.currentTarget.value)}
                   data-testid="auth-register-email"
                   className={baseInputClass}
                 />
@@ -576,8 +596,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   id="auth-signup-password"
                   name="password"
                   type="password"
-                  autoComplete="new-password"
+                  autoComplete="section-signup new-password"
                   required
+                  value={signUpPassword}
+                  onChange={(event) => setSignUpPassword(event.currentTarget.value)}
                   data-testid="auth-register-password"
                   className={baseInputClass}
                 />
@@ -620,7 +642,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 {tCombined("footer.noAccount")}{" "}
                 <button
                   type="button"
-                  onClick={() => setTab("signup")}
+                  onClick={() => setActiveTab("signup")}
                   className="vh-v3-focus font-medium text-teal-600 transition-colors hover:text-teal-700"
                 >
                   {tCombined("tabs.signUp")}
@@ -632,7 +654,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setTab("signin");
+                    setActiveTab("signin");
                     setNotice(null);
                     setError(null);
                   }}
