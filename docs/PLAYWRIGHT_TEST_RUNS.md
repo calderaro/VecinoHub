@@ -183,6 +183,24 @@ Steps:
 Expected:
 - The updated group role persists, even when the acting user is not a member of that group.
 
+## Feature: Dashboard Localization
+
+### Test Run: Neighbor Dashboard Switches Between Spanish and English
+Preconditions:
+- Logged in as a user with at least one active group membership.
+
+Steps:
+1. Open `/profile`.
+2. Change the language field to English and save.
+3. Open `/dashboard`.
+4. Verify the group selector title, empty address fallback, and `UserMenu` copy are in English.
+5. Open `/dashboard/{groupId}` and verify overview cards, fundraising urgency text, contribution form, and contribution delete action are in English.
+6. Return to `/profile`, change the language field to Spanish, and save.
+7. Re-open `/dashboard` and `/dashboard/{groupId}` and verify the same surfaces are shown in Spanish.
+
+Expected:
+- Resident dashboard pages and resident-only shared components consistently reflect the selected language in both locales.
+
 ## Playwright MCP Selector Guidance
 Use these selector patterns to keep tests stable:
 

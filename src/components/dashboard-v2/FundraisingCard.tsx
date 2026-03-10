@@ -10,8 +10,7 @@ type FundraisingCardItem = {
   goalLabel: string;
   perGroupLabel: string;
   dueLabel: string | null;
-  isUrgent: boolean;
-  daysUntil: number | null;
+  urgencyLabel: string | null;
 };
 
 type FundraisingCardProps = {
@@ -85,12 +84,10 @@ export function FundraisingCard({
               <div className="mt-0.5 flex items-center gap-1">
                 <CalendarIcon className="h-3 w-3 flex-shrink-0 text-stone-400" aria-hidden="true" />
                 <span
-                  className={`text-xs ${campaign.isUrgent ? "font-medium text-red-500" : "text-stone-400"}`}
+                  className={`text-xs ${campaign.urgencyLabel ? "font-medium text-red-500" : "text-stone-400"}`}
                 >
                   {campaign.dueLabel}
-                  {campaign.isUrgent && campaign.daysUntil !== null
-                    ? ` · ${campaign.daysUntil}d left`
-                    : ""}
+                  {campaign.urgencyLabel ? ` · ${campaign.urgencyLabel}` : ""}
                 </span>
               </div>
             ) : null}

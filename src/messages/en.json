@@ -130,6 +130,7 @@
   },
   "userMenu": {
     "defaultUser": "User",
+    "navigation": "Navigation",
     "dashboard": "Dashboard",
     "profile": "Profile",
     "adminPanel": "Admin Panel",
@@ -937,6 +938,11 @@
       "status": "Waiting for admin assignment",
       "help": "If you believe this is an error, please contact your building administrator."
     },
+    "groupSelector": {
+      "title": "Select a group",
+      "subtitle": "Choose the group you want to open in your resident dashboard.",
+      "emptyAddress": "No address set"
+    },
     "overview": {
       "label": "Neighborhood overview",
       "subtitle": "Overview for this house group.",
@@ -972,7 +978,8 @@
         "emptyHint": "Fundraising campaigns will appear here.",
         "goal": "Goal: {amount}",
         "perGroup": "({amount} per group)",
-        "due": "Due {date}"
+        "due": "Due {date}",
+        "daysLeft": "{count} day left{count, plural, one {} other {s}}"
       },
       "members": {
         "title": "Group Members",
@@ -1166,6 +1173,31 @@
       "title": "Submit contribution",
       "perGroup": "Per group: {amount}",
       "goal": "Goal: {amount}"
+    },
+    "contributionForm": {
+      "noGroup": "You are not assigned to a group.",
+      "amountRequired": "Contribution amount is required.",
+      "amountInvalid": "Contribution amount must be a positive number.",
+      "wireRequired": "Wire transfer details are required.",
+      "submitting": "Submitting",
+      "submit": "Submit contribution",
+      "submittedToast": "Contribution submitted.",
+      "submitError": "Unable to submit contribution.",
+      "fields": {
+        "group": "Group",
+        "method": "Method",
+        "amount": "Amount",
+        "reference": "Reference",
+        "date": "Date"
+      },
+      "methods": {
+        "cash": "Cash",
+        "wire_transfer": "Wire transfer"
+      }
+    },
+    "contributionDelete": {
+      "delete": "Delete",
+      "deleting": "Deleting"
     }
   }
 }

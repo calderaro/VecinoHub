@@ -17,15 +17,17 @@ export function ContributionForm({
   groups,
   initialGroupId,
   redirectTo,
+  translationNamespace = "admin.contributionForm",
 }: {
   campaignId: string;
   groups: GroupOption[];
   initialGroupId?: string;
   redirectTo?: string;
+  translationNamespace?: "admin.contributionForm" | "dashboard.contributionForm";
 }) {
   const router = useRouter();
   const { addToast } = useToast();
-  const t = useTranslations("admin.contributionForm");
+  const t = useTranslations(translationNamespace);
   const [method, setMethod] = useState<"cash" | "wire_transfer">("cash");
   const [groupId, setGroupId] = useState(
     initialGroupId ?? groups[0]?.id ?? ""

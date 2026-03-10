@@ -26,8 +26,9 @@ export default async function DashboardGroupSelectorPage() {
     },
   };
 
-  const [tNav, tEmpty, tUserMenu, canAccessAdmin, groups, adminNeighborhoods] = await Promise.all([
+  const [tNav, tDashboard, tEmpty, tUserMenu, canAccessAdmin, groups, adminNeighborhoods] = await Promise.all([
     getTranslations("nav"),
+    getTranslations("dashboard.groupSelector"),
     getTranslations("dashboard.empty"),
     getTranslations("userMenu"),
     hasNeighborhoodAdminRole(baseContext),
@@ -79,9 +80,9 @@ export default async function DashboardGroupSelectorPage() {
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-teal-600">
             VecinoHub
           </p>
-          <h1 className="text-3xl font-bold text-stone-900">Select a group</h1>
+          <h1 className="text-3xl font-bold text-stone-900">{tDashboard("title")}</h1>
           <p className="mt-2 text-sm text-stone-500">
-            Choose the group you want to open in your resident dashboard.
+            {tDashboard("subtitle")}
           </p>
         </div>
 
@@ -106,7 +107,9 @@ export default async function DashboardGroupSelectorPage() {
                 data-testid={`dashboard-group-card-${group.id}`}
               >
                 <p className="text-base font-semibold text-stone-900">{group.name}</p>
-                <p className="mt-1 text-xs text-stone-500">{group.address ?? "No address set"}</p>
+                <p className="mt-1 text-xs text-stone-500">
+                  {group.address ?? tDashboard("emptyAddress")}
+                </p>
               </Link>
             ))}
           </div>

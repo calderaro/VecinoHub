@@ -99,7 +99,10 @@ export default async function NeighborCampaignDetailPage({
                   </p>
                 </div>
                 {campaign.status === "open" ? (
-                  <ContributionDeleteButton contributionId={contribution.id} />
+                  <ContributionDeleteButton
+                    contributionId={contribution.id}
+                    translationNamespace="dashboard.contributionDelete"
+                  />
                 ) : null}
               </div>
             ))

@@ -114,6 +114,10 @@ export default async function DashboardPage({
 
   const fundraisingItems = campaigns.items.map((campaign) => {
     const daysUntil = campaign.dueDate ? getDaysUntil(campaign.dueDate) : null;
+    const urgencyLabel =
+      daysUntil !== null && daysUntil <= 14 && daysUntil > 0
+        ? t("fundraising.daysLeft", { count: daysUntil })
+        : null;
 
     return {
       id: campaign.id,
@@ -130,8 +134,7 @@ export default async function DashboardPage({
             date: formatDashboardDate(new Date(campaign.dueDate), locale),
           })
         : null,
-      isUrgent: daysUntil !== null && daysUntil <= 14 && daysUntil > 0,
-      daysUntil,
+      urgencyLabel,
     };
   });
 

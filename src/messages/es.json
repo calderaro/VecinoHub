@@ -130,6 +130,7 @@
   },
   "userMenu": {
     "defaultUser": "Usuario",
+    "navigation": "Navegación",
     "dashboard": "Panel",
     "profile": "Perfil",
     "adminPanel": "Panel admin",
@@ -937,6 +938,11 @@
       "status": "Esperando asignación del admin",
       "help": "Si crees que esto es un error, contacta al administrador del edificio."
     },
+    "groupSelector": {
+      "title": "Selecciona un grupo",
+      "subtitle": "Elige el grupo que quieres abrir en tu dashboard de residente.",
+      "emptyAddress": "Sin dirección"
+    },
     "overview": {
       "label": "Resumen del vecindario",
       "subtitle": "Resumen del grupo de casas.",
@@ -972,7 +978,8 @@
         "emptyHint": "Las campañas de recaudación aparecerán aquí.",
         "goal": "Meta: {amount}",
         "perGroup": "({amount} por grupo)",
-        "due": "Vence {date}"
+        "due": "Vence {date}",
+        "daysLeft": "Queda {count} día{count, plural, one {} other {s}}"
       },
       "members": {
         "title": "Miembros del grupo",
@@ -1166,6 +1173,31 @@
       "title": "Enviar aporte",
       "perGroup": "Por grupo: {amount}",
       "goal": "Meta: {amount}"
+    },
+    "contributionForm": {
+      "noGroup": "No estás asignado a un grupo.",
+      "amountRequired": "El monto del aporte es obligatorio.",
+      "amountInvalid": "El monto del aporte debe ser mayor que cero.",
+      "wireRequired": "Faltan datos de la transferencia.",
+      "submitting": "Enviando",
+      "submit": "Enviar aporte",
+      "submittedToast": "Aporte enviado.",
+      "submitError": "No se pudo enviar el aporte.",
+      "fields": {
+        "group": "Grupo",
+        "method": "Método",
+        "amount": "Monto",
+        "reference": "Referencia",
+        "date": "Fecha"
+      },
+      "methods": {
+        "cash": "Efectivo",
+        "wire_transfer": "Transferencia"
+      }
+    },
+    "contributionDelete": {
+      "delete": "Eliminar",
+      "deleting": "Eliminando"
     }
   }
 }

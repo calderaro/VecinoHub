@@ -216,7 +216,7 @@ export function UserMenu({
             <p className={styles.menuHeaderName}>{displayName}</p>
           </div>
 
-          <div className="py-1" role="group" aria-label="navigation">
+          <div className="py-1" role="group" aria-label={t("navigation")}>
             <Link
               href={selectedGroupId ? `/dashboard/${selectedGroupId}` : "/dashboard"}
               role="menuitem"
@@ -263,7 +263,11 @@ export function UserMenu({
           </div>
 
           {canSeeAdminLink && neighborhoods && neighborhoods.length > 0 ? (
-            <div className={styles.sectionDivider} role="group" aria-label="switch-admin-neighborhood">
+            <div
+              className={styles.sectionDivider}
+              role="group"
+              aria-label={t("switchAdminNeighborhood")}
+            >
               <p className={styles.sectionLabel}>{t("adminNeighborhoods")}</p>
               {neighborhoods.map((neighborhood) => {
                 const isSelected = neighborhood.id === selectedAdminNeighborhoodId;
@@ -290,7 +294,7 @@ export function UserMenu({
           ) : null}
 
           {groups && groups.length > 0 ? (
-            <div className={styles.sectionDivider} role="group" aria-label="switch-group">
+            <div className={styles.sectionDivider} role="group" aria-label={t("switchGroup")}>
               <p className={styles.sectionLabel}>{t("groups")}</p>
               {groups.map((group) => {
                 const isSelected = selectedGroupId ? group.id === selectedGroupId : false;

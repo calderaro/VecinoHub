@@ -7,11 +7,13 @@ import { trpc } from "@/lib/trpc";
 
 export function ContributionDeleteButton({
   contributionId,
+  translationNamespace = "admin.contributionDelete",
 }: {
   contributionId: string;
+  translationNamespace?: "admin.contributionDelete" | "dashboard.contributionDelete";
 }) {
   const router = useRouter();
-  const t = useTranslations("admin.contributionDelete");
+  const t = useTranslations(translationNamespace);
   const deleteContribution = trpc.fundraising.deleteContribution.useMutation({
     onSuccess: () => router.refresh(),
   });

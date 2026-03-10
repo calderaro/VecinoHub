@@ -56,6 +56,7 @@ export default async function NeighborContributionPage({
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}
           initialGroupId={resolvedParams.groupId}
           redirectTo={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`}
+          translationNamespace="dashboard.contributionForm"
         />
       </section>
     </div>
