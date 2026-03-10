@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, inArray } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -474,6 +474,60 @@ export async function listUserGroups(ctx: ServiceContext) {
 export async function listAllGroups(ctx: ServiceContext) {
   requirePlatformAdmin(ctx);
   return db.select().from(groups);
+}
+
+const getGroupsStatsSchema = z.object({
+  neighborhoodId: idSchema.optional(),
+});
+
+export async function getGroupsStats(
+  ctx: ServiceContext,
+  input?: z.input<typeof getGroupsStatsSchema>
+) {
+  const { neighborhoodId } = getGroupsStatsSchema.parse(input ?? {});
+  const activeNeighborhoodId = ctx.user.activeNeighborhoodId ?? undefined;
+  const neighborhoodScopeId = neighborhoodId ?? activeNeighborhoodId;
+  const neighborhoodFilter = neighborhoodScopeId
+    ? eq(groups.neighborhoodId, neighborhoodScopeId)
+    : undefined;
+
+  let scopedFilter = neighborhoodFilter;
+
+  if (!isPlatformAdmin(ctx)) {
+    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+    if (!neighborhoodIds || neighborhoodIds.length === 0) {
+      return { active: 0, inactive: 0, total: 0 };
+    }
+
+    const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
+    scopedFilter = neighborhoodFilter
+      ? and(membershipFilter, neighborhoodFilter)
+      : membershipFilter;
+  }
+
+  const totalResult = await db.select({ value: count() }).from(groups).where(scopedFilter);
+  const activeResult = await db
+    .select({
+      value: sql<number>`count(distinct case when ${groupMemberships.userId} is not null then ${groups.id} end)`,
+    })
+    .from(groups)
+    .leftJoin(
+      groupMemberships,
+      and(
+        eq(groupMemberships.groupId, groups.id),
+        eq(groupMemberships.status, "active")
+      )
+    )
+    .where(scopedFilter);
+
+  const total = Number(totalResult[0]?.value ?? 0);
+  const active = Number(activeResult[0]?.value ?? 0);
+
+  return {
+    active,
+    inactive: Math.max(total - active, 0),
+    total,
+  };
 }
 
 const listGroupsPagedSchema = z.object({

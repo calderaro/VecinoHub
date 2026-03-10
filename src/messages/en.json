@@ -219,6 +219,12 @@
       "posts": {
         "title": "Recent Posts",
         "empty": "No posts yet."
+      },
+      "membersSection": {
+        "title": "Neighborhood Admins",
+        "viewAll": "Manage neighborhood roles",
+        "empty": "No neighborhood admins yet.",
+        "emptyHint": "Assign the neighborhood admin role to an existing user to show them here."
       }
     },
     "users": {
@@ -231,11 +237,12 @@
     "members": {
       "back": "Back to overview",
       "title": "Neighborhood members",
-      "subtitle": "This list only shows users who already hold a neighborhood role. Use the dialog to assign a neighborhood role to an existing user.",
+      "subtitle": "This page shows users with a neighborhood role. Use the dialog to assign a role to an existing user.",
+      "managerTitle": "Neighborhood members",
       "stats": {
-        "members": "Members",
-        "active": "Active",
-        "admins": "Admins"
+        "admins": "Admins",
+        "activeAdmins": "Active admins",
+        "showing": "Showing"
       },
       "showingFirst": "Showing the first {count} members."
     },
@@ -243,6 +250,7 @@
       "title": "Neighborhood roles",
       "add": "Assign role",
       "empty": "No users hold a neighborhood role yet.",
+      "adminsOnlyEmpty": "No neighborhood admins yet.",
       "roles": {
         "neighbor": "Neighbor",
         "neighborhood_admin": "Neighborhood admin"
@@ -250,6 +258,10 @@
       "statuses": {
         "active": "Active",
         "inactive": "Inactive"
+      },
+      "actions": {
+        "edit": "Edit",
+        "remove": "Remove"
       },
       "systemRoles": {
         "user": "User",
@@ -259,7 +271,9 @@
       "toasts": {
         "added": "Neighborhood role assigned.",
         "roleUpdated": "Neighborhood role updated.",
-        "statusUpdated": "Neighborhood membership updated."
+        "statusUpdated": "Neighborhood membership updated.",
+        "updated": "Neighborhood admin updated.",
+        "removed": "Neighborhood admin removed."
       },
       "addDialog": {
         "title": "Assign neighborhood role",
@@ -271,6 +285,22 @@
         "cancel": "Cancel",
         "saving": "Saving...",
         "submit": "Assign role"
+      },
+      "editDialog": {
+        "title": "Edit neighborhood admin",
+        "subtitle": "Update the neighborhood role and status for {name}.",
+        "roleLabel": "Neighborhood role",
+        "statusLabel": "Status",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "submit": "Save changes"
+      },
+      "removeDialog": {
+        "title": "Remove neighborhood admin",
+        "body": "Remove {name} from neighborhood admins?",
+        "cancel": "Cancel",
+        "remove": "Remove",
+        "removing": "Removing..."
       }
     },
     "usersTable": {

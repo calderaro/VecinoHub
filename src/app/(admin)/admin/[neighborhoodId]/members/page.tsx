@@ -4,10 +4,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { NeighborhoodMembersManager } from "@/components/platform/neighborhood-members-manager";
-import {
-  getNeighborhoodById,
-  listNeighborhoodMembersPaged,
-} from "@/services/neighborhoods";
+import { listNeighborhoodMembersPaged } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminNeighborhoodMembersPage({
@@ -32,26 +29,14 @@ export default async function AdminNeighborhoodMembersPage({
     },
   };
 
-  const [neighborhood, members, adminMembers, activeMembers, t] = await Promise.all([
-    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }),
+  const [members, t, tManager] = await Promise.all([
     listNeighborhoodMembersPaged(serviceContext, {
       neighborhoodId: resolvedParams.neighborhoodId,
       limit: 100,
       offset: 0,
     }),
-    listNeighborhoodMembersPaged(serviceContext, {
-      neighborhoodId: resolvedParams.neighborhoodId,
-      role: "neighborhood_admin",
-      limit: 1,
-      offset: 0,
-    }),
-    listNeighborhoodMembersPaged(serviceContext, {
-      neighborhoodId: resolvedParams.neighborhoodId,
-      status: "active",
-      limit: 1,
-      offset: 0,
-    }),
     getTranslations("admin.members"),
+    getTranslations("admin.neighborhoodMembersManager"),
   ]);
 
   return (
@@ -67,34 +52,16 @@ export default async function AdminNeighborhoodMembersPage({
       </Link>
 
       <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-        <div className="border-b border-stone-100 px-6 py-5">
-          <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-blue-600">
-            {neighborhood.name}
-          </p>
-          <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
-          <p className="mt-1 text-sm text-stone-500">{t("subtitle")}</p>
-        </div>
-
-        <div className="grid gap-3 border-b border-stone-100 px-6 py-5 sm:grid-cols-3">
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.members")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{members.total}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.active")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{activeMembers.total}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.admins")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{adminMembers.total}</p>
-          </div>
-        </div>
-
         <div className="px-6 py-5" data-testid="admin-members-manager">
           <NeighborhoodMembersManager
             neighborhoodId={resolvedParams.neighborhoodId}
             initialMembers={members.items}
             userDetailHrefBase={null}
+            assignableRoles={["neighbor", "neighborhood_admin"]}
+            editableRoles={["neighbor", "neighborhood_admin"]}
+            heading={t("managerTitle")}
+            emptyMessage={tManager("empty")}
+            itemActionsMode="dialog"
           />
           {members.total > members.items.length ? (
             <p className="mt-3 text-xs text-stone-400">

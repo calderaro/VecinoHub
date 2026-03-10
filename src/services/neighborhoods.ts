@@ -444,6 +444,74 @@ export async function updateNeighborhoodMembershipStatus(
   return updated[0];
 }
 
+const updateNeighborhoodMemberSchema = z
+  .object({
+    neighborhoodId: idSchema,
+    userId: idSchema,
+    role: neighborhoodRoleSchema.optional(),
+    status: statusSchema.optional(),
+  })
+  .refine((value) => value.role !== undefined || value.status !== undefined, {
+    message: "At least one field is required.",
+  });
+
+export async function updateNeighborhoodMember(
+  ctx: ServiceContext,
+  input: z.input<typeof updateNeighborhoodMemberSchema>
+) {
+  const { neighborhoodId, userId, role, status } = updateNeighborhoodMemberSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+
+  const updated = await db
+    .update(neighborhoodMemberships)
+    .set({
+      ...(role ? { role } : {}),
+      ...(status ? { status } : {}),
+    })
+    .where(
+      and(
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.userId, userId)
+      )
+    )
+    .returning();
+
+  if (!updated[0]) {
+    throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");
+  }
+
+  return updated[0];
+}
+
+const removeNeighborhoodMemberSchema = z.object({
+  neighborhoodId: idSchema,
+  userId: idSchema,
+});
+
+export async function removeNeighborhoodMember(
+  ctx: ServiceContext,
+  input: z.input<typeof removeNeighborhoodMemberSchema>
+) {
+  const { neighborhoodId, userId } = removeNeighborhoodMemberSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+
+  const deleted = await db
+    .delete(neighborhoodMemberships)
+    .where(
+      and(
+        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.userId, userId)
+      )
+    )
+    .returning();
+
+  if (!deleted[0]) {
+    throw new ServiceError("Neighborhood membership not found", "NOT_FOUND");
+  }
+
+  return deleted[0];
+}
+
 const listMembersSchema = z.object({
   neighborhoodId: idSchema,
   query: z.string().optional(),

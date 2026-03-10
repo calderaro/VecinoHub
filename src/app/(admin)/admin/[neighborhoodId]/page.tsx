@@ -2,6 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
+  MembersCard,
+} from "@/components/dashboard-v2";
+import {
+  getAvatarFallback,
+} from "@/components/dashboard-v2/mappers";
+import {
   AlertCircleIcon,
   ArrowRightIcon,
   Building2Icon,
@@ -19,7 +25,7 @@ import {
   listOpenCampaignsWithProgress,
   getFundraisingStats,
 } from "@/services/fundraising";
-import { listGroupsPaged } from "@/services/groups";
+import { getGroupsStats } from "@/services/groups";
 import { listNeighborhoodMembersPaged, getNeighborhoodById } from "@/services/neighborhoods";
 import {
   listActivePollsWithParticipation,
@@ -121,6 +127,7 @@ export default async function AdminNeighborhoodPage({
   const locale = await getLocale();
   const t = await getTranslations("admin.overview");
   const tNav = await getTranslations("admin.nav");
+  const tNeighborhoodMembers = await getTranslations("admin.neighborhoodMembersManager");
   const serviceContext = {
     user: {
       ...session.user,
@@ -137,13 +144,11 @@ export default async function AdminNeighborhoodPage({
     upcomingEvents,
     postsStats,
     recentPosts,
-    groupsTotal,
+    groupsStats,
     groupUsersActive,
     groupUsersInactive,
     groupUsersTotal,
-    neighborhoodMembersActive,
-    neighborhoodMembersAdmins,
-    neighborhoodMembersTotal,
+    neighborhoodMembers,
   ] = await Promise.all([
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
@@ -153,7 +158,7 @@ export default async function AdminNeighborhoodPage({
     listUpcomingEvents(serviceContext),
     getPostsStats(serviceContext),
     listRecentPosts(serviceContext),
-    listGroupsPaged(serviceContext, { limit: 1, offset: 0 }),
+    getGroupsStats(serviceContext, { neighborhoodId }),
     listNeighborhoodGroupUsersPaged(serviceContext, {
       neighborhoodId,
       status: "active",
@@ -173,22 +178,27 @@ export default async function AdminNeighborhoodPage({
     }),
     listNeighborhoodMembersPaged(serviceContext, {
       neighborhoodId,
-      status: "active",
-      limit: 1,
-      offset: 0,
-    }),
-    listNeighborhoodMembersPaged(serviceContext, {
-      neighborhoodId,
       role: "neighborhood_admin",
-      limit: 1,
-      offset: 0,
-    }),
-    listNeighborhoodMembersPaged(serviceContext, {
-      neighborhoodId,
-      limit: 1,
+      limit: 5,
       offset: 0,
     }),
   ]);
+
+  const neighborhoodMemberItems = [...neighborhoodMembers.items]
+    .sort((left, right) => left.name.localeCompare(right.name))
+    .map((member) => {
+      const avatar = getAvatarFallback(member.name ?? member.email);
+
+      return {
+        id: member.userId,
+        name: member.username ?? member.name,
+        email: member.email,
+        role: member.membershipRole,
+        roleLabel: tNeighborhoodMembers(`roles.${member.membershipRole}`),
+        avatarInitial: avatar.initial,
+        avatarColorClass: avatar.colorClass,
+      };
+    });
 
   return (
     <div
@@ -213,7 +223,7 @@ export default async function AdminNeighborhoodPage({
       </header>
 
       <section
-        className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-7"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         data-testid="admin-overview-stats"
       >
         <KpiCard
@@ -309,40 +319,15 @@ export default async function AdminNeighborhoodPage({
         />
 
         <KpiCard
-          href={`${adminBasePath}/members`}
-          title={tNav("members")}
-          icon={<UsersIcon className="h-4.5 w-4.5 text-sky-600" />}
-          iconBg="bg-sky-50"
-          testId="admin-overview-stats-members"
-          stats={[
-            {
-              label: t("kpi.members.active"),
-              value: neighborhoodMembersActive.total,
-              color: "text-teal-600",
-            },
-            {
-              label: t("kpi.members.admins"),
-              value: neighborhoodMembersAdmins.total,
-              color: "text-sky-600",
-            },
-            {
-              label: t("kpi.members.total"),
-              value: neighborhoodMembersTotal.total,
-              color: "text-stone-900",
-            },
-          ]}
-        />
-
-        <KpiCard
           href={`${adminBasePath}/groups`}
           title={tNav("groups")}
           icon={<Building2Icon className="h-4.5 w-4.5 text-stone-600" />}
           iconBg="bg-stone-100"
           testId="admin-overview-stats-groups"
           stats={[
-            { label: t("kpi.groups.active"), value: groupsTotal.total, color: "text-teal-600" },
-            { label: t("kpi.groups.inactive"), value: 0 },
-            { label: t("kpi.groups.total"), value: groupsTotal.total },
+            { label: t("kpi.groups.active"), value: groupsStats.active, color: "text-teal-600" },
+            { label: t("kpi.groups.inactive"), value: groupsStats.inactive },
+            { label: t("kpi.groups.total"), value: groupsStats.total },
           ]}
         />
       </section>
@@ -534,6 +519,17 @@ export default async function AdminNeighborhoodPage({
           </div>
         </section>
       </div>
+
+      <MembersCard
+        title={t("membersSection.title")}
+        viewAllLabel={t("membersSection.viewAll")}
+        viewAllHref={`${adminBasePath}/members`}
+        emptyTitle={t("membersSection.empty")}
+        emptyBody={t("membersSection.emptyHint")}
+        totalCount={neighborhoodMembers.total}
+        items={neighborhoodMemberItems}
+        testId="admin-overview-members"
+      />
     </div>
   );
 }

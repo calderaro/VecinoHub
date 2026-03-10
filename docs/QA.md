@@ -38,8 +38,9 @@
 - Group admins can update group details and manage members/roles only for their own group.
 - Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.
 - Neighborhood admins opening `/admin/[neighborhoodId]/users` only see users who hold at least one active group membership in that neighborhood.
-- `/admin/[neighborhoodId]/members` only lists users who already have a neighborhood role.
+- `/admin/[neighborhoodId]/members` only lists users with the `neighborhood_admin` role.
 - Neighborhood admins can assign a neighborhood role to an existing user from the dialog in `/admin/[neighborhoodId]/members`, then promote/demote neighborhood admins there.
+- `/admin/[neighborhoodId]/members` provides dialog-based edit and remove actions for each listed neighborhood admin.
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Events: create/edit/delete and list/detail render correctly.

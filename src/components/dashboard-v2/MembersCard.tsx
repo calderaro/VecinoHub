@@ -7,7 +7,7 @@ type MemberCardItem = {
   id: string;
   name: string;
   email: string;
-  role: "group_admin" | "group_member";
+  role: "group_admin" | "group_member" | "neighborhood_admin" | "neighbor";
   roleLabel: string;
   avatarInitial: string;
   avatarColorClass: string;

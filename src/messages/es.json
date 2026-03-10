@@ -219,6 +219,12 @@
       "posts": {
         "title": "Publicaciones recientes",
         "empty": "No hay publicaciones."
+      },
+      "membersSection": {
+        "title": "Administradores de la colonia",
+        "viewAll": "Administrar roles de colonia",
+        "empty": "Todavía no hay administradores de colonia.",
+        "emptyHint": "Asigna el rol de admin de colonia a un usuario existente para mostrarlo aquí."
       }
     },
     "users": {
@@ -231,11 +237,12 @@
     "members": {
       "back": "Volver al resumen",
       "title": "Miembros de la colonia",
-      "subtitle": "Esta lista solo muestra usuarios que ya tienen un rol en la colonia. Usa el diálogo para asignar un rol de colonia a un usuario existente.",
+      "subtitle": "Esta página muestra usuarios con un rol de colonia. Usa el diálogo para asignar un rol a un usuario existente.",
+      "managerTitle": "Miembros de la colonia",
       "stats": {
-        "members": "Miembros",
-        "active": "Activos",
-        "admins": "Administradores"
+        "admins": "Administradores",
+        "activeAdmins": "Administradores activos",
+        "showing": "Mostrando"
       },
       "showingFirst": "Mostrando los primeros {count} miembros."
     },
@@ -243,6 +250,7 @@
       "title": "Roles de colonia",
       "add": "Asignar rol",
       "empty": "Ningún usuario tiene un rol de colonia todavía.",
+      "adminsOnlyEmpty": "Todavía no hay administradores de colonia.",
       "roles": {
         "neighbor": "Vecino",
         "neighborhood_admin": "Admin de colonia"
@@ -250,6 +258,10 @@
       "statuses": {
         "active": "Activo",
         "inactive": "Inactivo"
+      },
+      "actions": {
+        "edit": "Editar",
+        "remove": "Eliminar"
       },
       "systemRoles": {
         "user": "Usuario",
@@ -259,7 +271,9 @@
       "toasts": {
         "added": "Rol de colonia asignado.",
         "roleUpdated": "Rol de colonia actualizado.",
-        "statusUpdated": "Membresía de colonia actualizada."
+        "statusUpdated": "Membresía de colonia actualizada.",
+        "updated": "Administrador de la colonia actualizado.",
+        "removed": "Administrador de la colonia eliminado."
       },
       "addDialog": {
         "title": "Asignar rol de colonia",
@@ -271,6 +285,22 @@
         "cancel": "Cancelar",
         "saving": "Guardando...",
         "submit": "Asignar rol"
+      },
+      "editDialog": {
+        "title": "Editar administrador de la colonia",
+        "subtitle": "Actualiza el rol y el estado de colonia para {name}.",
+        "roleLabel": "Rol de colonia",
+        "statusLabel": "Estado",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "submit": "Guardar cambios"
+      },
+      "removeDialog": {
+        "title": "Eliminar administrador de la colonia",
+        "body": "¿Eliminar a {name} de los administradores de la colonia?",
+        "cancel": "Cancelar",
+        "remove": "Eliminar",
+        "removing": "Eliminando..."
       }
     },
     "usersTable": {

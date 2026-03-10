@@ -223,6 +223,7 @@ Overview Sections:
 - admin-overview-stats-posts
 - admin-overview-stats-users
 - admin-overview-stats-groups
+- admin-overview-members
 - admin-overview-polls
 - admin-overview-fundraising
 - admin-overview-events
@@ -1019,17 +1020,19 @@ Preconditions:
 Steps:
 1. Go to `/admin/{neighborhoodId}/members`.
 2. Verify `admin-members-root` and `admin-members-manager` render.
-3. Verify the list only contains users who already have a neighborhood role.
+3. Verify the list only contains neighborhood admins.
 4. Open `platform-neighborhood-add-member`.
 5. Add an existing user via `platform-neighborhood-add-member-email` and `platform-neighborhood-add-member-role`.
 6. Submit `platform-neighborhood-add-member-submit`.
-7. Change that user via `platform-neighborhood-member-role-{userId}`.
-8. Change that user via `platform-neighborhood-member-status-{userId}`.
+7. Open `platform-neighborhood-member-edit-{userId}`.
+8. Update `platform-neighborhood-edit-member-role` and `platform-neighborhood-edit-member-status`.
+9. Submit `platform-neighborhood-edit-member-submit`.
+10. Open `platform-neighborhood-member-remove-{userId}` and confirm removal.
 
 Expected:
 - Neighborhood role assignment happens from the dialog and requires an existing user email.
-- The members list only shows users with a neighborhood role.
-- Neighborhood admin role changes persist after refresh.
+- The members list only shows neighborhood admins.
+- Edit and remove actions persist after refresh.
 
 ## Feature: Admin CRUD Coverage
 ### Test Run: Admin Edits Group

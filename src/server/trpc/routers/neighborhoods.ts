@@ -7,9 +7,11 @@ import {
   getNeighborhoodById,
   listNeighborhoodMembersPaged,
   listNeighborhoodsPaged,
+  removeNeighborhoodMember,
   removeNeighborhood,
   setActiveNeighborhoodContext,
   setNeighborhoodMemberRole,
+  updateNeighborhoodMember,
   updateNeighborhood,
   updateNeighborhoodMembershipStatus,
 } from "@/services/neighborhoods";
@@ -142,6 +144,40 @@ export const neighborhoodsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         return await updateNeighborhoodMembershipStatus(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  updateMember: protectedProcedure
+    .input(
+      z
+        .object({
+          neighborhoodId: z.string().uuid(),
+          userId: z.string().uuid(),
+          role: z.enum(["neighbor", "neighborhood_admin"]).optional(),
+          status: z.enum(["active", "inactive"]).optional(),
+        })
+        .refine((value) => value.role !== undefined || value.status !== undefined, {
+          message: "At least one field is required.",
+        })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await updateNeighborhoodMember(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  removeMember: protectedProcedure
+    .input(
+      z.object({
+        neighborhoodId: z.string().uuid(),
+        userId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await removeNeighborhoodMember(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

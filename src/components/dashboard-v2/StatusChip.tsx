@@ -5,6 +5,8 @@ type StatusChipVariant =
   | "admin"
   | "group_admin"
   | "group_member"
+  | "neighborhood_admin"
+  | "neighbor"
   | "platform_admin"
   | "user"
   | "open";
@@ -21,6 +23,8 @@ const variantStyles: Record<StatusChipVariant, string> = {
   admin: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
   group_admin: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
   group_member: "bg-stone-100 text-stone-600 ring-1 ring-stone-200",
+  neighborhood_admin: "bg-sky-50 text-sky-700 ring-1 ring-sky-200",
+  neighbor: "bg-stone-100 text-stone-600 ring-1 ring-stone-200",
   platform_admin: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
   user: "bg-stone-100 text-stone-600 ring-1 ring-stone-200",
   open: "bg-teal-50 text-teal-700 ring-1 ring-teal-200",
