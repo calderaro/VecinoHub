@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronDownIcon } from "lucide-react";
 
@@ -37,6 +38,7 @@ export function UsersTable({
   status: string;
   adminBasePath?: string;
 }) {
+  const router = useRouter();
   const t = useTranslations("admin.usersTable");
 
   const startIndex = users.length > 0 ? (currentPage - 1) * 10 + 1 : 0;
@@ -112,6 +114,7 @@ export function UsersTable({
               <tbody className="divide-y divide-stone-100">
                 {users.map((user) => {
                   const displayName = user.username ?? user.name;
+                  const detailHref = `${adminBasePath}/users/${user.id}`;
                   const content = (
                     <div className="group flex items-center gap-3">
                       {user.image ? (
@@ -141,14 +144,25 @@ export function UsersTable({
                   return (
                     <tr
                       key={user.id}
-                      className="transition-colors hover:bg-stone-50"
+                      className="cursor-pointer transition-colors hover:bg-stone-50"
+                      onClick={() => router.push(detailHref)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(detailHref);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="link"
+                      aria-label={`${displayName} ${t(`statuses.${user.status}`)}`}
                       data-testid={`admin-users-row-${user.id}`}
                     >
                       <td className="px-5 py-3.5">
                         <Link
-                          href={`${adminBasePath}/users/${user.id}`}
+                          href={detailHref}
                           className="group flex items-center gap-3"
                           data-testid={`user-list-detail-${user.id}`}
+                          onClick={(event) => event.stopPropagation()}
                         >
                           {content}
                         </Link>
