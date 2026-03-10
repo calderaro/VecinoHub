@@ -18,6 +18,7 @@ vi.mock("@/db", async () => {
 });
 
 import { db } from "@/db";
+import { resetSecondaryStorage, secondaryStorage } from "@/server/secondary-storage";
 import { getGroupById, listGroupMembers, updateGroup } from "@/services/groups";
 import {
   removeNeighborhoodMember,
@@ -88,6 +89,7 @@ describe("service access-control regressions", () => {
 
   beforeEach(async () => {
     await resetTestDatabase();
+    await resetSecondaryStorage();
   });
 
   afterAll(async () => {
@@ -96,6 +98,7 @@ describe("service access-control regressions", () => {
 
   it("revokes all sessions when a user is deactivated", async () => {
     const userId = randomUUID();
+    const token = "session-token";
 
     await db.insert(users).values({
       id: userId,
@@ -105,10 +108,37 @@ describe("service access-control regressions", () => {
     });
     await db.insert(sessions).values({
       id: randomUUID(),
-      token: "session-token",
+      token,
       userId,
       expiresAt: new Date("2030-01-01T00:00:00.000Z"),
     });
+    await secondaryStorage.set(
+      token,
+      JSON.stringify({
+        session: {
+          token,
+          userId,
+          expiresAt: "2030-01-01T00:00:00.000Z",
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+        user: {
+          id: userId,
+          email: "resident@example.com",
+          name: "Resident",
+          status: "active",
+          role: "user",
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      }),
+      3600
+    );
+    await secondaryStorage.set(
+      `active-sessions-${userId}`,
+      JSON.stringify([{ token, expiresAt: new Date("2030-01-01T00:00:00.000Z").getTime() }]),
+      3600
+    );
 
     await updateUserStatus(createCtx(randomUUID(), "platform_admin"), {
       userId,
@@ -117,9 +147,13 @@ describe("service access-control regressions", () => {
 
     const storedSessions = await db.select().from(sessions);
     const storedUsers = await db.select().from(users);
+    const cachedSession = await secondaryStorage.get(token);
+    const cachedSessionList = await secondaryStorage.get(`active-sessions-${userId}`);
 
     expect(storedSessions).toHaveLength(0);
     expect(storedUsers[0]?.status).toBe("inactive");
+    expect(cachedSession).toBeNull();
+    expect(cachedSessionList).toBeNull();
   });
 
   it("keeps sessions intact when a user stays active", async () => {

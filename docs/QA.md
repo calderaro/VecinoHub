@@ -15,6 +15,7 @@
 - Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
 - Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
 - Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
+- Sign in, refresh, and sign out still work with Redis-backed sessions after setting `REDIS_URL`.
 - Inactive users are denied access after deactivation, even if they had an existing session before the status change.
 - Inactive users cannot create new sessions through password, magic-link, OTP, or social sign-in flows.
 

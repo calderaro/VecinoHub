@@ -12,6 +12,7 @@ const originalEnv = { ...process.env };
 function baseEnv() {
   process.env.BETTER_AUTH_SECRET = "test-secret";
   process.env.DATABASE_URL = "postgres://vecinohub:vecinohub@localhost:5432/vecinohub";
+  process.env.REDIS_URL = "redis://localhost:6379";
 }
 
 describe("better-auth security configuration", () => {
@@ -26,7 +27,7 @@ describe("better-auth security configuration", () => {
     process.env = { ...originalEnv };
   });
 
-  it("enables rate limiting and hashed storage for magic links and email OTPs", async () => {
+  it("enables rate limiting, Redis-backed sessions, and protected token storage", async () => {
     process.env.SMTP_HOST = "smtp.example.com";
     process.env.SMTP_USER = "mailer";
     process.env.SMTP_PASS = "secret";
@@ -44,10 +45,37 @@ describe("better-auth security configuration", () => {
       window: 60,
       max: 10,
     });
+    expect(
+      (auth as typeof auth & { options: { secondaryStorage?: unknown } }).options.secondaryStorage
+    ).toBeTruthy();
     expect(magicPlugin?.options?.storeToken).toBe("hashed");
     expect(magicPlugin?.options?.rateLimit).toEqual({ window: 60, max: 5 });
     expect(emailOtpPlugin?.options?.storeOTP).toBe("hashed");
     expect(emailOtpPlugin?.options?.allowedAttempts).toBe(5);
+    expect(
+      (auth as typeof auth & {
+        options: {
+          account: { encryptOAuthTokens?: boolean };
+          session: {
+            storeSessionInDatabase?: boolean;
+            preserveSessionInDatabase?: boolean;
+          };
+        };
+      }).options.account.encryptOAuthTokens
+    ).toBe(true);
+    expect(
+      (auth as typeof auth & {
+        options: {
+          session: {
+            storeSessionInDatabase?: boolean;
+            preserveSessionInDatabase?: boolean;
+          };
+        };
+      }).options.session
+    ).toMatchObject({
+      storeSessionInDatabase: false,
+      preserveSessionInDatabase: false,
+    });
   });
 
   it("fails closed without logging auth secrets when SMTP is missing", async () => {

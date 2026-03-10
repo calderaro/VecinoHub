@@ -245,3 +245,14 @@ The following additional audit findings were verified and remediated after the i
   - re-adding neighborhood membership does not silently restore prior group memberships
 
 Regression coverage was added for both areas in the Vitest suite.
+
+## Addendum: 2026-03-10 Token Storage Remediation
+
+The auth storage model was further hardened after the earlier follow-ups:
+
+- Better Auth sessions now use Redis-backed `secondaryStorage` instead of relying on plaintext session tokens in the SQL `sessions` table.
+- SQL session persistence is disabled in Better Auth config, so database session rows are no longer authoritative for active login state.
+- User deactivation now revokes Redis-backed sessions as well as any legacy SQL session rows.
+- OAuth account tokens are now encrypted at rest through Better Auth's `account.encryptOAuthTokens` option.
+
+This closes the previously noted residual concern that database read access would expose live session tokens and third-party OAuth tokens in plaintext.

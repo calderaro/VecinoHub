@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { db } from "@/db";
 import { groupMemberships, groups, sessions, users } from "@/db/schema";
+import { deleteUserSecondarySessions } from "@/server/secondary-storage";
 
 import { ServiceError } from "./errors";
 import { requireAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
@@ -354,6 +355,10 @@ export async function updateUserStatus(
 
     return userRows;
   });
+
+  if (status === "inactive") {
+    await deleteUserSecondarySessions(userId);
+  }
 
   if (!updated[0]) {
     throw new ServiceError("User not found", "NOT_FOUND");
