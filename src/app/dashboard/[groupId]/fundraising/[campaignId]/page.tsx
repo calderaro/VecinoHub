@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ContributionDeleteButton } from "@/components/fundraising/contribution-delete-button";
 import Link from "next/link";
 
-import { getCampaignDetail } from "@/services/fundraising";
+import { getResidentCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
 function getDisplayLocale(locale: string) {
@@ -33,12 +33,11 @@ export default async function NeighborCampaignDetailPage({
 
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
-  const campaign = await getCampaignDetail(serviceContext, {
+  const campaign = await getResidentCampaignDetail(serviceContext, {
     campaignId: resolvedParams.campaignId,
+    groupId: resolvedParams.groupId,
   });
-  const contributions = campaign.contributions.filter(
-    (contribution) => contribution.submittedBy === session.user.id
-  );
+  const contributions = campaign.contributions;
   const contributedTotal = contributions.reduce(
     (total, contribution) => total + Number(contribution.amount ?? 0),
     0

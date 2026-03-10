@@ -33,6 +33,7 @@
   - `/dashboard/[groupId]/polls/[pollId]`
   - `/dashboard/[groupId]/fundraising`
   - `/dashboard/[groupId]/fundraising/[campaignId]`
+    - shows campaign summary plus only the signed-in resident's own submissions for the selected group.
   - `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
   - `/dashboard/[groupId]/events`
   - `/dashboard/[groupId]/events/[eventId]`

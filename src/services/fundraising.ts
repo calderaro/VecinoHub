@@ -18,7 +18,6 @@ import {
   listNeighborhoodIdsForUser,
   requireGroupMember,
   requireNeighborhoodAdminOrPlatform,
-  requireNeighborhoodMember,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
@@ -74,25 +73,6 @@ async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
   }
 
   return neighborhoodAdminIds;
-}
-
-async function listActiveGroupIdsForUserInNeighborhood(
-  userId: string,
-  neighborhoodId: string
-) {
-  const rows = await db
-    .select({ groupId: groupMemberships.groupId })
-    .from(groupMemberships)
-    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
-    .where(
-      and(
-        eq(groupMemberships.userId, userId),
-        eq(groupMemberships.status, "active"),
-        eq(groups.neighborhoodId, neighborhoodId)
-      )
-    );
-
-  return rows.map((row) => row.groupId);
 }
 
 const createCampaignSchema = z.object({
@@ -629,12 +609,12 @@ export async function getCampaignProgressByIds(
 
 const getCampaignSchema = z.object({ campaignId: idSchema });
 
-export async function getCampaignDetail(
-  ctx: ServiceContext,
-  input: z.input<typeof getCampaignSchema>
-) {
-  const { campaignId } = getCampaignSchema.parse(input);
+const getResidentCampaignSchema = z.object({
+  campaignId: idSchema,
+  groupId: idSchema,
+});
 
+async function getCampaignDetailRow(campaignId: string) {
   const campaignRows = await db
     .select({
       campaign: fundraisingCampaigns,
@@ -648,94 +628,80 @@ export async function getCampaignDetail(
   if (!campaignRows[0]) {
     throw new ServiceError("Campaign not found", "NOT_FOUND");
   }
-  const campaign = {
+
+  return {
     ...campaignRows[0].campaign,
     creatorName: campaignRows[0].creatorName,
   };
+}
 
-  if (isPlatformAdmin(ctx)) {
-    const contributions = await db
-      .select({
-        id: fundraisingContributions.id,
-        campaignId: fundraisingContributions.campaignId,
-        groupId: fundraisingContributions.groupId,
-        groupName: groups.name,
-        submittedBy: fundraisingContributions.submittedBy,
-        submittedByName: users.name,
-        submittedByEmail: users.email,
-        method: fundraisingContributions.method,
-        amount: fundraisingContributions.amount,
-        wireReference: fundraisingContributions.wireReference,
-        wireDate: fundraisingContributions.wireDate,
-        wireAmount: fundraisingContributions.wireAmount,
-        status: fundraisingContributions.status,
-        confirmedBy: fundraisingContributions.confirmedBy,
-        createdAt: fundraisingContributions.createdAt,
-        updatedAt: fundraisingContributions.updatedAt,
-      })
-      .from(fundraisingContributions)
-      .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
-      .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
-      .where(eq(fundraisingContributions.campaignId, campaignId));
+export async function getCampaignDetail(
+  ctx: ServiceContext,
+  input: z.input<typeof getCampaignSchema>
+) {
+  const { campaignId } = getCampaignSchema.parse(input);
+  await requireCampaignAdminScope(ctx, campaignId);
+  const campaign = await getCampaignDetailRow(campaignId);
 
-    return { ...campaign, contributions };
+  const contributions = await db
+    .select({
+      id: fundraisingContributions.id,
+      campaignId: fundraisingContributions.campaignId,
+      groupId: fundraisingContributions.groupId,
+      groupName: groups.name,
+      submittedBy: fundraisingContributions.submittedBy,
+      submittedByName: users.name,
+      submittedByEmail: users.email,
+      method: fundraisingContributions.method,
+      amount: fundraisingContributions.amount,
+      wireReference: fundraisingContributions.wireReference,
+      wireDate: fundraisingContributions.wireDate,
+      wireAmount: fundraisingContributions.wireAmount,
+      status: fundraisingContributions.status,
+      confirmedBy: fundraisingContributions.confirmedBy,
+      createdAt: fundraisingContributions.createdAt,
+      updatedAt: fundraisingContributions.updatedAt,
+    })
+    .from(fundraisingContributions)
+    .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
+    .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
+    .where(eq(fundraisingContributions.campaignId, campaignId));
+
+  return { ...campaign, contributions };
+}
+
+export async function getResidentCampaignDetail(
+  ctx: ServiceContext,
+  input: z.input<typeof getResidentCampaignSchema>
+) {
+  const { campaignId, groupId } = getResidentCampaignSchema.parse(input);
+  const groupScope = await requireGroupMember(ctx, groupId);
+  const campaign = await getCampaignDetailRow(campaignId);
+
+  if (!campaign.neighborhoodId || campaign.neighborhoodId !== groupScope.neighborhoodId) {
+    throw new ServiceError("Group and campaign belong to different neighborhoods", "FORBIDDEN");
   }
 
-  if (campaign.neighborhoodId) {
-    const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
-    if (neighborhoodAdminIds && neighborhoodAdminIds.includes(campaign.neighborhoodId)) {
-      const contributions = await db
-        .select({
-          id: fundraisingContributions.id,
-          campaignId: fundraisingContributions.campaignId,
-          groupId: fundraisingContributions.groupId,
-          groupName: groups.name,
-          submittedBy: fundraisingContributions.submittedBy,
-          submittedByName: users.name,
-          submittedByEmail: users.email,
-          method: fundraisingContributions.method,
-          amount: fundraisingContributions.amount,
-          wireReference: fundraisingContributions.wireReference,
-          wireDate: fundraisingContributions.wireDate,
-          wireAmount: fundraisingContributions.wireAmount,
-          status: fundraisingContributions.status,
-          confirmedBy: fundraisingContributions.confirmedBy,
-          createdAt: fundraisingContributions.createdAt,
-          updatedAt: fundraisingContributions.updatedAt,
-        })
-        .from(fundraisingContributions)
-        .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
-        .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
-        .where(eq(fundraisingContributions.campaignId, campaignId));
-
-      return { ...campaign, contributions };
-    }
-
-    await requireNeighborhoodMember(ctx, campaign.neighborhoodId);
-
-    const groupIds = await listActiveGroupIdsForUserInNeighborhood(
-      ctx.user.id,
-      campaign.neighborhoodId
+  const contributions = await db
+    .select({
+      id: fundraisingContributions.id,
+      campaignId: fundraisingContributions.campaignId,
+      method: fundraisingContributions.method,
+      amount: fundraisingContributions.amount,
+      status: fundraisingContributions.status,
+      createdAt: fundraisingContributions.createdAt,
+      updatedAt: fundraisingContributions.updatedAt,
+    })
+    .from(fundraisingContributions)
+    .where(
+      and(
+        eq(fundraisingContributions.campaignId, campaignId),
+        eq(fundraisingContributions.groupId, groupId),
+        eq(fundraisingContributions.submittedBy, ctx.user.id)
+      )
     );
 
-    if (groupIds.length === 0) {
-      throw new ServiceError("Membership required", "FORBIDDEN");
-    }
-
-    const contributions = await db
-      .select()
-      .from(fundraisingContributions)
-      .where(
-        and(
-          eq(fundraisingContributions.campaignId, campaignId),
-          inArray(fundraisingContributions.groupId, groupIds)
-        )
-      );
-
-    return { ...campaign, contributions };
-  }
-
-  throw new ServiceError("Campaign not found", "NOT_FOUND");
+  return { ...campaign, contributions };
 }
 
 export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {

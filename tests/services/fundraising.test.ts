@@ -17,7 +17,11 @@ vi.mock("@/db", async () => {
   return { db: testDb };
 });
 
-import { getCampaignDetail, listCampaigns } from "@/services/fundraising";
+import {
+  getCampaignDetail,
+  getResidentCampaignDetail,
+  listCampaigns,
+} from "@/services/fundraising";
 import {
   closeTestDatabase,
   ensureTestDatabase,
@@ -52,13 +56,15 @@ describe("fundraising service authorization", () => {
     await closeTestDatabase();
   });
 
-  it("returns campaign detail for an active resident and only includes their active group contributions", async () => {
+  it("returns resident campaign detail scoped to the requested group and self-submitted contributions only", async () => {
     const neighborhoodId = randomUUID();
     const viewerId = randomUUID();
     const otherUserId = randomUUID();
     const viewerGroupId = randomUUID();
+    const otherViewerGroupId = randomUUID();
     const otherGroupId = randomUUID();
     const campaignId = randomUUID();
+    const requestedContributionId = randomUUID();
 
     await db.insert(users).values({
       id: viewerId,
@@ -85,6 +91,11 @@ describe("fundraising service authorization", () => {
       name: "Viewer Group",
     });
     await db.insert(groups).values({
+      id: otherViewerGroupId,
+      neighborhoodId,
+      name: "Viewer Secondary Group",
+    });
+    await db.insert(groups).values({
       id: otherGroupId,
       neighborhoodId,
       name: "Other Group",
@@ -93,6 +104,13 @@ describe("fundraising service authorization", () => {
     await db.insert(groupMemberships).values({
       id: randomUUID(),
       groupId: viewerGroupId,
+      userId: viewerId,
+      role: "group_member",
+      status: "active",
+    });
+    await db.insert(groupMemberships).values({
+      id: randomUUID(),
+      groupId: otherViewerGroupId,
       userId: viewerId,
       role: "group_member",
       status: "active",
@@ -116,7 +134,7 @@ describe("fundraising service authorization", () => {
     });
 
     await db.insert(fundraisingContributions).values({
-      id: randomUUID(),
+      id: requestedContributionId,
       campaignId,
       groupId: viewerGroupId,
       submittedBy: viewerId,
@@ -126,6 +144,19 @@ describe("fundraising service authorization", () => {
       wireDate: null,
       wireAmount: null,
       confirmedBy: null,
+    });
+    await db.insert(fundraisingContributions).values({
+      id: randomUUID(),
+      campaignId,
+      groupId: otherViewerGroupId,
+      submittedBy: viewerId,
+      method: "cash",
+      amount: "25.00",
+      status: "confirmed",
+      wireReference: "WIRE-SECONDARY",
+      wireDate: "2026-03-10",
+      wireAmount: "25.00",
+      confirmedBy: otherUserId,
     });
     await db.insert(fundraisingContributions).values({
       id: randomUUID(),
@@ -140,17 +171,23 @@ describe("fundraising service authorization", () => {
       confirmedBy: null,
     });
 
-    const campaign = await getCampaignDetail(createCtx(viewerId), { campaignId });
+    const campaign = await getResidentCampaignDetail(createCtx(viewerId), {
+      campaignId,
+      groupId: viewerGroupId,
+    });
 
     expect(campaign.id).toBe(campaignId);
     expect(campaign.contributions).toHaveLength(1);
-    expect(campaign.contributions[0]?.groupId).toBe(viewerGroupId);
+    expect(campaign.contributions[0]?.id).toBe(requestedContributionId);
+    expect(campaign.contributions[0]).not.toHaveProperty("wireReference");
+    expect(campaign.contributions[0]).not.toHaveProperty("submittedByEmail");
   });
 
-  it("rejects campaign access outside the caller neighborhood membership scope", async () => {
+  it("rejects resident campaign access outside the caller group membership scope", async () => {
     const neighborhoodId = randomUUID();
     const viewerId = randomUUID();
     const creatorId = randomUUID();
+    const groupId = randomUUID();
     const campaignId = randomUUID();
 
     await db.insert(users).values({
@@ -164,6 +201,12 @@ describe("fundraising service authorization", () => {
       name: "Creator",
     });
 
+    await db.insert(groups).values({
+      id: groupId,
+      neighborhoodId,
+      name: "Restricted Group",
+    });
+
     await db.insert(fundraisingCampaigns).values({
       id: campaignId,
       neighborhoodId,
@@ -175,7 +218,7 @@ describe("fundraising service authorization", () => {
     });
 
     await expect(
-      getCampaignDetail(createCtx(viewerId), { campaignId })
+      getResidentCampaignDetail(createCtx(viewerId), { campaignId, groupId })
     ).rejects.toMatchObject({ message: "Neighborhood membership required" });
   });
 
@@ -230,8 +273,48 @@ describe("fundraising service authorization", () => {
     });
 
     await expect(
-      getCampaignDetail(createCtx(viewerId), { campaignId })
+      getResidentCampaignDetail(createCtx(viewerId), { campaignId, groupId })
     ).rejects.toMatchObject({ message: "Membership required" });
+  });
+
+  it("rejects resident callers from the admin campaign detail path", async () => {
+    const neighborhoodId = randomUUID();
+    const viewerId = randomUUID();
+    const creatorId = randomUUID();
+    const campaignId = randomUUID();
+
+    await db.insert(users).values({
+      id: viewerId,
+      email: "viewer@example.com",
+      name: "Viewer",
+    });
+    await db.insert(users).values({
+      id: creatorId,
+      email: "creator@example.com",
+      name: "Creator",
+    });
+
+    await db.insert(neighborhoodMemberships).values({
+      id: randomUUID(),
+      neighborhoodId,
+      userId: viewerId,
+      role: "neighbor",
+      status: "active",
+    });
+
+    await db.insert(fundraisingCampaigns).values({
+      id: campaignId,
+      neighborhoodId,
+      title: "Admin Only Campaign",
+      amount: "50.00",
+      goalAmount: "100.00",
+      dueDate: null,
+      createdBy: creatorId,
+    });
+
+    await expect(
+      getCampaignDetail(createCtx(viewerId), { campaignId })
+    ).rejects.toMatchObject({ message: "Neighborhood admin access required" });
   });
 
   it("returns all contributions for a neighborhood admin in the campaign neighborhood", async () => {

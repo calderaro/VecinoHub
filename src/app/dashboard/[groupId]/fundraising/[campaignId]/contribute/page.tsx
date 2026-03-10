@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContributionForm } from "@/components/fundraising/contribution-form";
 import { listUserGroups } from "@/services/groups";
-import { getCampaignDetail } from "@/services/fundraising";
+import { getResidentCampaignDetail } from "@/services/fundraising";
 import { getSession } from "@/server/auth";
 
 export default async function NeighborContributionPage({
@@ -21,8 +21,9 @@ export default async function NeighborContributionPage({
 
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
-  const campaign = await getCampaignDetail(serviceContext, {
+  const campaign = await getResidentCampaignDetail(serviceContext, {
     campaignId: resolvedParams.campaignId,
+    groupId: resolvedParams.groupId,
   });
 
   if (campaign.status !== "open") {

@@ -57,6 +57,7 @@
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
 - Poll voting rejects option ids that belong to a different poll and preserves the existing valid vote.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
+- Resident campaign detail only shows contributions submitted by the signed-in user for the selected group.
 - Former or inactive group memberships do not expose contributions in fundraising detail pages.
 - Re-adding a neighborhood membership does not automatically restore prior group memberships or group-admin access.
 - Events: create/edit/delete and list/detail render correctly.
