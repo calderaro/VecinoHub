@@ -45,36 +45,58 @@ describe("server auth session enforcement", () => {
     getSessionMock.mockResolvedValue({
       user: {
         id: "00000000-0000-4000-8000-000000000001",
+        role: "platform_admin",
+        status: "active",
+        username: "inactive-user",
+        image: null,
+        preferredLanguage: "es",
+      },
+    });
+    dbLimitMock.mockResolvedValue([
+      {
         role: "user",
         status: "inactive",
         username: "inactive-user",
         image: null,
         preferredLanguage: "es",
       },
-    });
+    ]);
 
     const { getSession } = await import("@/server/auth");
 
     await expect(getSession()).resolves.toBeNull();
-    expect(dbSelectMock).not.toHaveBeenCalled();
+    expect(dbSelectMock).toHaveBeenCalled();
   });
 
-  it("falls back to the database status when the auth payload omits status", async () => {
+  it("hydrates mutable claims from the current database user row", async () => {
     getSessionMock.mockResolvedValue({
       user: {
         id: "00000000-0000-4000-8000-000000000002",
-        role: "user",
-        username: "active-user",
-        image: null,
+        role: "platform_admin",
+        status: "active",
+        username: "stale-admin",
+        image: "https://example.com/old.png",
         preferredLanguage: "en",
       },
     });
-    dbLimitMock.mockResolvedValue([{ status: "active" }]);
+    dbLimitMock.mockResolvedValue([
+      {
+        role: "user",
+        status: "active",
+        username: "active-user",
+        image: null,
+        preferredLanguage: "es",
+      },
+    ]);
 
     const { getSession } = await import("@/server/auth");
     const session = await getSession();
 
+    expect(session?.user.role).toBe("user");
     expect(session?.user.status).toBe("active");
+    expect(session?.user.username).toBe("active-user");
+    expect(session?.user.image).toBeNull();
+    expect(session?.user.preferredLanguage).toBe("es");
     expect(session?.user.activeNeighborhoodId).toBe(
       "00000000-0000-4000-8000-0000000000aa"
     );

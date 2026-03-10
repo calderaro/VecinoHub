@@ -44,32 +44,32 @@ export async function getSession(): Promise<Session> {
     return null;
   }
 
-  const sessionStatus =
-    (sessionResult.user as { status?: SessionUser["status"] }).status;
-  const userStatus =
-    sessionStatus ??
-    (
-      await db
-        .select({ status: users.status })
-        .from(users)
-        .where(eq(users.id, sessionResult.user.id))
-        .limit(1)
-    )[0]?.status;
+  const currentUser = (
+    await db
+      .select({
+        role: users.role,
+        status: users.status,
+        username: users.username,
+        image: users.image,
+        preferredLanguage: users.preferredLanguage,
+      })
+      .from(users)
+      .where(eq(users.id, sessionResult.user.id))
+      .limit(1)
+  )[0];
 
-  if (userStatus !== "active") {
+  if (!currentUser || currentUser.status !== "active") {
     return null;
   }
 
   return {
     user: {
       id: sessionResult.user.id,
-      role: sessionResult.user.role as SessionUser["role"],
-      status: userStatus,
-      username: (sessionResult.user as { username?: string }).username ?? null,
-      image: sessionResult.user.image ?? null,
-      preferredLanguage:
-        (sessionResult.user as { preferredLanguage?: SessionUser["preferredLanguage"] })
-          .preferredLanguage ?? "es",
+      role: currentUser.role as SessionUser["role"],
+      status: currentUser.status,
+      username: currentUser.username ?? null,
+      image: currentUser.image ?? null,
+      preferredLanguage: currentUser.preferredLanguage as SessionUser["preferredLanguage"],
       activeNeighborhoodId,
     },
   };
