@@ -32,6 +32,7 @@ export default async function AdminNeighborhoodMembersPage({
   const [members, t, tManager] = await Promise.all([
     listNeighborhoodMembersPaged(serviceContext, {
       neighborhoodId: resolvedParams.neighborhoodId,
+      role: "neighborhood_admin",
       limit: 100,
       offset: 0,
     }),
@@ -57,10 +58,11 @@ export default async function AdminNeighborhoodMembersPage({
             neighborhoodId={resolvedParams.neighborhoodId}
             initialMembers={members.items}
             userDetailHrefBase={null}
+            visibleRoles={["neighborhood_admin"]}
             assignableRoles={["neighbor", "neighborhood_admin"]}
             editableRoles={["neighbor", "neighborhood_admin"]}
             heading={t("managerTitle")}
-            emptyMessage={tManager("empty")}
+            emptyMessage={tManager("adminsOnlyEmpty")}
             itemActionsMode="dialog"
           />
           {members.total > members.items.length ? (

@@ -237,15 +237,15 @@
     },
     "members": {
       "back": "Back to overview",
-      "title": "Neighborhood members",
-      "subtitle": "This page shows users with a neighborhood role. Use the dialog to assign a role to an existing user.",
-      "managerTitle": "Neighborhood members",
+      "title": "Neighborhood admins",
+      "subtitle": "This page only shows users with the neighborhood admin role. Use the dialog to assign that role to an existing user.",
+      "managerTitle": "Neighborhood admins",
       "stats": {
         "admins": "Admins",
         "activeAdmins": "Active admins",
         "showing": "Showing"
       },
-      "showingFirst": "Showing the first {count} members."
+      "showingFirst": "Showing the first {count} admins."
     },
     "neighborhoodMembersManager": {
       "title": "Neighborhood roles",

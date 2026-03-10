@@ -237,15 +237,15 @@
     },
     "members": {
       "back": "Volver al resumen",
-      "title": "Miembros de la colonia",
-      "subtitle": "Esta página muestra usuarios con un rol de colonia. Usa el diálogo para asignar un rol a un usuario existente.",
-      "managerTitle": "Miembros de la colonia",
+      "title": "Administradores de la colonia",
+      "subtitle": "Esta página solo muestra usuarios con el rol de admin de colonia. Usa el diálogo para asignar ese rol a un usuario existente.",
+      "managerTitle": "Administradores de la colonia",
       "stats": {
         "admins": "Administradores",
         "activeAdmins": "Administradores activos",
         "showing": "Mostrando"
       },
-      "showingFirst": "Mostrando los primeros {count} miembros."
+      "showingFirst": "Mostrando los primeros {count} administradores."
     },
     "neighborhoodMembersManager": {
       "title": "Roles de colonia",
