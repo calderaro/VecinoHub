@@ -57,12 +57,14 @@
   - `/admin/[neighborhoodId]/posts`, `/admin/[neighborhoodId]/posts/new`, `/admin/[neighborhoodId]/posts/[postId]`, `/admin/[neighborhoodId]/posts/[postId]/edit`
   - `/admin/[neighborhoodId]/users`
     - neighborhood-scoped list of users who hold at least one active group membership in that neighborhood.
-    - neighborhood admins can view the list; platform admins can also open user detail/edit screens.
+    - neighborhood admins and platform admins can open the list and the user detail screen.
+  - `/admin/[neighborhoodId]/users/[userId]`
+    - read-only neighborhood-scoped user detail.
+    - shows only the user's group memberships in the current neighborhood.
   - `/admin/[neighborhoodId]/members`
     - neighborhood role management for neighbors and neighborhood admins.
     - only users with a neighborhood membership appear in the list.
     - assigning a neighborhood role is done through a dialog that asks for an existing user email plus the target role.
-  - `/admin/[neighborhoodId]/users/[userId]`, `/admin/[neighborhoodId]/users/[userId]/edit` (platform admin only)
 
 ## Platform Admin Shell
 - `/platform`

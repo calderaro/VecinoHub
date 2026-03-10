@@ -37,10 +37,6 @@ export default async function AdminUsersPage({
     typeof resolvedSearchParams.q === "string"
       ? resolvedSearchParams.q.trim()
       : "";
-  const role =
-    typeof resolvedSearchParams.role === "string"
-      ? resolvedSearchParams.role
-      : "";
   const status =
     typeof resolvedSearchParams.status === "string"
       ? resolvedSearchParams.status
@@ -52,13 +48,9 @@ export default async function AdminUsersPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const canOpenDetail =
-    session.user.role === "admin" || session.user.role === "platform_admin";
-
   const usersPaged = await listNeighborhoodGroupUsersPaged(serviceContext, {
     neighborhoodId: resolvedParams.neighborhoodId,
     query: query || undefined,
-    role: role ? (role as "user" | "admin" | "platform_admin") : undefined,
     status: status ? (status as "active" | "inactive") : undefined,
     limit: PAGE_SIZE,
     offset,
@@ -97,10 +89,8 @@ export default async function AdminUsersPage({
         currentPage={page}
         totalPages={totalPages}
         query={query}
-        role={role}
         status={status}
         adminBasePath={adminBasePath}
-        canOpenDetail={canOpenDetail}
       />
     </div>
   );

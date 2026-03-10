@@ -38,6 +38,9 @@
 - Group admins can update group details and manage members/roles only for their own group.
 - Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.
 - Neighborhood admins opening `/admin/[neighborhoodId]/users` only see users who hold at least one active group membership in that neighborhood.
+- `/admin/[neighborhoodId]/users` does not show a role column or role filter, and search/status filters still work.
+- Neighborhood admins can open `/admin/[neighborhoodId]/users/[userId]` and only see memberships for the current neighborhood.
+- `/admin/[neighborhoodId]/users/[userId]` is read-only and does not expose edit or role/status action controls.
 - `/admin/[neighborhoodId]/members` only lists users with the `neighborhood_admin` role.
 - Neighborhood admins can assign a neighborhood role to an existing user from the dialog in `/admin/[neighborhoodId]/members`, then promote/demote neighborhood admins there.
 - `/admin/[neighborhoodId]/members` provides dialog-based edit and remove actions for each listed neighborhood admin.

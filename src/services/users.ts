@@ -82,7 +82,6 @@ export async function listUsersPaged(
 const listNeighborhoodGroupUsersPagedSchema = z.object({
   neighborhoodId: idSchema,
   query: z.string().optional(),
-  role: roleSchema.optional(),
   status: statusSchema.optional(),
   limit: z.number().int().positive().max(100).default(10),
   offset: z.number().int().min(0).default(0),
@@ -92,7 +91,7 @@ export async function listNeighborhoodGroupUsersPaged(
   ctx: ServiceContext,
   input: z.input<typeof listNeighborhoodGroupUsersPagedSchema>
 ) {
-  const { neighborhoodId, query, role, status, limit, offset } =
+  const { neighborhoodId, query, status, limit, offset } =
     listNeighborhoodGroupUsersPagedSchema.parse(input);
   await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
@@ -104,18 +103,11 @@ export async function listNeighborhoodGroupUsersPaged(
         ilike(users.username, search)
       )
     : undefined;
-  const roleFilter = role ? eq(users.role, role) : undefined;
   const statusFilter = status ? eq(users.status, status) : undefined;
   const combinedFilter =
-    searchFilter && roleFilter && statusFilter
-      ? and(searchFilter, roleFilter, statusFilter)
-      : searchFilter && roleFilter
-        ? and(searchFilter, roleFilter)
-        : searchFilter && statusFilter
-          ? and(searchFilter, statusFilter)
-          : roleFilter && statusFilter
-            ? and(roleFilter, statusFilter)
-            : (searchFilter ?? roleFilter ?? statusFilter);
+    searchFilter && statusFilter
+      ? and(searchFilter, statusFilter)
+      : (searchFilter ?? statusFilter);
   const scopedFilter = combinedFilter
     ? and(
         eq(groups.neighborhoodId, neighborhoodId),
@@ -131,7 +123,6 @@ export async function listNeighborhoodGroupUsersPaged(
       username: users.username,
       email: users.email,
       image: users.image,
-      role: users.role,
       status: users.status,
       createdAt: users.createdAt,
       updatedAt: users.updatedAt,
@@ -147,7 +138,6 @@ export async function listNeighborhoodGroupUsersPaged(
       users.username,
       users.email,
       users.image,
-      users.role,
       users.status,
       users.createdAt,
       users.updatedAt
@@ -201,18 +191,44 @@ export async function getUserGroupCounts(
   return new Map(rows.map((row) => [row.userId, Number(row.total)]));
 }
 
-const getUserByIdSchema = z.object({
+const getNeighborhoodUserByIdSchema = z.object({
+  neighborhoodId: idSchema,
   userId: idSchema,
 });
 
-export async function getUserById(
+export async function getNeighborhoodUserById(
   ctx: ServiceContext,
-  input: z.input<typeof getUserByIdSchema>
+  input: z.input<typeof getNeighborhoodUserByIdSchema>
 ) {
-  requireAdmin(ctx);
-  const { userId } = getUserByIdSchema.parse(input);
+  const { neighborhoodId, userId } = getNeighborhoodUserByIdSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
-  const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const userRows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      username: users.username,
+      image: users.image,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .innerJoin(users, eq(groupMemberships.userId, users.id))
+    .where(and(eq(users.id, userId), eq(groups.neighborhoodId, neighborhoodId)))
+    .groupBy(
+      users.id,
+      users.name,
+      users.email,
+      users.username,
+      users.image,
+      users.status,
+      users.createdAt,
+      users.updatedAt
+    )
+    .limit(1);
   const user = userRows[0];
 
   if (!user) {
@@ -226,14 +242,17 @@ export async function getUserById(
       inactive: sql<number>`coalesce(sum(case when ${groupMemberships.status} = 'inactive' then 1 else 0 end), 0)`,
     })
     .from(groupMemberships)
-    .where(eq(groupMemberships.userId, userId));
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .where(and(eq(groupMemberships.userId, userId), eq(groups.neighborhoodId, neighborhoodId)));
 
   const managedTotals = await db
     .select({ total: count() })
     .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
     .where(
       and(
         eq(groupMemberships.userId, userId),
+        eq(groups.neighborhoodId, neighborhoodId),
         eq(groupMemberships.role, "group_admin"),
         eq(groupMemberships.status, "active")
       )
@@ -248,17 +267,18 @@ export async function getUserById(
   };
 }
 
-const listUserMembershipsSchema = z.object({
+const listNeighborhoodUserMembershipsSchema = z.object({
+  neighborhoodId: idSchema,
   userId: idSchema,
   limit: z.number().int().positive().max(100).default(20),
 });
 
-export async function listUserMemberships(
+export async function listNeighborhoodUserMemberships(
   ctx: ServiceContext,
-  input: z.input<typeof listUserMembershipsSchema>
+  input: z.input<typeof listNeighborhoodUserMembershipsSchema>
 ) {
-  requireAdmin(ctx);
-  const { userId, limit } = listUserMembershipsSchema.parse(input);
+  const { neighborhoodId, userId, limit } = listNeighborhoodUserMembershipsSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
   const rows = await db
     .select({
@@ -272,7 +292,7 @@ export async function listUserMemberships(
     })
     .from(groupMemberships)
     .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
-    .where(eq(groupMemberships.userId, userId))
+    .where(and(eq(groupMemberships.userId, userId), eq(groups.neighborhoodId, neighborhoodId)))
     .orderBy(desc(groupMemberships.createdAt))
     .limit(limit);
 

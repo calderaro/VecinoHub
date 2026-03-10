@@ -2,11 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeftIcon, PencilIcon, UsersIcon } from "lucide-react";
+import { ArrowLeftIcon, UsersIcon } from "lucide-react";
 
-import { UserDetailActions } from "@/components/admin/user-detail-actions";
 import { StatusBadge } from "@/components/ui-v3";
-import { getUserById, listUserMemberships } from "@/services/users";
+import {
+  getNeighborhoodUserById,
+  listNeighborhoodUserMemberships,
+} from "@/services/users";
 import { getSession } from "@/server/auth";
 
 function getDisplayLocale(locale: string) {
@@ -43,16 +45,18 @@ export default async function AdminUserDetailPage({
     },
   };
 
-  if (session.user.role !== "admin" && session.user.role !== "platform_admin") {
-    redirect(adminBasePath);
-  }
-
-  const [user, memberships, locale, t, tTable] = await Promise.all([
-    getUserById(serviceContext, { userId: resolvedParams.userId }),
-    listUserMemberships(serviceContext, { userId: resolvedParams.userId, limit: 20 }),
+  const [user, memberships, locale, t] = await Promise.all([
+    getNeighborhoodUserById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+      userId: resolvedParams.userId,
+    }),
+    listNeighborhoodUserMemberships(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+      userId: resolvedParams.userId,
+      limit: 20,
+    }),
     getLocale(),
     getTranslations("admin.userDetail"),
-    getTranslations("admin.usersTable"),
   ]);
 
   const displayName = user.username ?? user.name;
@@ -96,15 +100,7 @@ export default async function AdminUserDetailPage({
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2.5">
-                <StatusBadge
-                  variant={user.role === "platform_admin" ? "admin" : user.role}
-                  label={
-                    user.role === "platform_admin"
-                      ? tTable("roles.platform_admin")
-                      : tTable(`roles.${user.role}`)
-                  }
-                />
-                <StatusBadge variant={user.status} label={tTable(`statuses.${user.status}`)} />
+                <StatusBadge variant={user.status} label={t(`statuses.${user.status}`)} />
                 <span className="text-xs text-stone-400">
                   {t("createdAt")} {formatDate(user.createdAt, locale)}
                 </span>
@@ -113,31 +109,6 @@ export default async function AdminUserDetailPage({
                 </span>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Link
-                href={`${adminBasePath}/users/${user.id}/edit`}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50"
-                data-testid="user-detail-edit"
-              >
-                <PencilIcon className="h-3.5 w-3.5" /> {t("edit")}
-              </Link>
-              <UserDetailActions userId={user.id} role={user.role} status={user.status} />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-3 border-b border-stone-100 px-6 py-5 sm:grid-cols-3">
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.totalMemberships")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{user.membershipsTotal}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.activeMemberships")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{user.membershipsActive}</p>
-          </div>
-          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
-            <p className="text-xs text-stone-400">{t("stats.managedGroups")}</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{user.groupsManaged}</p>
           </div>
         </div>
 
@@ -162,7 +133,9 @@ export default async function AdminUserDetailPage({
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-stone-900">{membership.groupName}</p>
-                    <p className="truncate text-xs text-stone-400">{membership.groupAddress ?? "-"}</p>
+                    <p className="truncate text-xs text-stone-400">
+                      {membership.groupAddress ?? t("noAddress")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <StatusBadge
@@ -171,7 +144,7 @@ export default async function AdminUserDetailPage({
                     />
                     <StatusBadge
                       variant={membership.membershipStatus}
-                      label={membership.membershipStatus === "active" ? tTable("statuses.active") : tTable("statuses.inactive")}
+                      label={t(`statuses.${membership.membershipStatus}`)}
                     />
                   </div>
                 </Link>

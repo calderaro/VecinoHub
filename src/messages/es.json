@@ -335,50 +335,26 @@
     },
     "userDetail": {
       "back": "Volver a usuarios",
-      "label": "Usuario de la plataforma",
-      "edit": "Editar",
+      "label": "Usuario de la colonia",
+      "username": "Usuario",
+      "notSet": "Sin definir",
       "createdAt": "Creado",
       "updatedAt": "Actualizado",
-      "membershipsTitle": "Membresías en grupos",
-      "noMemberships": "Este usuario no está asignado a ningún grupo.",
+      "membershipsTitle": "Grupos en esta colonia",
+      "noMemberships": "Este usuario no está asignado a ningún grupo en esta colonia.",
+      "noAddress": "Sin dirección",
       "membershipRoles": {
         "group_admin": "Admin del grupo",
         "group_member": "Miembro del grupo"
       },
+      "statuses": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
       "stats": {
-        "totalMemberships": "Membresías totales",
+        "totalMemberships": "Grupos en la colonia",
         "activeMemberships": "Membresías activas",
         "managedGroups": "Grupos administrados"
-      }
-    },
-    "userActions": {
-      "makeAdmin": "Hacer admin",
-      "makeUser": "Asignar como usuario",
-      "deactivate": "Desactivar",
-      "activate": "Activar",
-      "saving": "Guardando...",
-      "roleUpdated": "Rol actualizado.",
-      "statusUpdated": "Estado actualizado."
-    },
-    "userForm": {
-      "title": "Editar acceso del usuario",
-      "subtitle": "Actualiza rol y estado de la cuenta.",
-      "updatedToast": "Acceso del usuario actualizado.",
-      "saveError": "No se pudo actualizar este usuario.",
-      "saveErrorTitle": "No se pudo guardar el usuario",
-      "accountSection": "Detalles de cuenta",
-      "permissionsSection": "Permisos",
-      "previewTitle": "Vista previa de acceso",
-      "notSet": "Sin definir",
-      "cancel": "Cancelar",
-      "saving": "Guardando...",
-      "saveChanges": "Guardar cambios",
-      "fields": {
-        "name": "Nombre",
-        "email": "Correo",
-        "username": "Usuario",
-        "role": "Rol",
-        "status": "Estado"
       }
     },
     "groups": {

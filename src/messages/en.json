@@ -335,50 +335,26 @@
     },
     "userDetail": {
       "back": "Back to users",
-      "label": "Platform User",
-      "edit": "Edit",
+      "label": "Neighborhood user",
+      "username": "Username",
+      "notSet": "Not set",
       "createdAt": "Created",
       "updatedAt": "Updated",
-      "membershipsTitle": "Group memberships",
-      "noMemberships": "This user is not assigned to any groups.",
+      "membershipsTitle": "Groups in this neighborhood",
+      "noMemberships": "This user is not assigned to any groups in this neighborhood.",
+      "noAddress": "No address",
       "membershipRoles": {
         "group_admin": "Group admin",
         "group_member": "Group member"
       },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
       "stats": {
-        "totalMemberships": "Total memberships",
+        "totalMemberships": "Groups in neighborhood",
         "activeMemberships": "Active memberships",
-        "managedGroups": "Groups managed"
-      }
-    },
-    "userActions": {
-      "makeAdmin": "Make admin",
-      "makeUser": "Set as user",
-      "deactivate": "Deactivate",
-      "activate": "Activate",
-      "saving": "Saving...",
-      "roleUpdated": "Role updated.",
-      "statusUpdated": "Status updated."
-    },
-    "userForm": {
-      "title": "Edit user access",
-      "subtitle": "Update role and account status.",
-      "updatedToast": "User access updated.",
-      "saveError": "Unable to update this user.",
-      "saveErrorTitle": "Failed to save user",
-      "accountSection": "Account details",
-      "permissionsSection": "Permissions",
-      "previewTitle": "Access preview",
-      "notSet": "Not set",
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "saveChanges": "Save changes",
-      "fields": {
-        "name": "Name",
-        "email": "Email",
-        "username": "Username",
-        "role": "Role",
-        "status": "Status"
+        "managedGroups": "Managed groups"
       }
     },
     "groups": {

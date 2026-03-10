@@ -366,7 +366,6 @@ Admin Lists:
 - admin-users-title
 - admin-users-table
 - admin-users-search
-- admin-users-role
 - admin-users-status
 - admin-users-row-<id>
 - user-list-detail-<id>
@@ -444,15 +443,8 @@ Groups:
 Users:
 - user-detail-root
 - user-detail-back
-- user-detail-edit
-- user-detail-toggle-role
-- user-detail-toggle-status
 - user-detail-memberships
 - user-detail-membership-<id>
-- user-form-role
-- user-form-status
-- user-form-submit
-- user-form-submit-mobile
 
 Fundraising:
 - campaign-list-detail-<id>
