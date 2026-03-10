@@ -6,8 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { authClient } from "@/lib/auth-client";
-import { normalizeLanguage, setLocaleCookie } from "@/lib/locale";
-import { trpc } from "@/lib/trpc";
+import { setLocaleCookie } from "@/lib/locale";
 
 type AuthTab = "signin" | "signup";
 type SignUpStep = "form" | "verify";
@@ -58,11 +57,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const [loginEmail, setLoginEmail] = useState("");
   const [verificationEmail, setVerificationEmail] = useState("");
   const [verificationOtp, setVerificationOtp] = useState("");
-  const [pendingPreferredLanguage, setPendingPreferredLanguage] = useState<
-    "es" | "en" | null
-  >(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const updateProfile = trpc.users.updateProfile.useMutation();
   const isBusy =
     isSubmitting ||
     isMagicLinkSubmitting ||
@@ -98,7 +93,6 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
 
       if (result.error) {
         if (isEmailNotVerifiedError(result.error.message)) {
-          setPendingPreferredLanguage(null);
           openEmailVerification(email, tCombined("emailVerificationPending", { email }));
           return;
         }
@@ -117,7 +111,6 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
       const message = err instanceof Error ? err.message : tLogin("errors.login");
 
       if (isEmailNotVerifiedError(message)) {
-        setPendingPreferredLanguage(null);
         openEmailVerification(email, tCombined("emailVerificationPending", { email }));
         return;
       }
@@ -138,9 +131,6 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "").trim();
-    const preferredLanguage = normalizeLanguage(
-      typeof navigator !== "undefined" ? navigator.language : undefined
-    );
 
     try {
       const result = await authClient.signUp.email({
@@ -159,8 +149,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
         return;
       }
 
-      setPendingPreferredLanguage(preferredLanguage);
-      setLocaleCookie(preferredLanguage);
+      setLocaleCookie("es");
       openEmailVerification(email);
     } catch (err) {
       setError(
@@ -240,19 +229,8 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
         return;
       }
 
-      if (pendingPreferredLanguage) {
-        try {
-          await updateProfile.mutateAsync({
-            preferredLanguage: pendingPreferredLanguage,
-          });
-        } catch {
-          // Best effort. The user can still change language later.
-        }
-      }
-
       setVerificationOtp("");
       setVerificationEmail("");
-      setPendingPreferredLanguage(null);
       setSignUpStep("form");
       setNotice(tCombined("emailVerificationSuccess"));
       router.push("/dashboard");
