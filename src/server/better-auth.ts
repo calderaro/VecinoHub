@@ -30,6 +30,8 @@ const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
+const authEmailOtpExpiresInSeconds = 10 * 60;
+const authMagicLinkExpiresInSeconds = 10 * 60;
 const mailFrom =
   process.env.MAIL_FROM ??
   process.env.EMAIL_FROM ??
@@ -161,12 +163,19 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
       await sendPasswordResetEmail({
         email: user.email,
         url,
       });
     },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    expiresIn: authEmailOtpExpiresInSeconds,
   },
   socialProviders:
     Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
@@ -246,11 +255,16 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     magicLink({
+      expiresIn: authMagicLinkExpiresInSeconds,
       sendMagicLink: async ({ email, url }) => {
         await sendMagicLinkEmail({ email, url });
       },
     }),
     emailOTP({
+      otpLength: 6,
+      expiresIn: authEmailOtpExpiresInSeconds,
+      allowedAttempts: 5,
+      overrideDefaultEmailVerification: true,
       sendVerificationOTP: async ({ email, otp, type }) => {
         await sendEmailOtp({ email, otp, type });
       },

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -9,10 +10,15 @@ import { normalizeLanguage, setLocaleCookie } from "@/lib/locale";
 import { trpc } from "@/lib/trpc";
 
 type AuthTab = "signin" | "signup";
+type SignUpStep = "form" | "verify";
 
 type AuthCombinedPageProps = {
   initialTab: AuthTab;
 };
+
+function isEmailNotVerifiedError(message: string | null | undefined) {
+  return message?.toLowerCase().includes("email not verified") ?? false;
+}
 
 function GoogleIcon() {
   return (
@@ -43,17 +49,39 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
   const tLogin = useTranslations("auth.login");
   const tRegister = useTranslations("auth.register");
   const [tab, setTab] = useState<AuthTab>(initialTab);
+  const [signUpStep, setSignUpStep] = useState<SignUpStep>("form");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMagicLinkSubmitting, setIsMagicLinkSubmitting] = useState(false);
-  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
+  const [isVerificationSubmitting, setIsVerificationSubmitting] = useState(false);
+  const [isVerificationResending, setIsVerificationResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
-  const [resetOtp, setResetOtp] = useState("");
-  const [resetPasswordValue, setResetPasswordValue] = useState("");
-  const [hasRequestedResetOtp, setHasRequestedResetOtp] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [verificationOtp, setVerificationOtp] = useState("");
+  const [pendingPreferredLanguage, setPendingPreferredLanguage] = useState<
+    "es" | "en" | null
+  >(null);
   const [notice, setNotice] = useState<string | null>(null);
   const updateProfile = trpc.users.updateProfile.useMutation();
-  const isBusy = isSubmitting || isMagicLinkSubmitting || isResetSubmitting;
+  const isBusy =
+    isSubmitting ||
+    isMagicLinkSubmitting ||
+    isVerificationSubmitting ||
+    isVerificationResending;
+  const forgotPasswordHref = loginEmail.trim()
+    ? `/forgot-password?email=${encodeURIComponent(loginEmail.trim())}`
+    : "/forgot-password";
+
+  function openEmailVerification(email: string, message?: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    setTab("signup");
+    setSignUpStep("verify");
+    setVerificationEmail(normalizedEmail);
+    setVerificationOtp("");
+    setError(null);
+    setNotice(message ?? tCombined("emailVerificationSent", { email: normalizedEmail }));
+  }
 
   async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,16 +94,35 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     const password = String(formData.get("password") ?? "").trim();
 
     try {
-      const { data } = await authClient.signIn.email({ email, password });
+      const result = await authClient.signIn.email({ email, password });
 
-      if (!data?.user) {
+      if (result.error) {
+        if (isEmailNotVerifiedError(result.error.message)) {
+          setPendingPreferredLanguage(null);
+          openEmailVerification(email, tCombined("emailVerificationPending", { email }));
+          return;
+        }
+
+        setError(result.error.message ?? tLogin("errors.login"));
+        return;
+      }
+
+      if (!result.data?.user) {
         setError(tLogin("errors.invalid"));
         return;
       }
 
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : tLogin("errors.login"));
+      const message = err instanceof Error ? err.message : tLogin("errors.login");
+
+      if (isEmailNotVerifiedError(message)) {
+        setPendingPreferredLanguage(null);
+        openEmailVerification(email, tCombined("emailVerificationPending", { email }));
+        return;
+      }
+
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -96,22 +143,25 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     );
 
     try {
-      const { data } = await authClient.signUp.email({ name, email, password });
+      const result = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
 
-      if (!data?.user) {
+      if (result.error) {
+        setError(result.error.message ?? tRegister("errors.registration"));
+        return;
+      }
+
+      if (!result.data?.user) {
         setError(tRegister("errors.createAccount"));
         return;
       }
 
-      try {
-        await updateProfile.mutateAsync({ preferredLanguage });
-      } catch {
-        // Best effort. The user can update profile language later.
-      }
-
+      setPendingPreferredLanguage(preferredLanguage);
       setLocaleCookie(preferredLanguage);
-
-      router.push("/dashboard");
+      openEmailVerification(email);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : tRegister("errors.registration")
@@ -164,68 +214,86 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     }
   }
 
-  async function handleRequestPasswordResetOtp() {
-    const email = loginEmail.trim();
-
-    if (!email) {
-      setError(null);
-      setNotice(tCombined("passwordResetEmailRequired"));
+  async function handleVerifyEmailOtp() {
+    if (!verificationEmail) {
+      setNotice(tCombined("emailVerificationEmailRequired"));
       return;
     }
 
-    setIsResetSubmitting(true);
+    if (!verificationOtp.trim()) {
+      setNotice(tCombined("emailVerificationOtpRequired"));
+      return;
+    }
+
+    setIsVerificationSubmitting(true);
     setError(null);
     setNotice(null);
 
     try {
-      await authClient.forgetPassword.emailOtp({ email });
-      setHasRequestedResetOtp(true);
-      setNotice(tCombined("passwordResetOtpSent"));
+      const result = await authClient.emailOtp.verifyEmail({
+        email: verificationEmail,
+        otp: verificationOtp.trim(),
+      });
+
+      if (result.error) {
+        setNotice(result.error.message ?? tCombined("emailVerificationError"));
+        return;
+      }
+
+      if (pendingPreferredLanguage) {
+        try {
+          await updateProfile.mutateAsync({
+            preferredLanguage: pendingPreferredLanguage,
+          });
+        } catch {
+          // Best effort. The user can still change language later.
+        }
+      }
+
+      setVerificationOtp("");
+      setVerificationEmail("");
+      setPendingPreferredLanguage(null);
+      setSignUpStep("form");
+      setNotice(tCombined("emailVerificationSuccess"));
+      router.push("/dashboard");
+      router.refresh();
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : tCombined("passwordResetError"));
+      setNotice(
+        err instanceof Error ? err.message : tCombined("emailVerificationError")
+      );
     } finally {
-      setIsResetSubmitting(false);
+      setIsVerificationSubmitting(false);
     }
   }
 
-  async function handleResetPasswordWithOtp() {
-    const email = loginEmail.trim();
-    const otp = resetOtp.trim();
-    const newPassword = resetPasswordValue.trim();
-
-    if (!email) {
-      setNotice(tCombined("passwordResetEmailRequired"));
+  async function handleResendEmailVerificationOtp() {
+    if (!verificationEmail) {
+      setNotice(tCombined("emailVerificationEmailRequired"));
       return;
     }
 
-    if (!otp) {
-      setNotice(tCombined("passwordResetOtpRequired"));
-      return;
-    }
-
-    if (!newPassword) {
-      setNotice(tCombined("passwordResetNewPasswordRequired"));
-      return;
-    }
-
-    setIsResetSubmitting(true);
+    setIsVerificationResending(true);
     setError(null);
     setNotice(null);
 
     try {
-      await authClient.emailOtp.resetPassword({
-        email,
-        otp,
-        password: newPassword,
+      const result = await authClient.emailOtp.sendVerificationOtp({
+        email: verificationEmail,
+        type: "email-verification",
       });
-      setResetOtp("");
-      setResetPasswordValue("");
-      setHasRequestedResetOtp(false);
-      setNotice(tCombined("passwordResetSuccess"));
+
+      if (result.error) {
+        setNotice(result.error.message ?? tCombined("emailVerificationError"));
+        return;
+      }
+
+      setNotice(tCombined("emailVerificationResent", { email: verificationEmail }));
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : tCombined("passwordResetError"));
+      setNotice(
+        err instanceof Error ? err.message : tCombined("emailVerificationError")
+      );
     } finally {
-      setIsResetSubmitting(false);
+      setIsVerificationResending(false);
     }
   }
 
@@ -272,6 +340,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
               onClick={() => {
                 setTab("signin");
                 setError(null);
+                setNotice(null);
               }}
               className={`vh-v3-focus relative flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
                 tab === "signin"
@@ -288,6 +357,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
               onClick={() => {
                 setTab("signup");
                 setError(null);
+                setNotice(null);
               }}
               className={`vh-v3-focus relative flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
                 tab === "signup"
@@ -351,16 +421,13 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                   >
                     {tLogin("password")}
                   </label>
-                  <button
-                    type="button"
+                  <Link
+                    href={forgotPasswordHref}
                     className="vh-v3-focus text-xs font-medium text-stone-400 transition-colors hover:text-stone-600"
-                    onClick={() => {
-                      void handleRequestPasswordResetOtp();
-                    }}
                     data-testid="auth-reset-request"
                   >
                     {tCombined("forgotPassword")}
-                  </button>
+                  </Link>
                 </div>
                 <input
                   id="auth-password"
@@ -373,57 +440,6 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 />
               </div>
 
-              {hasRequestedResetOtp ? (
-                <>
-                  <div className="space-y-1.5">
-                    <label
-                      className="block text-sm font-medium text-stone-700"
-                      htmlFor="auth-reset-otp"
-                    >
-                      {tCombined("passwordResetOtpLabel")}
-                    </label>
-                    <input
-                      id="auth-reset-otp"
-                      type="text"
-                      inputMode="numeric"
-                      value={resetOtp}
-                      onChange={(event) => setResetOtp(event.currentTarget.value)}
-                      data-testid="auth-reset-otp"
-                      className={baseInputClass}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      className="block text-sm font-medium text-stone-700"
-                      htmlFor="auth-reset-password"
-                    >
-                      {tCombined("passwordResetNewPasswordLabel")}
-                    </label>
-                    <input
-                      id="auth-reset-password"
-                      type="password"
-                      autoComplete="new-password"
-                      value={resetPasswordValue}
-                      onChange={(event) => setResetPasswordValue(event.currentTarget.value)}
-                      data-testid="auth-reset-password"
-                      className={baseInputClass}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void handleResetPasswordWithOtp();
-                    }}
-                    disabled={isBusy}
-                    data-testid="auth-reset-submit"
-                    className="vh-v3-focus flex w-full items-center justify-center rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isResetSubmitting
-                      ? tCombined("passwordResetSubmitting")
-                      : tCombined("passwordResetAction")}
-                  </button>
-                </>
-              ) : null}
               <button
                 type="button"
                 onClick={() => {
@@ -456,6 +472,88 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 {isSubmitting ? tLogin("signingIn") : tLogin("action")}
               </button>
             </form>
+          ) : signUpStep === "verify" ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-teal-100 bg-teal-50 px-4 py-3 text-xs text-teal-800">
+                {tCombined("emailVerificationPending", { email: verificationEmail })}
+              </div>
+              <div className="space-y-1.5">
+                <label
+                  className="block text-sm font-medium text-stone-700"
+                  htmlFor="auth-register-verification-email"
+                >
+                  {tRegister("email")}
+                </label>
+                <input
+                  id="auth-register-verification-email"
+                  type="email"
+                  value={verificationEmail}
+                  readOnly
+                  data-testid="auth-register-verification-email"
+                  className={`${baseInputClass} bg-stone-50 text-stone-500`}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label
+                  className="block text-sm font-medium text-stone-700"
+                  htmlFor="auth-register-otp"
+                >
+                  {tCombined("emailVerificationOtpLabel")}
+                </label>
+                <input
+                  id="auth-register-otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={verificationOtp}
+                  onChange={(event) => setVerificationOtp(event.currentTarget.value)}
+                  data-testid="auth-register-otp"
+                  className={baseInputClass}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleVerifyEmailOtp();
+                }}
+                disabled={isBusy}
+                data-testid="auth-register-otp-verify"
+                className="vh-v3-focus flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isVerificationSubmitting
+                  ? tCombined("emailVerificationSubmitting")
+                  : tCombined("emailVerificationAction")}
+              </button>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleResendEmailVerificationOtp();
+                  }}
+                  disabled={isBusy}
+                  data-testid="auth-register-otp-resend"
+                  className="vh-v3-focus flex w-full items-center justify-center rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isVerificationResending
+                    ? tCombined("emailVerificationResending")
+                    : tCombined("emailVerificationResend")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSignUpStep("form");
+                    setVerificationOtp("");
+                    setError(null);
+                    setNotice(null);
+                  }}
+                  disabled={isBusy}
+                  data-testid="auth-register-otp-back"
+                  className="vh-v3-focus flex w-full items-center justify-center rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {tCombined("emailVerificationBack")}
+                </button>
+              </div>
+            </div>
           ) : (
             <form className="space-y-4" onSubmit={handleSignUp}>
               <div className="space-y-1.5">
@@ -473,7 +571,10 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-stone-700" htmlFor="auth-signup-email">
+                <label
+                  className="block text-sm font-medium text-stone-700"
+                  htmlFor="auth-signup-email"
+                >
                   {tRegister("email")}
                 </label>
                 <input
@@ -552,7 +653,11 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
                 {tCombined("footer.hasAccount")}{" "}
                 <button
                   type="button"
-                  onClick={() => setTab("signin")}
+                  onClick={() => {
+                    setTab("signin");
+                    setNotice(null);
+                    setError(null);
+                  }}
                   className="vh-v3-focus font-medium text-teal-600 transition-colors hover:text-teal-700"
                 >
                   {tCombined("tabs.signIn")}
