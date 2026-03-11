@@ -78,6 +78,10 @@
 - `/platform/users/[userId]`
   - platform user detail and management screen.
   - shows platform role/status controls plus neighborhood and group memberships across the full system.
+  - includes an edit button to open the profile form.
+- `/platform/users/[userId]/edit`
+  - platform admin user profile edit screen.
+  - allows platform admins to update another user's name, username, and preferred language.
 - `/platform/[neighborhoodId]`
   - platform neighborhood detail screen.
   - shows neighborhood metadata, editable neighborhood member list, add-user form, edit entry, and delete confirmation flow.

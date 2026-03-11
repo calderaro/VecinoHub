@@ -3,10 +3,15 @@ import { z } from "zod";
 import {
   listUsers,
   updateUserProfile,
+  updateUserProfileByAdmin,
   updateUserRole,
   updateUserStatus,
 } from "@/services/users";
-import { nameSchema, preferredLanguageSchema } from "@/services/validators";
+import {
+  nameSchema,
+  preferredLanguageSchema,
+  usernameSchema,
+} from "@/services/validators";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { getServiceContext, handleServiceError } from "../service";
@@ -49,7 +54,7 @@ export const usersRouter = createTRPCRouter({
       z
         .object({
           name: nameSchema.optional(),
-          username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9._-]+$/).optional(),
+          username: usernameSchema.optional(),
           image: z.string().url().max(2048).nullable().optional(),
           preferredLanguage: preferredLanguageSchema.optional(),
         })
@@ -67,6 +72,34 @@ export const usersRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         return await updateUserProfile(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  updateProfileByAdmin: protectedProcedure
+    .input(
+      z
+        .object({
+          userId: z.string().uuid(),
+          name: nameSchema.optional(),
+          username: usernameSchema.optional(),
+          image: z.string().url().max(2048).nullable().optional(),
+          preferredLanguage: preferredLanguageSchema.optional(),
+        })
+        .refine(
+          (data) =>
+            data.name !== undefined ||
+            data.username !== undefined ||
+            data.image !== undefined ||
+            data.preferredLanguage !== undefined,
+          {
+            message: "Profile updates require a name, username, image, or language preference.",
+          }
+        )
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await updateUserProfileByAdmin(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

@@ -30,6 +30,7 @@
 - `users.updateRole` (mutation, `platform_admin`)
 - `users.updateStatus` (mutation, `platform_admin`)
 - `users.updateProfile` (mutation, authenticated user)
+- `users.updateProfileByAdmin` (mutation, `platform_admin`)
 
 ### groups
 - `groups.list` (query, scoped by neighborhood permissions)

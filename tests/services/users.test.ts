@@ -21,6 +21,7 @@ import {
   getPlatformUserById,
   listPlatformUserGroupMemberships,
   listPlatformUserNeighborhoodMemberships,
+  updateUserProfileByAdmin,
 } from "@/services/users";
 import {
   closeTestDatabase,
@@ -190,5 +191,23 @@ describe("platform user services", () => {
     await expect(
       getPlatformUserById(createCtx(randomUUID(), "user"), { userId })
     ).rejects.toMatchObject({ message: "Admin access required" });
+  });
+
+  it("allows platform admins to update another user's profile", async () => {
+    const { userId } = await seedPlatformUserFixtures();
+
+    const updated = await updateUserProfileByAdmin(
+      createCtx(randomUUID(), "platform_admin"),
+      {
+        userId,
+        name: "Updated Resident",
+        username: "updated.resident",
+        preferredLanguage: "en",
+      }
+    );
+
+    expect(updated.name).toBe("Updated Resident");
+    expect(updated.username).toBe("updated.resident");
+    expect(updated.preferredLanguage).toBe("en");
   });
 });

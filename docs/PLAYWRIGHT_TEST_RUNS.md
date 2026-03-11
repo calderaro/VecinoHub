@@ -201,6 +201,19 @@ Steps:
 Expected:
 - Resident dashboard pages and resident-only shared components consistently reflect the selected language in both locales.
 
+### Test Run: Profile Page Uses Single Settings Header
+Preconditions:
+- Logged in as a user with at least one active group membership.
+
+Steps:
+1. Open `/profile`.
+2. Verify the back link is visible.
+3. Verify there is a single visible heading for the profile settings form.
+4. Verify the name, username, language, and save controls render normally.
+
+Expected:
+- `/profile` no longer shows a duplicated page-level hero above the profile form card.
+
 ## Playwright MCP Selector Guidance
 Use these selector patterns to keep tests stable:
 
@@ -378,6 +391,14 @@ Admin Lists:
 - platform-users-title
 - platform-user-detail-root
 - platform-user-detail-back
+- platform-user-edit-link
+- platform-user-edit-root
+- platform-user-edit-back
+- platform-user-edit-form
+- platform-user-edit-name
+- platform-user-edit-username
+- platform-user-edit-language
+- platform-user-edit-submit
 - platform-user-management
 - platform-user-role
 - platform-user-status
@@ -444,6 +465,7 @@ Platform Users:
 - Open `/platform` and use `platform-manage-users-link` to reach `/platform/users`.
 - Filter with `admin-users-search`, `admin-users-role`, and `admin-users-status`.
 - Open a user row, change `platform-user-role` or `platform-user-status`, and save with `platform-user-save`.
+- From the detail page, use `platform-user-edit-link` to reach `/platform/users/[userId]/edit`, update `platform-user-edit-name`, `platform-user-edit-username`, or `platform-user-edit-language`, and save with `platform-user-edit-submit`.
 - Verify the updated badges render on the detail screen and persist after reload.
 
 Groups:

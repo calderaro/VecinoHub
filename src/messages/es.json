@@ -109,7 +109,6 @@
   "profile": {
     "navLabel": "Perfil",
     "back": "Volver al panel",
-    "eyebrow": "Cuenta",
     "title": "Ajustes de perfil",
     "subtitle": "Actualiza tu nombre completo, nombre público y el idioma preferido para la interfaz del vecindario.",
     "nameLabel": "Nombre completo",
@@ -926,6 +925,7 @@
     "userDetail": {
       "back": "Volver a usuarios",
       "label": "Usuario de plataforma",
+      "edit": "Editar",
       "createdAt": "Creado",
       "updatedAt": "Actualizado",
       "roles": {
@@ -955,6 +955,29 @@
         "group_admin": "Admin del grupo",
         "group_member": "Miembro del grupo"
       }
+    },
+    "userEdit": {
+      "back": "Volver a detalles",
+      "eyebrow": "Usuario de plataforma",
+      "pageTitle": "Editar perfil del usuario",
+      "pageSubtitle": "Actualiza los datos de la cuenta que se muestran en toda la plataforma.",
+      "title": "Perfil",
+      "subtitle": "Cambia la información pública de este usuario.",
+      "nameLabel": "Nombre completo",
+      "namePlaceholder": "Su nombre completo",
+      "nameError": "Ingresa un nombre completo antes de guardar.",
+      "usernameLabel": "Nombre de usuario",
+      "usernamePlaceholder": "su.usuario",
+      "usernameHelp": "Usa 3-32 caracteres: letras, números, puntos, guiones bajos o guiones.",
+      "usernameError": "Ingresa un nombre de usuario válido antes de guardar.",
+      "languageLabel": "Idioma preferido",
+      "languageSpanish": "Español",
+      "languageEnglish": "Inglés",
+      "saving": "Guardando...",
+      "save": "Guardar perfil",
+      "validationError": "Corrige los campos antes de guardar.",
+      "updated": "Perfil actualizado.",
+      "updateError": "No se pudo actualizar el perfil."
     }
   },
   "status": {

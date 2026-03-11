@@ -109,7 +109,6 @@
   "profile": {
     "navLabel": "Profile",
     "back": "Back to dashboard",
-    "eyebrow": "Account",
     "title": "Profile settings",
     "subtitle": "Update your full name, public username, and preferred language for the neighborhood UI.",
     "nameLabel": "Full name",
@@ -926,6 +925,7 @@
     "userDetail": {
       "back": "Back to users",
       "label": "Platform user",
+      "edit": "Edit",
       "createdAt": "Created",
       "updatedAt": "Updated",
       "roles": {
@@ -955,6 +955,29 @@
         "group_admin": "Group admin",
         "group_member": "Group member"
       }
+    },
+    "userEdit": {
+      "back": "Back to details",
+      "eyebrow": "Platform user",
+      "pageTitle": "Edit user profile",
+      "pageSubtitle": "Update the account details shown across the platform.",
+      "title": "Profile",
+      "subtitle": "Change this user's public profile information.",
+      "nameLabel": "Full name",
+      "namePlaceholder": "Their full name",
+      "nameError": "Enter a full name before saving.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "their.username",
+      "usernameHelp": "Use 3-32 characters: letters, numbers, dots, underscores, or dashes.",
+      "usernameError": "Enter a valid username before saving.",
+      "languageLabel": "Preferred language",
+      "languageSpanish": "Spanish",
+      "languageEnglish": "English",
+      "saving": "Saving...",
+      "save": "Save profile",
+      "validationError": "Please fix the profile fields before saving.",
+      "updated": "Profile updated.",
+      "updateError": "Unable to update profile."
     }
   },
   "status": {

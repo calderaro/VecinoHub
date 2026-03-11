@@ -224,6 +224,7 @@ export async function getPlatformUserById(
       email: users.email,
       username: users.username,
       image: users.image,
+      preferredLanguage: users.preferredLanguage,
       role: users.role,
       status: users.status,
       createdAt: users.createdAt,
@@ -543,7 +544,7 @@ export async function getUserProfile(ctx: ServiceContext) {
   return profile[0];
 }
 
-const updateProfileSchema = z
+const userProfileUpdatesSchema = z
   .object({
     name: nameSchema.optional(),
     username: usernameSchema.optional(),
@@ -561,47 +562,53 @@ const updateProfileSchema = z
     }
   );
 
-export async function updateUserProfile(
-  ctx: ServiceContext,
-  input: z.input<typeof updateProfileSchema>
-) {
-  const { name, username, image, preferredLanguage } = updateProfileSchema.parse(input);
-
-  if (username) {
-    const existing = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(
-        and(
-          sql`lower(${users.username}) = lower(${username})`,
-          sql`${users.id} <> ${ctx.user.id}`
-        )
-      )
-      .limit(1);
-
-    if (existing[0]) {
-      throw new ServiceError("Username already in use.", "INVALID");
-    }
+async function ensureUsernameIsAvailable(userId: string, username?: string) {
+  if (!username) {
+    return;
   }
 
+  const existing = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(sql`lower(${users.username}) = lower(${username})`, sql`${users.id} <> ${userId}`))
+    .limit(1);
+
+  if (existing[0]) {
+    throw new ServiceError("Username already in use.", "INVALID");
+  }
+}
+
+function buildUserProfileUpdates(
+  input: z.infer<typeof userProfileUpdatesSchema>
+): Partial<typeof users.$inferInsert> {
   const updates: Partial<typeof users.$inferInsert> = {};
-  if (name !== undefined) {
-    updates.name = name;
+
+  if (input.name !== undefined) {
+    updates.name = input.name;
   }
-  if (username !== undefined) {
-    updates.username = username;
+  if (input.username !== undefined) {
+    updates.username = input.username;
   }
-  if (image !== undefined) {
-    updates.image = image;
+  if (input.image !== undefined) {
+    updates.image = input.image;
   }
-  if (preferredLanguage !== undefined) {
-    updates.preferredLanguage = preferredLanguage;
+  if (input.preferredLanguage !== undefined) {
+    updates.preferredLanguage = input.preferredLanguage;
   }
+
+  return updates;
+}
+
+async function updateUserProfileRecord(
+  userId: string,
+  input: z.infer<typeof userProfileUpdatesSchema>
+) {
+  await ensureUsernameIsAvailable(userId, input.username);
 
   const updated = await db
     .update(users)
-    .set(updates)
-    .where(eq(users.id, ctx.user.id))
+    .set(buildUserProfileUpdates(input))
+    .where(eq(users.id, userId))
     .returning();
 
   if (!updated[0]) {
@@ -609,4 +616,25 @@ export async function updateUserProfile(
   }
 
   return updated[0];
+}
+
+export async function updateUserProfile(
+  ctx: ServiceContext,
+  input: z.input<typeof userProfileUpdatesSchema>
+) {
+  const updates = userProfileUpdatesSchema.parse(input);
+  return updateUserProfileRecord(ctx.user.id, updates);
+}
+
+const updateUserProfileByAdminSchema = userProfileUpdatesSchema.extend({
+  userId: idSchema,
+});
+
+export async function updateUserProfileByAdmin(
+  ctx: ServiceContext,
+  input: z.input<typeof updateUserProfileByAdminSchema>
+) {
+  requireAdmin(ctx);
+  const { userId, ...updates } = updateUserProfileByAdminSchema.parse(input);
+  return updateUserProfileRecord(userId, updates);
 }

@@ -12,7 +12,7 @@
 
 ## Platform Admin
 - Create/update/delete neighborhoods.
-- Manage global users (role/status).
+- Manage global users (profile, role, status).
 - Full CRUD across groups, polls, fundraising, events, posts.
 - Assign/revoke neighborhood admin memberships.
 

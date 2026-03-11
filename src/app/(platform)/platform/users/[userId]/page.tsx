@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeftIcon, Building2Icon, MapPinnedIcon } from "lucide-react";
+import { ArrowLeftIcon, Building2Icon, MapPinnedIcon, PencilIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { StatusChip } from "@/components/dashboard-v2";
@@ -120,6 +120,15 @@ export default async function PlatformUserDetailPage({
                 </span>
               </div>
             </div>
+
+            <Link
+              href={`/platform/users/${user.id}/edit`}
+              className="vh-v3-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+              data-testid="platform-user-edit-link"
+            >
+              <PencilIcon className="h-4 w-4" />
+              {t("edit")}
+            </Link>
           </div>
         </div>
 

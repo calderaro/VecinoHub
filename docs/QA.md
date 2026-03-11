@@ -31,6 +31,7 @@
 - Platform admin can add an existing user to a neighborhood and change neighborhood membership role/status from `/platform/[neighborhoodId]`.
 - Platform admin can open `/platform/users`, search/filter all accounts, and navigate to `/platform/users/[userId]`.
 - Platform admin can update platform user role/status from `/platform/users/[userId]`, and deactivation ends active sessions immediately.
+- Platform admin can open `/platform/users/[userId]/edit`, update name/username/language, and return to the detail page with the new profile values shown.
 - Neighborhood admin cannot create neighborhoods.
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
