@@ -70,13 +70,6 @@ export default async function ProfilePage() {
           <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
           {t("back")}
         </Link>
-        <div className="mb-8">
-          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-teal-600">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mb-1.5 text-3xl font-bold text-stone-900">{t("title")}</h1>
-          <p className="text-sm text-stone-500">{t("subtitle")}</p>
-        </div>
         <ProfileForm
           name={profile.name}
           email={profile.email}
