@@ -72,6 +72,12 @@
   - access requires `platform_admin` (or legacy `admin` compatibility).
   - platform neighborhood management dashboard.
   - includes neighborhood creation form and neighborhood list.
+- `/platform/users`
+  - global platform user directory.
+  - shows every user account with search, role filter, status filter, pagination, and links to detail.
+- `/platform/users/[userId]`
+  - platform user detail and management screen.
+  - shows platform role/status controls plus neighborhood and group memberships across the full system.
 - `/platform/[neighborhoodId]`
   - platform neighborhood detail screen.
   - shows neighborhood metadata, editable neighborhood member list, add-user form, edit entry, and delete confirmation flow.

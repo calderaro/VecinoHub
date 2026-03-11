@@ -14,6 +14,7 @@ mem.public.registerFunction({
 mem.public.none(`
   CREATE TYPE role AS ENUM ('user', 'admin', 'platform_admin');
   CREATE TYPE user_status AS ENUM ('active', 'inactive');
+  CREATE TYPE neighborhood_status AS ENUM ('active', 'inactive');
   CREATE TYPE neighborhood_role AS ENUM ('neighbor', 'neighborhood_admin');
   CREATE TYPE neighborhood_membership_status AS ENUM ('active', 'inactive');
   CREATE TYPE group_role AS ENUM ('group_member', 'group_admin');
@@ -54,6 +55,16 @@ mem.public.none(`
     user_id uuid NOT NULL,
     role neighborhood_role NOT NULL DEFAULT 'neighbor',
     status neighborhood_membership_status NOT NULL DEFAULT 'active',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE TABLE neighborhoods (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    slug text NOT NULL,
+    status neighborhood_status NOT NULL DEFAULT 'active',
+    created_by uuid NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
   );
@@ -177,6 +188,7 @@ export async function resetTestDatabase() {
   await testDb.delete(schema.groupMemberships);
   await testDb.delete(schema.groups);
   await testDb.delete(schema.neighborhoodMemberships);
+  await testDb.delete(schema.neighborhoods);
   await testDb.delete(schema.sessions);
   await testDb.delete(schema.users);
 }

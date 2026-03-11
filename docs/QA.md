@@ -29,6 +29,8 @@
 - Platform admin can create a new neighborhood in `/platform`.
 - Platform admin can open `/platform/[neighborhoodId]`, edit the neighborhood, and delete it from the detail screen.
 - Platform admin can add an existing user to a neighborhood and change neighborhood membership role/status from `/platform/[neighborhoodId]`.
+- Platform admin can open `/platform/users`, search/filter all accounts, and navigate to `/platform/users/[userId]`.
+- Platform admin can update platform user role/status from `/platform/users/[userId]`, and deactivation ends active sessions immediately.
 - Neighborhood admin cannot create neighborhoods.
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
@@ -68,6 +70,7 @@
 ## UI and Accessibility
 - New/updated UI includes test ids:
   - platform neighborhood creation/list
+  - platform global users list/detail
   - platform neighborhood detail/edit/delete
   - platform neighborhood membership management
   - neighborhood admin members management

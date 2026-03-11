@@ -2,7 +2,14 @@ import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { groupMemberships, groups, sessions, users } from "@/db/schema";
+import {
+  groupMemberships,
+  groups,
+  neighborhoodMemberships,
+  neighborhoods,
+  sessions,
+  users,
+} from "@/db/schema";
 import { deleteUserSecondarySessions } from "@/server/secondary-storage";
 
 import { ServiceError } from "./errors";
@@ -28,7 +35,12 @@ export async function listUsers(ctx: ServiceContext, input?: z.input<typeof list
   requireAdmin(ctx);
   const { limit, offset } = listUsersSchema.parse(input ?? {});
 
-  return db.select().from(users).limit(limit).offset(offset);
+  return db
+    .select()
+    .from(users)
+    .orderBy(desc(users.updatedAt), desc(users.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 const listUsersPagedSchema = z.object({
@@ -70,6 +82,7 @@ export async function listUsersPaged(
     .select()
     .from(users)
     .where(combinedFilter)
+    .orderBy(desc(users.updatedAt), desc(users.createdAt))
     .limit(limit)
     .offset(offset);
 
@@ -191,6 +204,146 @@ export async function getUserGroupCounts(
     .groupBy(groupMemberships.userId);
 
   return new Map(rows.map((row) => [row.userId, Number(row.total)]));
+}
+
+const getPlatformUserByIdSchema = z.object({
+  userId: idSchema,
+});
+
+export async function getPlatformUserById(
+  ctx: ServiceContext,
+  input: z.input<typeof getPlatformUserByIdSchema>
+) {
+  requireAdmin(ctx);
+  const { userId } = getPlatformUserByIdSchema.parse(input);
+
+  const userRows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      username: users.username,
+      image: users.image,
+      role: users.role,
+      status: users.status,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const user = userRows[0];
+
+  if (!user) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  const [groupTotals, neighborhoodTotals, managedNeighborhoods] = await Promise.all([
+    db
+      .select({
+        total: count(),
+        active: sql<number>`coalesce(sum(case when ${groupMemberships.status} = 'active' then 1 else 0 end), 0)`,
+        inactive: sql<number>`coalesce(sum(case when ${groupMemberships.status} = 'inactive' then 1 else 0 end), 0)`,
+        managed: sql<number>`coalesce(sum(case when ${groupMemberships.role} = 'group_admin' and ${groupMemberships.status} = 'active' then 1 else 0 end), 0)`,
+      })
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, userId)),
+    db
+      .select({
+        total: count(),
+        active: sql<number>`coalesce(sum(case when ${neighborhoodMemberships.status} = 'active' then 1 else 0 end), 0)`,
+        inactive: sql<number>`coalesce(sum(case when ${neighborhoodMemberships.status} = 'inactive' then 1 else 0 end), 0)`,
+      })
+      .from(neighborhoodMemberships)
+      .where(eq(neighborhoodMemberships.userId, userId)),
+    db
+      .select({ total: count() })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, userId),
+          eq(neighborhoodMemberships.role, "neighborhood_admin"),
+          eq(neighborhoodMemberships.status, "active")
+        )
+      ),
+  ]);
+
+  return {
+    ...user,
+    groupMembershipsTotal: Number(groupTotals[0]?.total ?? 0),
+    groupMembershipsActive: Number(groupTotals[0]?.active ?? 0),
+    groupMembershipsInactive: Number(groupTotals[0]?.inactive ?? 0),
+    groupsManaged: Number(groupTotals[0]?.managed ?? 0),
+    neighborhoodMembershipsTotal: Number(neighborhoodTotals[0]?.total ?? 0),
+    neighborhoodMembershipsActive: Number(neighborhoodTotals[0]?.active ?? 0),
+    neighborhoodMembershipsInactive: Number(neighborhoodTotals[0]?.inactive ?? 0),
+    neighborhoodsManaged: Number(managedNeighborhoods[0]?.total ?? 0),
+  };
+}
+
+const listPlatformUserNeighborhoodMembershipsSchema = z.object({
+  userId: idSchema,
+  limit: z.number().int().positive().max(100).default(20),
+});
+
+export async function listPlatformUserNeighborhoodMemberships(
+  ctx: ServiceContext,
+  input: z.input<typeof listPlatformUserNeighborhoodMembershipsSchema>
+) {
+  requireAdmin(ctx);
+  const { userId, limit } = listPlatformUserNeighborhoodMembershipsSchema.parse(input);
+
+  return db
+    .select({
+      membershipId: neighborhoodMemberships.id,
+      membershipRole: neighborhoodMemberships.role,
+      membershipStatus: neighborhoodMemberships.status,
+      createdAt: neighborhoodMemberships.createdAt,
+      updatedAt: neighborhoodMemberships.updatedAt,
+      neighborhoodId: neighborhoods.id,
+      neighborhoodName: neighborhoods.name,
+      neighborhoodSlug: neighborhoods.slug,
+      neighborhoodStatus: neighborhoods.status,
+    })
+    .from(neighborhoodMemberships)
+    .innerJoin(neighborhoods, eq(neighborhoodMemberships.neighborhoodId, neighborhoods.id))
+    .where(eq(neighborhoodMemberships.userId, userId))
+    .orderBy(desc(neighborhoodMemberships.updatedAt), desc(neighborhoodMemberships.createdAt))
+    .limit(limit);
+}
+
+const listPlatformUserGroupMembershipsSchema = z.object({
+  userId: idSchema,
+  limit: z.number().int().positive().max(100).default(50),
+});
+
+export async function listPlatformUserGroupMemberships(
+  ctx: ServiceContext,
+  input: z.input<typeof listPlatformUserGroupMembershipsSchema>
+) {
+  requireAdmin(ctx);
+  const { userId, limit } = listPlatformUserGroupMembershipsSchema.parse(input);
+
+  return db
+    .select({
+      membershipId: groupMemberships.id,
+      membershipRole: groupMemberships.role,
+      membershipStatus: groupMemberships.status,
+      createdAt: groupMemberships.createdAt,
+      updatedAt: groupMemberships.updatedAt,
+      groupId: groups.id,
+      groupName: groups.name,
+      groupAddress: groups.address,
+      neighborhoodId: neighborhoods.id,
+      neighborhoodName: neighborhoods.name,
+      neighborhoodSlug: neighborhoods.slug,
+    })
+    .from(groupMemberships)
+    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+    .innerJoin(neighborhoods, eq(groups.neighborhoodId, neighborhoods.id))
+    .where(eq(groupMemberships.userId, userId))
+    .orderBy(desc(groupMemberships.updatedAt), desc(groupMemberships.createdAt))
+    .limit(limit);
 }
 
 const getNeighborhoodUserByIdSchema = z.object({

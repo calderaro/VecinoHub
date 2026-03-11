@@ -14,6 +14,7 @@ type AdminUser = {
   username: string | null;
   email: string;
   image: string | null;
+  role?: "user" | "admin" | "platform_admin";
   status: "active" | "inactive";
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -26,7 +27,10 @@ export function UsersTable({
   currentPage,
   totalPages,
   query,
+  role = "",
   status,
+  showRoleFilter = false,
+  showRoleColumn = false,
   adminBasePath = "/admin",
 }: {
   users: AdminUser[];
@@ -35,7 +39,10 @@ export function UsersTable({
   currentPage: number;
   totalPages: number;
   query: string;
+  role?: string;
   status: string;
+  showRoleFilter?: boolean;
+  showRoleColumn?: boolean;
   adminBasePath?: string;
 }) {
   const router = useRouter();
@@ -67,6 +74,22 @@ export function UsersTable({
               testId="admin-users-search"
             />
           </div>
+          {showRoleFilter ? (
+            <div className="relative">
+              <select
+                className="vh-v3-focus appearance-none rounded-lg border border-stone-200 bg-white py-2.5 pl-3 pr-8 text-sm text-stone-700 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+                name="role"
+                data-testid="admin-users-role"
+                defaultValue={role}
+              >
+                <option value="">{t("roles.all")}</option>
+                <option value="user">{t("roles.user")}</option>
+                <option value="admin">{t("roles.admin")}</option>
+                <option value="platform_admin">{t("roles.platform_admin")}</option>
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+            </div>
+          ) : null}
           <div className="relative">
             <select
               className="vh-v3-focus appearance-none rounded-lg border border-stone-200 bg-white py-2.5 pl-3 pr-8 text-sm text-stone-700 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
@@ -100,6 +123,11 @@ export function UsersTable({
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
                     Status
                   </th>
+                  {showRoleColumn ? (
+                    <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500 md:table-cell">
+                      {t("roleLabel")}
+                    </th>
+                  ) : null}
                   <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500 md:table-cell">
                     Groups
                   </th>
@@ -170,6 +198,18 @@ export function UsersTable({
                       <td className="px-4 py-3.5">
                         <StatusBadge variant={user.status} label={t(`statuses.${user.status}`)} />
                       </td>
+                      {showRoleColumn ? (
+                        <td className="hidden px-4 py-3.5 md:table-cell">
+                          {user.role ? (
+                            <StatusBadge
+                              variant={user.role}
+                              label={t(`roles.${user.role}`)}
+                            />
+                          ) : (
+                            <span className="text-stone-300">-</span>
+                          )}
+                        </td>
+                      ) : null}
                       <td className="hidden px-4 py-3.5 text-stone-600 md:table-cell">
                         {groupCounts[user.id] ?? 0}
                       </td>
@@ -197,6 +237,7 @@ export function UsersTable({
                 className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
                 href={`${adminBasePath}/users?${new URLSearchParams({
                   q: query || "",
+                  role: role || "",
                   status: status || "",
                   page: String(currentPage - 1),
                 }).toString()}`}
@@ -213,6 +254,7 @@ export function UsersTable({
                 className="vh-v3-focus rounded-md px-2.5 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100"
                 href={`${adminBasePath}/users?${new URLSearchParams({
                   q: query || "",
+                  role: role || "",
                   status: status || "",
                   page: String(currentPage + 1),
                 }).toString()}`}

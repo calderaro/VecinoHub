@@ -25,12 +25,21 @@ export default async function PlatformPage() {
             Manage neighborhoods and platform-level access.
           </p>
         </div>
-        <Link
-          href="/admin"
-          className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-100"
-        >
-          Go to neighborhood admin
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/platform/users"
+            className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-100"
+            data-testid="platform-manage-users-link"
+          >
+            Manage users
+          </Link>
+          <Link
+            href="/admin"
+            className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-100"
+          >
+            Go to neighborhood admin
+          </Link>
+        </div>
       </header>
 
       <NeighborhoodCreateForm />

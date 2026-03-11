@@ -893,6 +893,70 @@
       "deletedToast": "Group deleted."
     }
   },
+  "platform": {
+    "users": {
+      "back": "Back to platform",
+      "title": "All users",
+      "subtitle": "Review every account across neighborhoods and open a user to update their role or access status.",
+      "totalUsers": "{count} total users"
+    },
+    "userManagement": {
+      "title": "Manage access",
+      "subtitle": "Role and status updates are applied platform-wide.",
+      "roleLabel": "System role",
+      "statusLabel": "Access status",
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "platform_admin": "Platform admin"
+      },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "hint": "Deactivating a user ends their active sessions immediately.",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "toasts": {
+        "saved": "User access updated.",
+        "noChanges": "No changes to save.",
+        "error": "Unable to update user access."
+      }
+    },
+    "userDetail": {
+      "back": "Back to users",
+      "label": "Platform user",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "platform_admin": "Platform admin"
+      },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "stats": {
+        "groups": "Group memberships",
+        "activeGroups": "Active groups",
+        "neighborhoods": "Neighborhoods",
+        "managedNeighborhoods": "Neighborhoods managed"
+      },
+      "neighborhoodMembershipsTitle": "Neighborhood memberships",
+      "groupMembershipsTitle": "Group memberships",
+      "noNeighborhoodMemberships": "This user does not belong to any neighborhoods yet.",
+      "noGroupMemberships": "This user does not belong to any groups yet.",
+      "neighborhoodRoles": {
+        "neighbor": "Neighbor",
+        "neighborhood_admin": "Neighborhood admin"
+      },
+      "groupRoles": {
+        "group_admin": "Group admin",
+        "group_member": "Group member"
+      }
+    }
+  },
   "status": {
     "draft": "Draft",
     "active": "Active",

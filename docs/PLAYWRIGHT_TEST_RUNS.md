@@ -372,6 +372,18 @@ Admin Lists:
 - admin-users-pagination
 - admin-users-prev
 - admin-users-next
+- platform-manage-users-link
+- platform-users-root
+- platform-users-back
+- platform-users-title
+- platform-user-detail-root
+- platform-user-detail-back
+- platform-user-management
+- platform-user-role
+- platform-user-status
+- platform-user-save
+- platform-user-neighborhood-memberships
+- platform-user-group-memberships
 - admin-groups-row-<id>
 - admin-polls-row-<id>
 - admin-events-row-<id>
@@ -426,6 +438,13 @@ Group Members:
 - group-members-remove-confirm
 - group-members-remove-cancel
 - group-members-row-<id>
+
+Platform Users:
+- Logged in as `platform_admin`.
+- Open `/platform` and use `platform-manage-users-link` to reach `/platform/users`.
+- Filter with `admin-users-search`, `admin-users-role`, and `admin-users-status`.
+- Open a user row, change `platform-user-role` or `platform-user-status`, and save with `platform-user-save`.
+- Verify the updated badges render on the detail screen and persist after reload.
 
 Groups:
 - group-list-detail-<id>

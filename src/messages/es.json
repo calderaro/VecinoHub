@@ -893,6 +893,70 @@
       "deletedToast": "Grupo eliminado."
     }
   },
+  "platform": {
+    "users": {
+      "back": "Volver a plataforma",
+      "title": "Todos los usuarios",
+      "subtitle": "Revisa todas las cuentas entre colonias y abre un usuario para actualizar su rol o estado de acceso.",
+      "totalUsers": "{count} usuarios totales"
+    },
+    "userManagement": {
+      "title": "Administrar acceso",
+      "subtitle": "Los cambios de rol y estado se aplican a nivel plataforma.",
+      "roleLabel": "Rol del sistema",
+      "statusLabel": "Estado de acceso",
+      "roles": {
+        "user": "Usuario",
+        "admin": "Admin",
+        "platform_admin": "Admin de plataforma"
+      },
+      "statuses": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "hint": "Desactivar a un usuario cierra sus sesiones activas de inmediato.",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "toasts": {
+        "saved": "Acceso del usuario actualizado.",
+        "noChanges": "No hay cambios por guardar.",
+        "error": "No se pudo actualizar el acceso del usuario."
+      }
+    },
+    "userDetail": {
+      "back": "Volver a usuarios",
+      "label": "Usuario de plataforma",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado",
+      "roles": {
+        "user": "Usuario",
+        "admin": "Admin",
+        "platform_admin": "Admin de plataforma"
+      },
+      "statuses": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "stats": {
+        "groups": "Membresías de grupo",
+        "activeGroups": "Grupos activos",
+        "neighborhoods": "Colonias",
+        "managedNeighborhoods": "Colonias administradas"
+      },
+      "neighborhoodMembershipsTitle": "Membresías de colonia",
+      "groupMembershipsTitle": "Membresías de grupo",
+      "noNeighborhoodMemberships": "Este usuario todavía no pertenece a ninguna colonia.",
+      "noGroupMemberships": "Este usuario todavía no pertenece a ningún grupo.",
+      "neighborhoodRoles": {
+        "neighbor": "Vecino",
+        "neighborhood_admin": "Admin de colonia"
+      },
+      "groupRoles": {
+        "group_admin": "Admin del grupo",
+        "group_member": "Miembro del grupo"
+      }
+    }
+  },
   "status": {
     "draft": "Borrador",
     "active": "Activo",
