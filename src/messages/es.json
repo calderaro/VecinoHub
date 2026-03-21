@@ -399,9 +399,9 @@
     "groupFormPage": {
       "label": "Administración",
       "createTitle": "Crear grupo",
-      "createSubtitle": "Agrega un nuevo grupo de casas.",
+      "createSubtitle": "Agrega un nuevo grupo para este vecindario.",
       "editTitle": "Editar grupo",
-      "editSubtitle": "Actualiza los detalles del grupo."
+      "editSubtitle": "Actualiza los detalles de este grupo."
     },
     "groupForm": {
       "createTitle": "Crear grupo",
@@ -414,19 +414,24 @@
       "createAction": "Crear grupo",
       "saving": "Guardando...",
       "saveChanges": "Guardar cambios",
+      "sections": {
+        "details": "Detalles del grupo",
+        "admin": "Admin inicial"
+      },
       "fields": {
         "name": "Nombre",
         "address": "Dirección",
-        "adminUserId": "Id del admin inicial del grupo (opcional)"
+        "adminEmail": "Correo del admin del grupo (opcional)"
       },
       "createdToast": "Grupo creado.",
       "saveErrorTitle": "No se pudo guardar el grupo",
       "cancel": "Cancelar",
       "namePlaceholder": "ej. Residentes Torre A",
       "addressPlaceholder": "Calle, edificio y referencias del grupo",
-      "adminPlaceholder": "Id del admin inicial del grupo (UUID)",
-      "adminHint": "Déjalo vacío para crear el grupo sin miembros. Después podrás agregar miembros y asignar roles.",
+      "adminPlaceholder": "nombre@ejemplo.com",
+      "adminHint": "Ingresa el correo de un usuario existente para asignarlo como admin inicial del grupo, o déjalo vacío para crear el grupo sin miembros.",
       "preview": {
+        "title": "Vista previa",
         "newGroup": "Nuevo grupo",
         "noAddress": "Sin dirección registrada",
         "status": "Estado",
@@ -436,7 +441,7 @@
       "tips": {
         "title": "Sugerencias",
         "name": "Usa un nombre de grupo fácil de identificar para residentes.",
-        "owner": "Puedes dejar vacío el admin inicial y asignar miembros después.",
+        "owner": "Usa el correo de un usuario existente para el admin inicial, o déjalo vacío y asigna miembros después.",
         "address": "Agrega detalles de ubicación para identificar mejor el grupo."
       }
     },

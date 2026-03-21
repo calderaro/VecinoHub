@@ -46,7 +46,7 @@
 - Clearing active context (platform admin) returns to global scope behavior.
 
 ## Feature Flows
- - Groups: create/edit/delete, including creating an empty group with no members, plus member add/remove and group role changes respect permissions.
+- Groups: create/edit/delete, including creating a group with an optional initial admin email, creating an empty group with no members, plus member add/remove and group role changes respect permissions.
 - Group members remain read-only in `/dashboard/[groupId]/members`.
 - Group admins can update group details and manage members/roles only for their own group.
 - Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.

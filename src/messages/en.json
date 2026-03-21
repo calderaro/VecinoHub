@@ -399,9 +399,9 @@
     "groupFormPage": {
       "label": "Administration",
       "createTitle": "Create group",
-      "createSubtitle": "Add a new house group.",
+      "createSubtitle": "Add a new group for this neighborhood.",
       "editTitle": "Edit group",
-      "editSubtitle": "Update group details."
+      "editSubtitle": "Update this group's details."
     },
     "groupForm": {
       "createTitle": "Create group",
@@ -414,19 +414,24 @@
       "createAction": "Create group",
       "saving": "Saving...",
       "saveChanges": "Save changes",
+      "sections": {
+        "details": "Group details",
+        "admin": "Initial admin"
+      },
       "fields": {
         "name": "Name",
         "address": "Address",
-        "adminUserId": "Initial group admin user id (optional)"
+        "adminEmail": "Group admin email (optional)"
       },
       "createdToast": "Group created.",
       "saveErrorTitle": "Failed to save group",
       "cancel": "Cancel",
       "namePlaceholder": "e.g. Building A Residents",
       "addressPlaceholder": "Street, building, apartment references",
-      "adminPlaceholder": "Initial group admin user id (UUID)",
-      "adminHint": "Leave this blank to create the group without members. You can add members and assign roles later.",
+      "adminPlaceholder": "name@example.com",
+      "adminHint": "Enter an existing user's email to assign them as the initial group admin, or leave this blank to create the group without members.",
       "preview": {
+        "title": "Preview",
         "newGroup": "New Group",
         "noAddress": "No address provided",
         "status": "Status",
@@ -436,7 +441,7 @@
       "tips": {
         "title": "Tips",
         "name": "Use a recognizable group name for residents.",
-        "owner": "You can leave the initial group admin empty and assign members later.",
+        "owner": "Use an existing user's email for the initial group admin, or leave it empty and assign members later.",
         "address": "Add location details to help residents identify the group."
       }
     },

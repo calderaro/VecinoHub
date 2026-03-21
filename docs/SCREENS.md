@@ -52,6 +52,7 @@
   - `/admin`
   - `/admin/[neighborhoodId]`
   - `/admin/[neighborhoodId]/groups`, `/admin/[neighborhoodId]/groups/new`, `/admin/[neighborhoodId]/groups/[groupId]`, `/admin/[neighborhoodId]/groups/[groupId]/edit`
+    - group creation accepts an optional existing user email for the initial group admin.
   - `/admin/[neighborhoodId]/polls`, `/admin/[neighborhoodId]/polls/new`, `/admin/[neighborhoodId]/polls/[pollId]`, `/admin/[neighborhoodId]/polls/[pollId]/edit`
   - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
   - `/admin/[neighborhoodId]/events`, `/admin/[neighborhoodId]/events/new`, `/admin/[neighborhoodId]/events/[eventId]`, `/admin/[neighborhoodId]/events/[eventId]/edit`

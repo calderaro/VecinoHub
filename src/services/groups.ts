@@ -23,6 +23,7 @@ const createGroupSchema = z.object({
   neighborhoodId: idSchema.optional(),
   name: z.string().min(1),
   address: z.string().optional(),
+  adminEmail: z.string().email().optional(),
   adminUserId: idSchema.optional(),
 });
 
@@ -36,6 +37,21 @@ async function assertUserExists(userId: string) {
   if (!user[0]) {
     throw new ServiceError("User not found", "NOT_FOUND");
   }
+}
+
+async function resolveUserIdByEmail(email: string) {
+  const normalizedEmail = email.trim();
+  const user = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(ilike(users.email, normalizedEmail))
+    .limit(1);
+
+  if (!user[0]) {
+    throw new ServiceError("User not found", "NOT_FOUND");
+  }
+
+  return user[0].id;
 }
 
 async function ensureNeighborhoodMembership(
@@ -186,7 +202,7 @@ export async function createGroup(
   ctx: ServiceContext,
   input: z.input<typeof createGroupSchema>
 ) {
-  const { neighborhoodId, name, address, adminUserId } = createGroupSchema.parse(input);
+  const { neighborhoodId, name, address, adminEmail, adminUserId } = createGroupSchema.parse(input);
   let resolvedNeighborhoodId = neighborhoodId ?? ctx.user.activeNeighborhoodId ?? undefined;
   if (!resolvedNeighborhoodId) {
     const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
@@ -204,8 +220,12 @@ export async function createGroup(
 
   await requireNeighborhoodAdminOrPlatform(ctx, resolvedNeighborhoodId);
 
+  let resolvedAdminUserId: string | undefined;
   if (adminUserId) {
     await assertUserExists(adminUserId);
+    resolvedAdminUserId = adminUserId;
+  } else if (adminEmail) {
+    resolvedAdminUserId = await resolveUserIdByEmail(adminEmail);
   }
 
   return db.transaction(async (tx) => {
@@ -219,10 +239,10 @@ export async function createGroup(
       throw new ServiceError("Failed to create group", "INVALID");
     }
 
-    if (adminUserId) {
+    if (resolvedAdminUserId) {
       await tx.insert(groupMemberships).values({
         groupId: group.id,
-        userId: adminUserId,
+        userId: resolvedAdminUserId,
         role: "group_admin",
         status: "active",
       });
@@ -231,7 +251,7 @@ export async function createGroup(
         .insert(neighborhoodMemberships)
         .values({
           neighborhoodId: resolvedNeighborhoodId,
-          userId: adminUserId,
+          userId: resolvedAdminUserId,
           role: "neighbor",
           status: "active",
         })
@@ -240,7 +260,7 @@ export async function createGroup(
 
     return {
       ...group,
-      adminUserIds: adminUserId ? [adminUserId] : [],
+      adminUserIds: resolvedAdminUserId ? [resolvedAdminUserId] : [],
       adminNames: [],
       adminLabel: null,
       viewerMembershipRole: null,
@@ -369,16 +389,7 @@ export async function addMember(
 
   let resolvedUserId = userId;
   if (!resolvedUserId && email) {
-    const user = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(ilike(users.email, email))
-      .limit(1);
-
-    if (!user[0]) {
-      throw new ServiceError("User not found", "NOT_FOUND");
-    }
-    resolvedUserId = user[0].id;
+    resolvedUserId = await resolveUserIdByEmail(email);
   }
 
   if (!resolvedUserId) {

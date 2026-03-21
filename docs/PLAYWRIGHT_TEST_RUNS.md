@@ -702,7 +702,7 @@ Preconditions:
 Steps:
 1. Go to /admin/groups/new.
 2. Enter group name and optional address.
-3. Leave the Admin User field empty.
+3. Leave the Admin Email field empty.
 4. Save.
 5. Open group detail.
 

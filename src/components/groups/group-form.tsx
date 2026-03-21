@@ -40,13 +40,13 @@ export function GroupForm({
 
   const [name, setName] = useState(initialName);
   const [address, setAddress] = useState(initialAddress ?? "");
-  const [adminUserId, setAdminUserId] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createGroup = trpc.groups.create.useMutation();
   const updateGroup = trpc.groups.update.useMutation();
 
-  const showAdminUserIdField = mode === "create";
+  const showAdminEmailField = mode === "create";
   const isValid = name.trim().length > 0;
   const isDisabled = createGroup.isPending || updateGroup.isPending;
   const cancelHref =
@@ -65,7 +65,7 @@ export function GroupForm({
         await createGroup.mutateAsync({
           name: name.trim(),
           address: address.trim() || undefined,
-          adminUserId: adminUserId.trim() || undefined,
+          adminEmail: adminEmail.trim() || undefined,
         });
         addToast(t("createdToast"), "success");
         router.push(`${adminBasePath}/groups`);
@@ -127,7 +127,7 @@ export function GroupForm({
             <div className="flex items-center gap-2 border-b border-stone-100 px-5 py-3.5">
               <SparklesIcon className="h-3.5 w-3.5 text-stone-400" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
-                Core details
+                {t("sections.details")}
               </h2>
             </div>
             <div className="space-y-4 px-5 py-5">
@@ -165,24 +165,25 @@ export function GroupForm({
             </div>
           </section>
 
-          {showAdminUserIdField ? (
+          {showAdminEmailField ? (
             <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
               <div className="flex items-center gap-2 border-b border-stone-100 px-5 py-3.5">
                 <ShieldIcon className="h-3.5 w-3.5 text-stone-400" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500">
-                  Group owner
+                  {t("sections.admin")}
                 </h2>
               </div>
               <div className="space-y-4 px-5 py-5">
                 <div className="space-y-1.5">
-                  <label htmlFor="group-admin-user-id" className="block text-sm font-medium text-stone-700">
-                    {t("fields.adminUserId")}
+                  <label htmlFor="group-admin-email" className="block text-sm font-medium text-stone-700">
+                    {t("fields.adminEmail")}
                   </label>
                   <input
-                    id="group-admin-user-id"
+                    id="group-admin-email"
+                    type="email"
                     className={`${inputBase} border-stone-200 bg-white hover:border-stone-300`}
-                    value={adminUserId}
-                    onChange={(event) => setAdminUserId(event.target.value)}
+                    value={adminEmail}
+                    onChange={(event) => setAdminEmail(event.target.value)}
                     placeholder={t("adminPlaceholder")}
                     disabled={isDisabled}
                     data-testid="group-form-admin"
@@ -223,7 +224,7 @@ export function GroupForm({
           <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
             <div className="border-b border-stone-100 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">
-                Group preview
+                {t("preview.title")}
               </p>
             </div>
             <div className="space-y-3 px-4 py-4">
@@ -246,11 +247,11 @@ export function GroupForm({
                   <span className="text-xs text-stone-400">{t("preview.status")}</span>
                   <StatusBadge variant="active" label={t("preview.active")} />
                 </div>
-                {showAdminUserIdField ? (
+                {showAdminEmailField ? (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-stone-400">{t("fields.adminUserId")}</span>
+                    <span className="text-xs text-stone-400">{t("fields.adminEmail")}</span>
                     <span className="text-xs text-stone-600">
-                      {adminUserId.trim() || t("preview.notAssigned")}
+                      {adminEmail.trim() || t("preview.notAssigned")}
                     </span>
                   </div>
                 ) : null}

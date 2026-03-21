@@ -63,5 +63,6 @@
 
 ## Input Notes (high level)
 - Neighborhood-scoped creates accept optional `neighborhoodId`; if omitted, services resolve from active context/admin memberships.
+- `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
 - Cross-entity writes enforce neighborhood consistency server-side.
 - `users.updateRole` accepts `user | admin | platform_admin` for compatibility during transition.
