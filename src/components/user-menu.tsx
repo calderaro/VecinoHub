@@ -6,6 +6,7 @@ import {
   ChevronDown,
   LayoutDashboard,
   LogOut,
+  Mail,
   Settings,
   Shield,
   User,
@@ -222,6 +223,7 @@ export function UserMenu({
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className={styles.item}
+              data-testid="user-menu-dashboard"
             >
               <LayoutDashboard className={styles.itemIcon} aria-hidden="true" />
               {t("dashboard")}
@@ -232,9 +234,21 @@ export function UserMenu({
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className={styles.item}
+              data-testid="user-menu-profile"
             >
               <User className={styles.itemIcon} aria-hidden="true" />
               {t("profile")}
+            </Link>
+
+            <Link
+              href="/dashboard/invites"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className={styles.item}
+              data-testid="user-menu-invites"
+            >
+              <Mail className={styles.itemIcon} aria-hidden="true" />
+              {t("invites")}
             </Link>
 
             {canSeeAdminLink ? (
@@ -243,6 +257,7 @@ export function UserMenu({
                 role="menuitem"
                 onClick={() => setIsOpen(false)}
                 className={styles.itemAccent}
+                data-testid="user-menu-admin"
               >
                 <Shield className={styles.itemIcon} aria-hidden="true" />
                 {t("adminPanel")}
@@ -255,6 +270,7 @@ export function UserMenu({
                 role="menuitem"
                 onClick={() => setIsOpen(false)}
                 className={styles.itemAccent}
+                data-testid="user-menu-platform"
               >
                 <Settings className={styles.itemIcon} aria-hidden="true" />
                 {t("platformPanel")}
@@ -309,6 +325,7 @@ export function UserMenu({
                       router.push(`/dashboard/${group.id}`);
                     }}
                     className={classNames(styles.item, isSelected && styles.activeGroupItem)}
+                    data-testid={`user-menu-group-${group.id}`}
                   >
                     <Building2 className={styles.itemIcon} aria-hidden="true" />
                     <span className="flex-1 truncate text-left">{group.name}</span>

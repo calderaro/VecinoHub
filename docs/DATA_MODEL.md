@@ -8,6 +8,7 @@
 - `neighborhood_membership_status`: `active`, `inactive`
 - `group_role`: `group_member`, `group_admin`
 - `membership_status`: `active`, `inactive`
+- `group_invite_status`: `pending`, `accepted`, `rejected`, `cancelled`, `expired`
 - `poll_status`: `draft`, `active`, `closed`
 - `contribution_method`: `cash`, `wire_transfer`
 - `contribution_status`: `submitted`, `confirmed`, `rejected`
@@ -53,6 +54,10 @@
 - `created_at`
 - `updated_at`
 - Unique: (`neighborhood_id`, `user_id`)
+- Semantics:
+  - `neighborhood_admin` memberships are explicit and can exist without any group membership.
+  - `neighbor` memberships are synchronized support records for resident scoping and should reflect whether the user has at least one active `group_membership` in the same neighborhood.
+  - A standalone active `neighbor` membership must not be treated as sufficient resident access when the user has zero active groups in that neighborhood.
 
 ## groups
 - `id` (pk)
@@ -71,6 +76,28 @@
 - `created_at`
 - `updated_at`
 - Unique: (`group_id`, `user_id`)
+- Semantics:
+  - Active resident access is anchored here.
+  - A user’s active group memberships determine whether they should retain active `neighbor` status in the parent neighborhood.
+
+## group_invites
+- `id` (pk)
+- `group_id` (fk -> groups.id)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `email` (case-insensitive invite target)
+- `role`
+- `status`
+- `token_hash` (unique)
+- `invited_by` (fk -> users.id)
+- `responded_by` (fk -> users.id, nullable)
+- `last_sent_at`
+- `expires_at`
+- `accepted_at` (nullable)
+- `rejected_at` (nullable)
+- `cancelled_at` (nullable)
+- `created_at`
+- `updated_at`
+- Unique: one active pending invite per (`group_id`, lower(`email`))
 
 ## polls
 - `id` (pk)
@@ -253,6 +280,8 @@
   - `neighborhoods.lower(slug)` unique
   - `neighborhood_memberships(neighborhood_id, user_id)` unique
   - `groups.neighborhood_id`
+  - `group_invites(group_id, status)`
+  - `group_invites(lower(email), status)`
   - `polls.neighborhood_id`
   - `fundraising_campaigns.neighborhood_id`
   - `neighborhood_funds(neighborhood_id)`

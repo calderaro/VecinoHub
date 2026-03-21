@@ -19,6 +19,7 @@ mem.public.none(`
   CREATE TYPE neighborhood_membership_status AS ENUM ('active', 'inactive');
   CREATE TYPE group_role AS ENUM ('group_member', 'group_admin');
   CREATE TYPE membership_status AS ENUM ('active', 'inactive');
+  CREATE TYPE group_invite_status AS ENUM ('pending', 'accepted', 'rejected', 'cancelled', 'expired');
   CREATE TYPE poll_status AS ENUM ('draft', 'active', 'closed');
   CREATE TYPE contribution_method AS ENUM ('cash', 'wire_transfer');
   CREATE TYPE contribution_status AS ENUM ('submitted', 'confirmed', 'rejected');
@@ -96,6 +97,30 @@ mem.public.none(`
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
   );
+
+  CREATE TABLE group_invites (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id uuid NOT NULL,
+    neighborhood_id uuid NOT NULL,
+    email text NOT NULL,
+    role group_role NOT NULL DEFAULT 'group_member',
+    status group_invite_status NOT NULL DEFAULT 'pending',
+    token_hash text NOT NULL,
+    invited_by uuid NOT NULL,
+    responded_by uuid,
+    last_sent_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL,
+    accepted_at timestamptz,
+    rejected_at timestamptz,
+    cancelled_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE UNIQUE INDEX group_invites_token_hash_unique ON group_invites (token_hash);
+  CREATE INDEX group_invites_group_status_idx ON group_invites (group_id, status);
+  CREATE INDEX group_invites_neighborhood_status_idx ON group_invites (neighborhood_id, status);
+  CREATE INDEX group_invites_email_status_idx ON group_invites (lower(email), status);
 
   CREATE TABLE polls (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

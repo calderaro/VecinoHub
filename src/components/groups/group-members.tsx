@@ -22,14 +22,38 @@ type GroupMember = {
   membershipStatus: "active" | "inactive";
 };
 
+type GroupInvite = {
+  id: string;
+  email: string;
+  role: "group_member" | "group_admin";
+  status: "pending" | "accepted" | "rejected" | "cancelled" | "expired";
+  expiresAt: Date;
+  createdAt: Date;
+  lastSentAt: Date;
+  invitedByName: string | null;
+};
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
 export function GroupMembers({
   groupId,
   canManage,
   members,
+  invites,
+  viewerUserId,
+  viewerMembershipRole,
 }: {
   groupId: string;
   canManage: boolean;
   members: GroupMember[];
+  invites: GroupInvite[];
+  viewerUserId: string;
+  viewerMembershipRole: "group_member" | "group_admin" | null;
 }) {
   const router = useRouter();
   const { addToast } = useToast();
@@ -41,11 +65,13 @@ export function GroupMembers({
   const [addOpen, setAddOpen] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [pendingRemove, setPendingRemove] = useState<GroupMember | null>(null);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [activeInviteId, setActiveInviteId] = useState<string | null>(null);
   const canSubmit = email.trim().length > 0;
 
-  const addMember = trpc.groups.addMember.useMutation({
+  const createInvite = trpc.groupInvites.create.useMutation({
     onSuccess: () => {
-      addToast(t("toasts.added"), "success");
+      addToast(t("toasts.invited"), "success");
       setEmail("");
       setNewMemberRole("group_member");
       setAddError(null);
@@ -54,6 +80,30 @@ export function GroupMembers({
     },
     onError: (err) => {
       setAddError(err.message);
+      addToast(err.message, "error");
+    },
+  });
+
+  const resendInvite = trpc.groupInvites.resend.useMutation({
+    onSuccess: () => {
+      setActiveInviteId(null);
+      addToast(t("toasts.resent"), "success");
+      router.refresh();
+    },
+    onError: (err) => {
+      setActiveInviteId(null);
+      addToast(err.message, "error");
+    },
+  });
+
+  const cancelInvite = trpc.groupInvites.cancel.useMutation({
+    onSuccess: () => {
+      setActiveInviteId(null);
+      addToast(t("toasts.cancelled"), "success");
+      router.refresh();
+    },
+    onError: (err) => {
+      setActiveInviteId(null);
       addToast(err.message, "error");
     },
   });
@@ -75,6 +125,15 @@ export function GroupMembers({
     onError: (err) => addToast(err.message, "error"),
   });
 
+  const leaveGroup = trpc.groups.leave.useMutation({
+    onSuccess: () => {
+      addToast(t("toasts.left"), "success");
+      setLeaveOpen(false);
+      router.push("/dashboard");
+    },
+    onError: (err) => addToast(err.message, "error"),
+  });
+
   const sortedMembers = [...members].sort((left, right) => {
     if (left.membershipRole !== right.membershipRole) {
       return left.membershipRole === "group_admin" ? -1 : 1;
@@ -82,114 +141,236 @@ export function GroupMembers({
 
     return (left.username ?? left.name).localeCompare(right.username ?? right.name);
   });
+  const viewerMembership = members.find(
+    (member) => member.id === viewerUserId && member.membershipStatus === "active"
+  );
+  const canLeaveGroup = Boolean(viewerMembership && viewerMembershipRole);
 
   const isMutating =
-    addMember.isPending || updateRole.isPending || removeMember.isPending;
+    createInvite.isPending ||
+    resendInvite.isPending ||
+    cancelInvite.isPending ||
+    updateRole.isPending ||
+    removeMember.isPending ||
+    leaveGroup.isPending;
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 space-y-5">
       {canManage ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
-            {t("title")}
-          </p>
-          <button
-            className="vh-v3-focus rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
-            type="button"
-            data-testid="group-members-add"
-            onClick={() => {
-              setAddError(null);
-              setAddOpen(true);
-            }}
-          >
-            {t("add")}
-          </button>
-        </div>
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
+              {t("title")}
+            </p>
+            <button
+              className="vh-v3-focus rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
+              type="button"
+              data-testid="group-members-add"
+              onClick={() => {
+                setAddError(null);
+                setAddOpen(true);
+              }}
+            >
+              {t("add")}
+            </button>
+          </div>
+
+          <section className="space-y-3" data-testid="group-invites-list">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
+                {t("invites.title")}
+              </p>
+              <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600">
+                {t("invites.count", { count: invites.length })}
+              </span>
+            </div>
+
+            {invites.length === 0 ? (
+              <p className="text-sm text-stone-500">{t("invites.empty")}</p>
+            ) : (
+              <div className="space-y-3">
+                {invites.map((invite) => {
+                  const inviteBusy =
+                    activeInviteId === invite.id &&
+                    (resendInvite.isPending || cancelInvite.isPending);
+
+                  return (
+                    <div
+                      key={invite.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white px-3 py-3"
+                      data-testid={`group-invite-row-${invite.id}`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-stone-900">{invite.email}</p>
+                        <p className="text-xs text-stone-500">
+                          {t("invites.expires", {
+                            date: formatDate(invite.expiresAt),
+                          })}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusBadge
+                          variant={invite.role}
+                          label={t(`roles.${invite.role}`)}
+                        />
+                        <button
+                          className="vh-v3-focus rounded-md px-2 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          type="button"
+                          onClick={() => {
+                            setActiveInviteId(invite.id);
+                            resendInvite.mutate({ inviteId: invite.id });
+                          }}
+                          disabled={isMutating}
+                          data-testid={`group-invite-resend-${invite.id}`}
+                        >
+                          {inviteBusy && resendInvite.isPending
+                            ? t("invites.resending")
+                            : t("invites.resend")}
+                        </button>
+                        <button
+                          className="vh-v3-focus rounded-md px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          type="button"
+                          onClick={() => {
+                            setActiveInviteId(invite.id);
+                            cancelInvite.mutate({ inviteId: invite.id });
+                          }}
+                          disabled={isMutating}
+                          data-testid={`group-invite-cancel-${invite.id}`}
+                        >
+                          {inviteBusy && cancelInvite.isPending
+                            ? t("invites.cancelling")
+                            : t("invites.cancel")}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </>
       ) : null}
 
       {sortedMembers.length === 0 ? (
         <p className="text-sm text-stone-500">{t("empty")}</p>
       ) : (
-        sortedMembers.map((member) => {
-          const displayName = member.username ?? member.name;
-          const secondary = member.username ? member.name : member.email;
+        <div data-testid="dashboard-members-list" className="space-y-3">
+          {sortedMembers.map((member) => {
+            const displayName = member.username ?? member.name;
+            const secondary = member.username ? member.name : member.email;
 
-          return (
-            <div
-              key={member.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2.5"
-              data-testid={`group-members-row-${member.id}`}
-            >
-              <div className="flex items-center gap-3">
-                {member.image ? (
-                  <Image
-                    className="h-9 w-9 rounded-full border border-stone-200 object-cover"
-                    src={member.image}
-                    alt={displayName}
-                    width={36}
-                    height={36}
-                    sizes="36px"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
-                    {(displayName?.[0] ?? "?").toUpperCase()}
+            return (
+              <div
+                key={member.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2.5"
+                data-testid={`group-members-row-${member.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  {member.image ? (
+                    <Image
+                      className="h-9 w-9 rounded-full border border-stone-200 object-cover"
+                      src={member.image}
+                      alt={displayName}
+                      width={36}
+                      height={36}
+                      sizes="36px"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
+                      {(displayName?.[0] ?? "?").toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-stone-900">{displayName}</p>
+                    <p className="text-xs text-stone-500">{secondary}</p>
                   </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium text-stone-900">{displayName}</p>
-                  <p className="text-xs text-stone-500">{secondary}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {canManage && member.id !== viewerUserId ? (
+                    <div className="relative">
+                      <select
+                        className="appearance-none rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs font-medium text-stone-700 outline-none transition-colors focus:border-teal-400"
+                        value={member.membershipRole}
+                        onChange={(event) =>
+                          updateRole.mutate({
+                            groupId,
+                            userId: member.id,
+                            role: event.target.value as "group_member" | "group_admin",
+                          })
+                        }
+                        disabled={isMutating}
+                        data-testid={`group-members-role-${member.id}`}
+                      >
+                        <option value="group_member">{t("roles.group_member")}</option>
+                        <option value="group_admin">{t("roles.group_admin")}</option>
+                      </select>
+                      <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-stone-400" />
+                    </div>
+                  ) : (
+                    <StatusBadge
+                      variant={member.membershipRole}
+                      label={t(`roles.${member.membershipRole}`)}
+                    />
+                  )}
+
+                  <StatusBadge
+                    variant={member.membershipStatus}
+                    label={t(`statuses.${member.membershipStatus}`)}
+                  />
+
+                  {canManage && member.id !== viewerUserId ? (
+                    <button
+                      className="vh-v3-focus rounded-md px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                      type="button"
+                      onClick={() => setPendingRemove(member)}
+                      disabled={removeMember.isPending}
+                      data-testid={`group-members-remove-${member.id}`}
+                    >
+                      {t("remove")}
+                    </button>
+                  ) : null}
                 </div>
               </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {canManage ? (
-                  <div className="relative">
-                    <select
-                      className="appearance-none rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs font-medium text-stone-700 outline-none transition-colors focus:border-teal-400"
-                      value={member.membershipRole}
-                      onChange={(event) =>
-                        updateRole.mutate({
-                          groupId,
-                          userId: member.id,
-                          role: event.target.value as "group_member" | "group_admin",
-                        })
-                      }
-                      disabled={isMutating}
-                      data-testid={`group-members-role-${member.id}`}
-                    >
-                      <option value="group_member">{t("roles.group_member")}</option>
-                      <option value="group_admin">{t("roles.group_admin")}</option>
-                    </select>
-                    <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-stone-400" />
-                  </div>
-                ) : (
-                  <StatusBadge
-                    variant={member.membershipRole}
-                    label={t(`roles.${member.membershipRole}`)}
-                  />
-                )}
-
-                <StatusBadge
-                  variant={member.membershipStatus}
-                  label={t(`statuses.${member.membershipStatus}`)}
-                />
-
-                {canManage ? (
-                  <button
-                    className="vh-v3-focus rounded-md px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
-                    type="button"
-                    onClick={() => setPendingRemove(member)}
-                    disabled={removeMember.isPending}
-                  >
-                    {t("remove")}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
+
+      {canLeaveGroup ? (
+        <section
+          className="rounded-xl border border-red-200 bg-red-50/60 p-4"
+          data-testid="group-members-self-leave"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-stone-900">{t("leave.title")}</p>
+              <p className="text-sm text-stone-600">{t("leave.subtitle")}</p>
+              {viewerMembershipRole === "group_admin" ? (
+                <p className="text-xs text-stone-500">{t("leave.adminHint")}</p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge
+                variant={viewerMembershipRole ?? "group_member"}
+                label={t(`roles.${viewerMembershipRole ?? "group_member"}`)}
+              />
+              <button
+                className="vh-v3-focus rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                onClick={() => setLeaveOpen(true)}
+                disabled={isMutating}
+                data-testid="group-members-leave"
+              >
+                {t("leave.action")}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {addOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 px-4 backdrop-blur-sm">
@@ -209,7 +390,7 @@ export function GroupMembers({
                   addToast(t("addDialog.emailRequired"), "error");
                   return;
                 }
-                addMember.mutate({ groupId, email, role: newMemberRole });
+                createInvite.mutate({ groupId, email, role: newMemberRole });
               }}
             >
               <label className="space-y-2 text-sm text-stone-700">
@@ -224,6 +405,7 @@ export function GroupMembers({
                   placeholder={t("addDialog.emailPlaceholder")}
                   type="email"
                   required
+                  data-testid="group-members-add-email"
                 />
               </label>
 
@@ -260,7 +442,7 @@ export function GroupMembers({
                     setAddError(null);
                     setAddOpen(false);
                   }}
-                  disabled={addMember.isPending}
+                  disabled={createInvite.isPending}
                 >
                   {t("addDialog.cancel")}
                 </button>
@@ -268,9 +450,9 @@ export function GroupMembers({
                   className="vh-v3-focus rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
                   type="submit"
                   data-testid="group-members-add-submit"
-                  disabled={!canSubmit || addMember.isPending}
+                  disabled={!canSubmit || createInvite.isPending}
                 >
-                  {addMember.isPending ? t("addDialog.adding") : t("addDialog.add")}
+                  {createInvite.isPending ? t("addDialog.adding") : t("addDialog.add")}
                 </button>
               </div>
             </form>
@@ -296,6 +478,19 @@ export function GroupMembers({
             })
           }
           isLoading={removeMember.isPending}
+          variant="danger"
+        />
+      ) : null}
+
+      {leaveOpen ? (
+        <ConfirmDialog
+          title={t("leaveDialog.title")}
+          body={t("leaveDialog.body")}
+          cancelLabel={t("leaveDialog.cancel")}
+          confirmLabel={leaveGroup.isPending ? t("leaveDialog.leaving") : t("leaveDialog.leave")}
+          onCancel={() => setLeaveOpen(false)}
+          onConfirm={() => leaveGroup.mutate({ groupId })}
+          isLoading={leaveGroup.isPending}
           variant="danger"
         />
       ) : null}

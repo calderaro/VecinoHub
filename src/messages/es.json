@@ -135,6 +135,7 @@
     "navigation": "Navegación",
     "dashboard": "Panel",
     "profile": "Perfil",
+    "invites": "Invitaciones",
     "adminPanel": "Panel admin",
     "switchGroup": "Cambiar grupo",
     "groups": "Grupos",
@@ -1263,9 +1264,43 @@
       "title": "Miembros de {name}",
       "subtitle": "Administra residentes del grupo."
     },
+    "invites": {
+      "label": "Acceso a grupos",
+      "title": "Invitaciones",
+      "subtitle": "Revisa las invitaciones enviadas al correo de tu cuenta y decide si quieres unirte al grupo.",
+      "pendingTitle": "Invitaciones pendientes",
+      "pendingSubtitle": "Estas invitaciones siguen esperando tu respuesta.",
+      "pendingCount": "{count} pendientes",
+      "empty": "No hay invitaciones pendientes.",
+      "historyTitle": "Historial de invitaciones",
+      "historySubtitle": "Invitaciones completadas, canceladas o vencidas.",
+      "invitedBy": "Invitado por {name}",
+      "unknownInviter": "VecinoHub",
+      "sentOn": "Enviada el {date}",
+      "expiresOn": "Vence el {date}",
+      "accept": "Aceptar",
+      "accepting": "Aceptando...",
+      "reject": "Rechazar",
+      "rejecting": "Rechazando...",
+      "mismatchWarning": "Este enlace pertenece a una invitación enviada a otro correo distinto del que está autenticado.",
+      "roles": {
+        "group_admin": "Admin del grupo",
+        "group_member": "Miembro del grupo"
+      },
+      "statuses": {
+        "accepted": "Aceptada",
+        "cancelled": "Cancelada",
+        "expired": "Vencida",
+        "rejected": "Rechazada"
+      },
+      "toasts": {
+        "accepted": "Invitación aceptada.",
+        "rejected": "Invitación rechazada."
+      }
+    },
     "groupMembers": {
       "title": "Miembros",
-      "add": "Agregar miembro",
+      "add": "Invitar miembro",
       "empty": "Aún no hay miembros.",
       "remove": "Eliminar",
       "roles": {
@@ -1277,20 +1312,39 @@
         "inactive": "Inactivo"
       },
       "toasts": {
-        "added": "Miembro agregado al grupo.",
+        "invited": "Invitación enviada.",
+        "resent": "Invitación reenviada.",
+        "cancelled": "Invitación cancelada.",
+        "left": "Saliste del grupo.",
         "removed": "Miembro eliminado del grupo.",
         "roleUpdated": "Rol del grupo actualizado."
       },
+      "leave": {
+        "title": "Tu membresía",
+        "subtitle": "Sal de este grupo y quítalo de tu panel de residente.",
+        "adminHint": "Si eres el último admin activo del grupo, asigna a otro admin antes de salir.",
+        "action": "Salir del grupo"
+      },
+      "invites": {
+        "title": "Invitaciones pendientes",
+        "count": "{count} pendientes",
+        "empty": "No hay invitaciones pendientes para este grupo.",
+        "expires": "Vence el {date}",
+        "resend": "Reenviar",
+        "resending": "Reenviando...",
+        "cancel": "Cancelar",
+        "cancelling": "Cancelando..."
+      },
       "addDialog": {
-        "title": "Agregar miembro",
-        "subtitle": "Invita por correo y asigna su rol dentro del grupo.",
+        "title": "Invitar miembro",
+        "subtitle": "Envía una invitación por correo y asigna el rol que tendrá cuando la acepte.",
         "emailRequired": "El correo es obligatorio.",
         "emailLabel": "Correo",
         "emailPlaceholder": "miembro@email.com",
         "roleLabel": "Rol",
         "cancel": "Cancelar",
-        "add": "Agregar",
-        "adding": "Agregando"
+        "add": "Enviar invitación",
+        "adding": "Enviando"
       },
       "removeDialog": {
         "title": "Eliminar miembro",
@@ -1298,6 +1352,13 @@
         "cancel": "Cancelar",
         "remove": "Eliminar",
         "removing": "Eliminando"
+      },
+      "leaveDialog": {
+        "title": "Salir del grupo",
+        "body": "¿Salir de este grupo? Perderás acceso a su panel hasta que vuelvan a invitarte.",
+        "cancel": "Quedarme",
+        "leave": "Salir del grupo",
+        "leaving": "Saliendo"
       }
     },
     "pollsList": {

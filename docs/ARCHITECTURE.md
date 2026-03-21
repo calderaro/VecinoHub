@@ -40,6 +40,10 @@
 ## Data Access
 - Drizzle is the single DB layer.
 - All DB access is funneled through services.
+- Access resolution must distinguish between:
+  - explicit neighborhood access (`platform_admin`, `neighborhood_admin`)
+  - derived resident neighborhood access from active `group_memberships`
+- For regular residents, neighborhood-scoped reads must not trust a standalone active `neighbor` membership when the user has zero active groups in that neighborhood.
 
 ## Performance
 - Prefer SSR for read-heavy pages.

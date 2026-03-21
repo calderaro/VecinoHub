@@ -29,6 +29,13 @@ export const neighborhoodMembershipStatusEnum = pgEnum(
 );
 export const groupRoleEnum = pgEnum("group_role", ["group_member", "group_admin"]);
 export const membershipStatusEnum = pgEnum("membership_status", ["active", "inactive"]);
+export const groupInviteStatusEnum = pgEnum("group_invite_status", [
+  "pending",
+  "accepted",
+  "rejected",
+  "cancelled",
+  "expired",
+]);
 export const pollStatusEnum = pgEnum("poll_status", ["draft", "active", "closed"]);
 export const contributionMethodEnum = pgEnum("contribution_method", ["cash", "wire_transfer"]);
 export const contributionStatusEnum = pgEnum("contribution_status", [
@@ -263,6 +270,47 @@ export const groupMemberships = pgTable(
     index("group_memberships_group_id_idx").on(table.groupId),
     index("group_memberships_user_id_idx").on(table.userId),
     index("group_memberships_group_role_idx").on(table.groupId, table.role),
+  ]
+);
+
+export const groupInvites = pgTable(
+  "group_invites",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    groupId: uuid("group_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    email: text("email").notNull(),
+    role: groupRoleEnum("role").notNull().default("group_member"),
+    status: groupInviteStatusEnum("status").notNull().default("pending"),
+    tokenHash: text("token_hash").notNull(),
+    invitedBy: uuid("invited_by").notNull(),
+    respondedBy: uuid("responded_by"),
+    lastSentAt: timestamp("last_sent_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    rejectedAt: timestamp("rejected_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("group_invites_token_hash_unique").on(table.tokenHash),
+    uniqueIndex("group_invites_pending_group_email_unique")
+      .on(table.groupId, sql`lower(${table.email})`)
+      .where(sql`${table.status} = 'pending'::group_invite_status`),
+    index("group_invites_group_status_idx").on(table.groupId, table.status),
+    index("group_invites_neighborhood_status_idx").on(
+      table.neighborhoodId,
+      table.status
+    ),
+    index("group_invites_email_status_idx").on(sql`lower(${table.email})`, table.status),
+    index("group_invites_expires_at_idx").on(table.expiresAt),
   ]
 );
 

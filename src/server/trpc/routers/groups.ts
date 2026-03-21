@@ -4,6 +4,7 @@ import {
   addMember,
   createGroup,
   deleteGroup,
+  leaveGroup,
   listGroupMembers,
   listUserGroups,
   removeMember,
@@ -113,6 +114,15 @@ export const groupsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         return await removeMember(getServiceContext(ctx), input);
+      } catch (error) {
+        handleServiceError(error);
+      }
+    }),
+  leave: protectedProcedure
+    .input(z.object({ groupId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await leaveGroup(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

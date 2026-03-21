@@ -99,6 +99,13 @@
       "when": 1774126542623,
       "tag": "0013_colorful_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1774132512125,
+      "tag": "0014_light_tana_nile",
+      "breakpoints": true
     }
   ]
 }

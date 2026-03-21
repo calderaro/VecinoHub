@@ -6,6 +6,7 @@ import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { GroupDetailActions } from "@/components/groups/group-detail-actions";
 import { GroupMembers } from "@/components/groups/group-members";
 import { StatusBadge } from "@/components/ui-v3";
+import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
@@ -46,12 +47,17 @@ export default async function GroupDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const group = await getGroupById(serviceContext, {
-    groupId: resolvedParams.groupId,
-  });
-  const members = await listGroupMembers(serviceContext, {
-    groupId: resolvedParams.groupId,
-  });
+  const [group, members, invites] = await Promise.all([
+    getGroupById(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+    listGroupMembers(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+    listGroupInvites(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+  ]);
 
   const locale = await getLocale();
   const t = await getTranslations("admin.groupDetail");
@@ -103,7 +109,14 @@ export default async function GroupDetailPage({
 
         <div className="px-6 py-5">
           <h2 className="text-lg font-semibold">{t("membersTitle")}</h2>
-          <GroupMembers groupId={group.id} members={members} canManage />
+          <GroupMembers
+            groupId={group.id}
+            members={members}
+            invites={invites.pending}
+            canManage
+            viewerUserId={session.user.id}
+            viewerMembershipRole={group.viewerMembershipRole}
+          />
         </div>
       </section>
     </div>

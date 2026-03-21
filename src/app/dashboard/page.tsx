@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { NoGroupState } from "@/components/dashboard-v2";
 import { UserMenu } from "@/components/user-menu";
+import { listMyInvites } from "@/services/group-invites";
 import {
   hasNeighborhoodAdminRole,
   listNeighborhoodAdminOptions,
@@ -26,7 +27,7 @@ export default async function DashboardGroupSelectorPage() {
     },
   };
 
-  const [tNav, tDashboard, tEmpty, tUserMenu, canAccessAdmin, groups, adminNeighborhoods] = await Promise.all([
+  const [tNav, tDashboard, tEmpty, tUserMenu, canAccessAdmin, groups, adminNeighborhoods, invites] = await Promise.all([
     getTranslations("nav"),
     getTranslations("dashboard.groupSelector"),
     getTranslations("dashboard.empty"),
@@ -34,7 +35,12 @@ export default async function DashboardGroupSelectorPage() {
     hasNeighborhoodAdminRole(baseContext),
     listUserGroups(unscopedContext),
     listNeighborhoodAdminOptions(baseContext),
+    listMyInvites(baseContext),
   ]);
+
+  if (groups.length === 0 && invites.pending.length > 0) {
+    redirect("/dashboard/invites");
+  }
 
   return (
     <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">

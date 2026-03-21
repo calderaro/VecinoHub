@@ -8,6 +8,13 @@ export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"])
 export const groupRoleSchema = z.enum(["group_member", "group_admin"]);
 export const neighborhoodStatusSchema = z.enum(["active", "inactive"]);
 export const statusSchema = z.enum(["active", "inactive"]);
+export const groupInviteStatusSchema = z.enum([
+  "pending",
+  "accepted",
+  "rejected",
+  "cancelled",
+  "expired",
+]);
 export const preferredLanguageSchema = z.enum(["es", "en"]);
 export const contributionMethodSchema = z.enum(["cash", "wire_transfer"]);
 export const fundStatusSchema = z.enum(["active", "archived"]);

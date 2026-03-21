@@ -274,7 +274,7 @@ describe("fundraising service authorization", () => {
 
     await expect(
       getResidentCampaignDetail(createCtx(viewerId), { campaignId, groupId })
-    ).rejects.toMatchObject({ message: "Membership required" });
+    ).rejects.toMatchObject({ message: "Neighborhood membership required" });
   });
 
   it("rejects resident callers from the admin campaign detail path", async () => {

@@ -135,6 +135,7 @@
     "navigation": "Navigation",
     "dashboard": "Dashboard",
     "profile": "Profile",
+    "invites": "Invites",
     "adminPanel": "Admin Panel",
     "switchGroup": "Switch Group",
     "groups": "Groups",
@@ -1263,9 +1264,43 @@
       "title": "{name} members",
       "subtitle": "Manage residents in this house group."
     },
+    "invites": {
+      "label": "Group onboarding",
+      "title": "Invites",
+      "subtitle": "Review invitations sent to your account email and decide whether to join the group.",
+      "pendingTitle": "Pending invites",
+      "pendingSubtitle": "These invitations are still waiting for your response.",
+      "pendingCount": "{count} pending",
+      "empty": "No pending invites.",
+      "historyTitle": "Invite history",
+      "historySubtitle": "Completed, cancelled, or expired invitations.",
+      "invitedBy": "Invited by {name}",
+      "unknownInviter": "VecinoHub",
+      "sentOn": "Sent on {date}",
+      "expiresOn": "Expires on {date}",
+      "accept": "Accept",
+      "accepting": "Accepting...",
+      "reject": "Reject",
+      "rejecting": "Rejecting...",
+      "mismatchWarning": "This invite link belongs to a different email address than the one currently signed in.",
+      "roles": {
+        "group_admin": "Group admin",
+        "group_member": "Group member"
+      },
+      "statuses": {
+        "accepted": "Accepted",
+        "cancelled": "Cancelled",
+        "expired": "Expired",
+        "rejected": "Rejected"
+      },
+      "toasts": {
+        "accepted": "Invite accepted.",
+        "rejected": "Invite rejected."
+      }
+    },
     "groupMembers": {
       "title": "Members",
-      "add": "Add member",
+      "add": "Invite member",
       "empty": "No members yet.",
       "remove": "Remove",
       "roles": {
@@ -1277,20 +1312,39 @@
         "inactive": "Inactive"
       },
       "toasts": {
-        "added": "Member added to the group.",
+        "invited": "Invite sent.",
+        "resent": "Invite resent.",
+        "cancelled": "Invite cancelled.",
+        "left": "You left the group.",
         "removed": "Member removed from the group.",
         "roleUpdated": "Group role updated."
       },
+      "leave": {
+        "title": "Your membership",
+        "subtitle": "Leave this group and remove it from your resident dashboard.",
+        "adminHint": "If you are the last active group admin, assign another admin before leaving.",
+        "action": "Leave group"
+      },
+      "invites": {
+        "title": "Pending invites",
+        "count": "{count} pending",
+        "empty": "No pending invites for this group.",
+        "expires": "Expires on {date}",
+        "resend": "Resend",
+        "resending": "Resending...",
+        "cancel": "Cancel",
+        "cancelling": "Cancelling..."
+      },
       "addDialog": {
-        "title": "Add group member",
-        "subtitle": "Invite a member by their email address and assign their group role.",
+        "title": "Invite group member",
+        "subtitle": "Send an email invitation and assign the group role they will receive after accepting.",
         "emailRequired": "Email is required.",
         "emailLabel": "Email",
         "emailPlaceholder": "member@email.com",
         "roleLabel": "Role",
         "cancel": "Cancel",
-        "add": "Add member",
-        "adding": "Adding"
+        "add": "Send invite",
+        "adding": "Sending"
       },
       "removeDialog": {
         "title": "Remove member",
@@ -1298,6 +1352,13 @@
         "cancel": "Cancel",
         "remove": "Remove",
         "removing": "Removing"
+      },
+      "leaveDialog": {
+        "title": "Leave group",
+        "body": "Leave this group? You will lose access to its dashboard until you are invited back.",
+        "cancel": "Stay",
+        "leave": "Leave group",
+        "leaving": "Leaving"
       }
     },
     "pollsList": {

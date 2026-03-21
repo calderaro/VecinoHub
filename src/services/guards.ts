@@ -4,6 +4,10 @@ import { db } from "@/db";
 import { groupMemberships, groups, neighborhoodMemberships } from "@/db/schema";
 
 import { ServiceError } from "./errors";
+import {
+  hasResidentNeighborhoodAccess,
+  listResidentNeighborhoodIdsForUser,
+} from "./resident-neighborhoods";
 import type { ServiceContext } from "./types";
 
 export function isPlatformAdmin(ctx: ServiceContext) {
@@ -28,19 +32,25 @@ export async function requireNeighborhoodMember(
     return;
   }
 
-  const membership = await db
+  const adminMembership = await db
     .select({ id: neighborhoodMemberships.id })
     .from(neighborhoodMemberships)
     .where(
       and(
         eq(neighborhoodMemberships.userId, ctx.user.id),
         eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+        eq(neighborhoodMemberships.role, "neighborhood_admin"),
         eq(neighborhoodMemberships.status, "active")
       )
     )
     .limit(1);
 
-  if (!membership[0]) {
+  if (adminMembership[0]) {
+    return;
+  }
+
+  const residentAccess = await hasResidentNeighborhoodAccess(db, neighborhoodId, ctx.user.id);
+  if (!residentAccess) {
     throw new ServiceError("Neighborhood membership required", "FORBIDDEN");
   }
 }
@@ -77,38 +87,55 @@ export async function listNeighborhoodIdsForUser(ctx: ServiceContext) {
       return [ctx.user.activeNeighborhoodId];
     }
 
-    const membership = await db
+    const adminMembership = await db
       .select({ id: neighborhoodMemberships.id })
       .from(neighborhoodMemberships)
       .where(
         and(
           eq(neighborhoodMemberships.userId, ctx.user.id),
           eq(neighborhoodMemberships.neighborhoodId, ctx.user.activeNeighborhoodId),
+          eq(neighborhoodMemberships.role, "neighborhood_admin"),
           eq(neighborhoodMemberships.status, "active")
         )
       )
       .limit(1);
 
-    return membership[0] ? [ctx.user.activeNeighborhoodId] : [];
+    if (adminMembership[0]) {
+      return [ctx.user.activeNeighborhoodId];
+    }
+
+    const residentNeighborhoodIds = await listResidentNeighborhoodIdsForUser(
+      db,
+      ctx.user.id,
+      ctx.user.activeNeighborhoodId
+    );
+
+    return residentNeighborhoodIds;
   }
 
   if (isPlatformAdmin(ctx)) {
     return null;
   }
 
-  const memberships = await db
+  const adminMemberships = await db
     .select({ neighborhoodId: neighborhoodMemberships.neighborhoodId })
     .from(neighborhoodMemberships)
     .where(
       and(
         eq(neighborhoodMemberships.userId, ctx.user.id),
+        eq(neighborhoodMemberships.role, "neighborhood_admin"),
         eq(neighborhoodMemberships.status, "active")
       )
     );
 
-  return memberships
-    .map((membership) => membership.neighborhoodId)
-    .filter((id): id is string => Boolean(id));
+  const residentNeighborhoodIds = await listResidentNeighborhoodIdsForUser(db, ctx.user.id);
+
+  return [
+    ...new Set([
+      ...adminMemberships.map((membership) => membership.neighborhoodId),
+      ...residentNeighborhoodIds,
+    ]),
+  ].filter((id): id is string => Boolean(id));
 }
 
 export async function listNeighborhoodAdminIdsForUser(ctx: ServiceContext) {

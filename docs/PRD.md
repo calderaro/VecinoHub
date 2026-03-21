@@ -63,6 +63,8 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `neighborhood_f
 
 ### Resident dashboard
 - Access dashboard only for groups where user is an active member.
+- Resident access to a neighborhood is derived from having at least one active group membership in that neighborhood.
+- A standalone `neighbor` neighborhood membership must not grant resident access if the user has no active group memberships in that neighborhood.
 - View and participate in neighborhood-scoped polls, fundraising, funds, events, and posts.
 - View neighborhood fund balances and confirmed movements and track paid/unpaid status by group.
 - Submit fund payments for their own group.
@@ -71,7 +73,7 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `neighborhood_f
 ## 7) Permission Summary
 - `platform_admin`: full cross-neighborhood read/write and user role management.
 - `neighborhood_admin`: CRUD for neighborhood content, funds, and group management only in authorized neighborhoods.
-- `neighbor`: read/participate flows for own neighborhood/group permissions, including fund transparency and payment submission.
+- `neighbor`: resident access derived from active group membership in the neighborhood; used as a synchronized neighborhood-scoped role record rather than an independent access grant.
 - `group_admin`: manage only their own group details, members, and group roles.
 - `group_member`: read-only access for their own group.
 

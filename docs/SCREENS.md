@@ -7,6 +7,7 @@
 - `/login`
   - combined auth screen for sign-in and sign-up.
   - sign-up requires email OTP confirmation before session creation.
+  - supports a safe `next` param for invite deep links and other protected destinations.
 - `/forgot-password`
   - dedicated two-step password reset flow.
   - first step requests OTP by email.
@@ -16,19 +17,29 @@
 ## Resident Dashboard
 - `/dashboard`
   - redirects to first available group in active neighborhood context.
-  - no-group users see waiting state.
+  - users with no groups but pending invites are redirected to `/dashboard/invites`.
+  - users with neither groups nor invites see waiting state.
+  - users with no active groups in a neighborhood must not keep resident access there solely because of a standalone `neighbor` membership.
+- `/dashboard/invites`
+  - invite inbox for the signed-in user.
+  - lists pending group invites that match the signed-in account email.
+  - supports accept/reject actions.
+  - works even when the user has zero accepted group memberships.
 - `/dashboard/[groupId]`
   - overview cards: posts, events, polls, fundraising, funds, members.
   - sticky header with `UserMenu`.
   - `UserMenu` supports:
     - profile link
+    - invites link
     - group switcher
     - neighborhood switcher (if user has >1 neighborhood)
     - admin/platform entries based on role
 - Resident modules:
 - `/dashboard/[groupId]/members`
   - read-only for `group_member`.
-  - `group_admin`, `neighborhood_admin`, and `platform_admin` can add/remove members and change group roles.
+  - signed-in members can leave their own group from this page.
+  - the leave action must be blocked for the last active `group_admin` until another admin is assigned.
+  - `group_admin`, `neighborhood_admin`, and `platform_admin` can invite members, cancel/resend pending invites, add/remove existing accepted members, and change group roles.
 - `/dashboard/[groupId]/polls`
   - `/dashboard/[groupId]/polls/[pollId]`
   - `/dashboard/[groupId]/fundraising`

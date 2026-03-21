@@ -21,6 +21,7 @@ import { db } from "@/db";
 import { resetSecondaryStorage, secondaryStorage } from "@/server/secondary-storage";
 import { getGroupById, listGroupMembers, updateGroup } from "@/services/groups";
 import {
+  getNeighborhoodById,
   removeNeighborhoodMember,
   setNeighborhoodMemberRole,
   updateNeighborhoodMembershipStatus,
@@ -240,6 +241,36 @@ describe("service access-control regressions", () => {
     expect(storedMemberships[0]?.status).toBe("inactive");
     await expect(
       updateGroup(createCtx(userId), { groupId, name: "Still Blocked" })
-    ).rejects.toMatchObject({ message: "Group admin access required" });
+    ).rejects.toMatchObject({ message: "Neighborhood membership required" });
+  });
+
+  it("does not grant resident neighborhood access from a stale standalone neighbor row", async () => {
+    const neighborhoodId = randomUUID();
+    const userId = randomUUID();
+
+    await db.insert(users).values({
+      id: userId,
+      email: "resident@example.com",
+      name: "Resident",
+      status: "active",
+    });
+
+    await db.insert(neighborhoodMemberships).values({
+      id: randomUUID(),
+      neighborhoodId,
+      userId,
+      role: "neighbor",
+      status: "active",
+    });
+
+    await db.insert(groups).values({
+      id: randomUUID(),
+      neighborhoodId,
+      name: "Detached Group",
+    });
+
+    await expect(
+      getNeighborhoodById(createCtx(userId), { neighborhoodId })
+    ).rejects.toMatchObject({ message: "Neighborhood membership required" });
   });
 });

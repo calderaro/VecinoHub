@@ -13,6 +13,7 @@ type SignUpStep = "form" | "verify";
 
 type AuthCombinedPageProps = {
   initialTab: AuthTab;
+  nextPath?: string;
 };
 
 function isEmailNotVerifiedError(message: string | null | undefined) {
@@ -42,7 +43,7 @@ function GoogleIcon() {
   );
 }
 
-export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
+export function AuthCombinedPage({ initialTab, nextPath = "/dashboard" }: AuthCombinedPageProps) {
   const pathname = usePathname();
   const router = useRouter();
   const tCombined = useTranslations("auth.combined");
@@ -78,7 +79,11 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
 
   function setActiveTab(nextTab: AuthTab) {
     setTab(nextTab);
-    router.replace(`${pathname}?tab=${nextTab}`, { scroll: false });
+    const params = new URLSearchParams({ tab: nextTab });
+    if (nextPath !== "/dashboard") {
+      params.set("next", nextPath);
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   function openEmailVerification(email: string, message?: string) {
@@ -120,7 +125,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
       }
 
       setLoginPassword("");
-      router.push("/dashboard");
+      router.push(nextPath);
     } catch (err) {
       const message = err instanceof Error ? err.message : tLogin("errors.login");
 
@@ -182,7 +187,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: "/dashboard",
+        callbackURL: nextPath,
       });
     } catch {
       setNotice(tCombined("socialError"));
@@ -206,8 +211,11 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
     try {
       await authClient.signIn.magicLink({
         email,
-        callbackURL: "/dashboard",
-        errorCallbackURL: "/login",
+        callbackURL: nextPath,
+        errorCallbackURL:
+          nextPath === "/dashboard"
+            ? "/login"
+            : `/login?next=${encodeURIComponent(nextPath)}`,
       });
       setNotice(tCombined("magicLinkSent"));
     } catch (err) {
@@ -247,7 +255,7 @@ export function AuthCombinedPage({ initialTab }: AuthCombinedPageProps) {
       setVerificationEmail("");
       setSignUpStep("form");
       setNotice(tCombined("emailVerificationSuccess"));
-      router.push("/dashboard");
+      router.push(nextPath);
       router.refresh();
     } catch (err) {
       setNotice(

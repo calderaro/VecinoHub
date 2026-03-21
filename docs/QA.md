@@ -13,6 +13,7 @@
 - Sign-up requires email OTP verification before access to `/dashboard`.
 - Unverified users attempting password login receive a new verification OTP and can complete verification from `/login`.
 - Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
+- Invite deep links preserve destination through sign-in, sign-up, and email verification, and return the user to `/dashboard/invites`.
 - Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
 - Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
 - Sign in, refresh, and sign out still work with Redis-backed sessions after setting `REDIS_URL`.
@@ -48,7 +49,20 @@
 
 ## Feature Flows
 - Groups: create/edit/delete, including creating a group with an optional initial admin email, creating an empty group with no members, plus member add/remove and group role changes respect permissions.
+- Group managers can invite a registered user by email, the user receives an email, sees the invite in `/dashboard/invites`, and can accept or reject it.
+- Group managers can invite an email with no existing account, the recipient can register, and the pending invite appears in `/dashboard/invites` after sign-up.
+- Accepting an invite creates or reactivates the user’s neighborhood membership and group membership with the invited role.
+- Rejecting an invite does not create group membership.
+- Users signed in with a different email from the invite target cannot accept or reject that invite.
+- Group managers can resend and cancel pending invites for their own group only.
 - Group members remain read-only in `/dashboard/[groupId]/members`.
+- Group members can leave their own group from `/dashboard/[groupId]/members` and are redirected back to `/dashboard`.
+- Group admins can leave their own group only when another active group admin remains.
+- The last active group admin in a group cannot leave and sees a clear error message.
+- Leaving the last active group in a neighborhood also removes resident neighborhood access there.
+- Leaving one group while another active group remains in the same neighborhood keeps resident neighborhood access there.
+- Re-adding or reactivating a standalone `neighbor` neighborhood membership without an active group does not restore resident access.
+- An active `neighbor` row without an active group does not grant resident neighborhood access.
 - Group admins can update group details and manage members/roles only for their own group.
 - Neighborhood admins and platform admins can manage group members and roles in authorized neighborhoods.
 - Neighborhood admins opening `/admin/[neighborhoodId]/users` only see users who hold at least one active group membership in that neighborhood.
@@ -78,6 +92,9 @@
 
 ## UI and Accessibility
 - New/updated UI includes test ids:
+  - dashboard invites inbox and invite actions
+  - group invite creation and pending invite management
+  - group self-leave action and confirmation dialog
   - platform neighborhood creation/list
   - platform global users list/detail
   - platform neighborhood detail/edit/delete

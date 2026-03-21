@@ -38,8 +38,18 @@
 - `groups.update` (mutation, neighborhood admin/platform or group admin as allowed)
 - `groups.remove` (mutation, neighborhood admin/platform or group admin as allowed)
 - `groups.setMemberRole` (mutation, group admin/neighborhood admin/platform)
-- `groups.addMember` (mutation, group admin/neighborhood admin/platform; optional `group_member` / `group_admin` role)
+- `groups.addMember` (mutation, existing-user direct assignment path; prefer invite flow for email entry)
 - `groups.removeMember` (mutation, group admin/neighborhood admin/platform)
+- `groups.leave` (mutation, authenticated active group member leaving their own membership)
+
+### groupInvites
+- `groupInvites.listMine` (query, authenticated)
+- `groupInvites.listForGroup` (query, group admin / neighborhood admin / platform admin)
+- `groupInvites.create` (mutation, group admin / neighborhood admin / platform admin)
+- `groupInvites.resend` (mutation, same scope as create)
+- `groupInvites.cancel` (mutation, same scope as create)
+- `groupInvites.accept` (mutation, authenticated user whose account email matches the invite email)
+- `groupInvites.reject` (mutation, authenticated user whose account email matches the invite email)
 
 ### polls
 - `polls.create` / `polls.update` / `polls.close` / `polls.reopen` / `polls.reset` (mutation, neighborhood admin or platform admin)
@@ -76,6 +86,10 @@
 ## Input Notes (high level)
 - Neighborhood-scoped creates accept optional `neighborhoodId`; if omitted, services resolve from active context/admin memberships.
 - `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
+- Group invite creation accepts an email for both existing and not-yet-registered people; membership is created only on acceptance.
+- `groups.leave` inactivates the signed-in user’s membership in the target group and also inactivates the synchronized `neighbor` neighborhood membership when that was the user’s last active group in the neighborhood.
+- `groups.leave` must reject attempts by the last active `group_admin` in a group until another active admin exists.
+- For regular residents, neighborhood-scoped reads must resolve authorization through active group membership in that neighborhood; a standalone `neighbor` membership is only a synchronized support record.
 - Cross-entity writes enforce neighborhood consistency server-side.
 - `users.updateRole` accepts `user | admin | platform_admin` for compatibility during transition.
 - Fund mutations accept explicit `fundId` or `periodId` / `groupChargeId` as needed; services must validate that the referenced fund belongs to the authorized neighborhood.

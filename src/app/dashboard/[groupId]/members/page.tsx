@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { GroupMembers } from "@/components/groups/group-members";
+import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
 import { getSession } from "@/server/auth";
 
@@ -26,6 +27,11 @@ export default async function MembersPage({
       groupId: resolvedParams.groupId,
     }),
   ]);
+  const invites = group.viewerCanManage
+    ? await listGroupInvites(serviceContext, {
+        groupId: resolvedParams.groupId,
+      })
+    : { pending: [], history: [] };
   const t = await getTranslations("dashboard.membersPage");
 
   return (
@@ -49,7 +55,10 @@ export default async function MembersPage({
         <GroupMembers
           groupId={group.id}
           members={members}
+          invites={invites.pending}
           canManage={group.viewerCanManage}
+          viewerUserId={session.user.id}
+          viewerMembershipRole={group.viewerMembershipRole}
         />
       </section>
     </div>

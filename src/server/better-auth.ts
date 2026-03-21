@@ -3,11 +3,11 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, magicLink } from "better-auth/plugins";
 import { eq, sql } from "drizzle-orm";
-import nodemailer from "nodemailer";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 
+import { sendMail } from "./mail";
 import { secondaryStorage } from "./secondary-storage";
 
 const authSecret = process.env.BETTER_AUTH_SECRET;
@@ -29,19 +29,8 @@ const socialProviders = {
     : {}),
 };
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT ?? "587");
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
 const authEmailOtpExpiresInSeconds = 10 * 60;
 const authMagicLinkExpiresInSeconds = 10 * 60;
-const mailFrom =
-  process.env.MAIL_FROM ??
-  process.env.EMAIL_FROM ??
-  "VecinoHub <no-reply@vecinohub.com>";
-
-let warnedMissingSmtp = false;
-let smtpTransporter: nodemailer.Transporter | null = null;
 
 function buildBaseUsername(name: string) {
   const normalized = name
@@ -101,43 +90,6 @@ async function requireActiveUser(userId: string) {
   }
 }
 
-function getSmtpTransporter() {
-  if (!smtpHost || !smtpUser || !smtpPass) {
-    return null;
-  }
-
-  if (!smtpTransporter) {
-    smtpTransporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-  }
-
-  return smtpTransporter;
-}
-
-function requireSmtpTransporter() {
-  const transporter = getSmtpTransporter();
-
-  if (!transporter) {
-    if (!warnedMissingSmtp) {
-      warnedMissingSmtp = true;
-      console.warn(
-        "[auth] Auth email delivery is disabled because SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.",
-      );
-    }
-
-    throw new Error("Auth email delivery is not configured.");
-  }
-
-  return transporter;
-}
-
 async function sendMagicLinkEmail({
   email,
   url,
@@ -145,14 +97,13 @@ async function sendMagicLinkEmail({
   email: string;
   url: string;
 }) {
-  const transporter = requireSmtpTransporter();
-
-  await transporter.sendMail({
-    from: mailFrom,
+  await sendMail({
     to: email,
     subject: "Your VecinoHub sign-in link",
     text: `Use this link to sign in to VecinoHub: ${url}`,
     html: `<p>Use this link to sign in to <strong>VecinoHub</strong>:</p><p><a href="${url}">${url}</a></p>`,
+    errorMessage: "Auth email delivery is not configured.",
+    warningPrefix: "[auth]",
   });
 }
 
@@ -163,14 +114,13 @@ async function sendPasswordResetEmail({
   email: string;
   url: string;
 }) {
-  const transporter = requireSmtpTransporter();
-
-  await transporter.sendMail({
-    from: mailFrom,
+  await sendMail({
     to: email,
     subject: "Reset your VecinoHub password",
     text: `Use this link to reset your VecinoHub password: ${url}`,
     html: `<p>Use this link to reset your <strong>VecinoHub</strong> password:</p><p><a href="${url}">${url}</a></p>`,
+    errorMessage: "Auth email delivery is not configured.",
+    warningPrefix: "[auth]",
   });
 }
 
@@ -183,7 +133,6 @@ async function sendEmailOtp({
   otp: string;
   type: "sign-in" | "email-verification" | "forget-password";
 }) {
-  const transporter = requireSmtpTransporter();
   const purpose =
     type === "forget-password"
       ? "password reset"
@@ -191,12 +140,13 @@ async function sendEmailOtp({
         ? "email verification"
         : "sign in";
 
-  await transporter.sendMail({
-    from: mailFrom,
+  await sendMail({
     to: email,
     subject: `Your VecinoHub ${purpose} code`,
     text: `Your VecinoHub ${purpose} code is: ${otp}`,
     html: `<p>Your VecinoHub <strong>${purpose}</strong> code is:</p><p style="font-size:20px;font-weight:700;letter-spacing:0.15em">${otp}</p>`,
+    errorMessage: "Auth email delivery is not configured.",
+    warningPrefix: "[auth]",
   });
 }
 

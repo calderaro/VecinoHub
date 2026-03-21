@@ -25,6 +25,7 @@ import {
   requireNeighborhoodMember,
   requirePlatformAdmin,
 } from "./guards";
+import { syncResidentNeighborhoodMembership } from "./resident-neighborhoods";
 import type { ServiceContext } from "./types";
 import {
   idSchema,
@@ -97,7 +98,7 @@ export async function listNeighborhoodsPaged(
       membershipStatus: neighborhoodMemberships.status,
     })
     .from(neighborhoods)
-    .innerJoin(
+    .leftJoin(
       neighborhoodMemberships,
       and(
         eq(neighborhoodMemberships.neighborhoodId, neighborhoods.id),
@@ -117,8 +118,8 @@ export async function listNeighborhoodsPaged(
   return {
     items: rows.map((row) => ({
       ...row.neighborhood,
-      myRole: row.role,
-      myStatus: row.membershipStatus,
+      myRole: row.role ?? "neighbor",
+      myStatus: row.membershipStatus ?? "active",
     })),
     total: Number(totalResult[0]?.value ?? 0),
   };
@@ -309,38 +310,49 @@ export async function setNeighborhoodMemberRole(
   const { neighborhoodId, userId, role } = setMembershipRoleSchema.parse(input);
   await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
 
-  const existing = await db
-    .select({ id: neighborhoodMemberships.id })
-    .from(neighborhoodMemberships)
-    .where(
-      and(
-        eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
-        eq(neighborhoodMemberships.userId, userId)
+  return db.transaction(async (tx) => {
+    const existing = await tx
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (!existing[0]) {
-    const created = await db
-      .insert(neighborhoodMemberships)
-      .values({
+    if (!existing[0]) {
+      await tx.insert(neighborhoodMemberships).values({
         neighborhoodId,
         userId,
         role,
         status: "active",
-      })
-      .returning();
+      });
+    } else {
+      await tx
+        .update(neighborhoodMemberships)
+        .set({ role, status: "active", updatedAt: new Date() })
+        .where(eq(neighborhoodMemberships.id, existing[0].id));
+    }
 
-    return created[0];
-  }
+    if (role === "neighbor") {
+      await syncResidentNeighborhoodMembership(tx, neighborhoodId, userId);
+    }
 
-  const updated = await db
-    .update(neighborhoodMemberships)
-    .set({ role, status: "active" })
-    .where(eq(neighborhoodMemberships.id, existing[0].id))
-    .returning();
+    const finalRows = await tx
+      .select()
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
+      )
+      .limit(1);
 
-  return updated[0];
+    return finalRows[0];
+  });
 }
 
 const addMemberByEmailSchema = z.object({
@@ -461,7 +473,20 @@ export async function updateNeighborhoodMembershipStatus(
       }
     }
 
-    return membershipRows;
+    if (membershipRows[0]) {
+      await syncResidentNeighborhoodMembership(tx, neighborhoodId, userId);
+    }
+
+    return tx
+      .select()
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
+      )
+      .limit(1);
   });
 
   if (!updated[0]) {
@@ -527,7 +552,20 @@ export async function updateNeighborhoodMember(
       }
     }
 
-    return membershipRows;
+    if (membershipRows[0]) {
+      await syncResidentNeighborhoodMembership(tx, neighborhoodId, userId);
+    }
+
+    return tx
+      .select()
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.neighborhoodId, neighborhoodId),
+          eq(neighborhoodMemberships.userId, userId)
+        )
+      )
+      .limit(1);
   });
 
   if (!updated[0]) {

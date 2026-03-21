@@ -147,16 +147,19 @@ If seeding does not create users, create them via the UI in the Auth runs.
 ### Test Run: Group Admin Manages Own Group
 Preconditions:
 - Logged in as a user with an active `group_admin` membership for the target group.
+- A second existing user account exists and is not yet an active member of the target group.
 
 Steps:
 1. Open `/dashboard/{groupId}/members`.
 2. Verify `group-members-add` is visible.
-3. Add an existing user with `group-members-add`, `group-members-add-role`, and `group-members-add-submit`.
-4. Change that user via `group-members-role-{userId}`.
-5. Remove that user with the remove action.
+3. Send an invite with `group-members-add`, `group-members-add-role`, and `group-members-add-submit`.
+4. Sign in as the invited user and accept the invite in `/dashboard/invites`.
+5. Sign back in as the group admin.
+6. Change that user via `group-members-role-{userId}`.
+7. Remove that user with the remove action.
 
 Expected:
-- The group admin can add/remove members and switch `group_member` / `group_admin` roles only inside their own group.
+- The group admin can invite users, remove members, and switch `group_member` / `group_admin` roles only inside their own group.
 
 ### Test Run: Group Member Is Read Only
 Preconditions:
@@ -171,6 +174,59 @@ Steps:
 Expected:
 - The group member can read the roster but cannot change membership or roles.
 
+### Test Run: Group Member Leaves Own Group
+Preconditions:
+- Logged in as a user with an active `group_member` membership for the target group.
+- The user belongs to at least one other active group, or the dashboard empty state is acceptable for the run.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Verify the self-service leave control is visible.
+3. Trigger the leave action and confirm it in the dialog.
+4. Verify redirect to `/dashboard`.
+5. Re-open the previous group route directly.
+
+Expected:
+- The leave action succeeds, the user loses access to the former group, and the previous group members page no longer opens for that user.
+
+### Test Run: Leaving Last Group Revokes Resident Neighborhood Access
+Preconditions:
+- Logged in as a user whose only active group in the target neighborhood is the selected group.
+- The user is not a `neighborhood_admin` in that neighborhood.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Leave the group and confirm.
+3. Attempt to open the previous group route directly.
+4. Attempt to open another resident page in the same neighborhood by URL if one exists.
+
+Expected:
+- The user cannot access any resident neighborhood surface in that neighborhood after leaving the last active group there.
+
+### Test Run: Last Group Admin Cannot Leave
+Preconditions:
+- Logged in as the only active `group_admin` for the target group.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Trigger the leave action and confirm it.
+
+Expected:
+- The mutation is rejected with a clear error instructing the user to assign another group admin first, and the membership remains active.
+
+### Test Run: Standalone Neighbor Membership Does Not Restore Resident Access
+Preconditions:
+- A user previously left or was removed from their last active group in a neighborhood.
+- An admin reactivates or recreates a `neighbor` membership for that user without adding them to a group.
+
+Steps:
+1. Sign in as the affected user.
+2. Attempt to open `/dashboard`.
+3. Attempt to open a resident route in the former neighborhood directly.
+
+Expected:
+- The user still lacks resident access until an active group membership is restored.
+
 ### Test Run: Neighborhood Admin Manages Group Roles
 Preconditions:
 - Logged in as a `neighborhood_admin` for the target group neighborhood.
@@ -182,6 +238,42 @@ Steps:
 
 Expected:
 - The updated group role persists, even when the acting user is not a member of that group.
+
+## Feature: Group Invitations
+
+### Test Run: Existing User Accepts Group Invite
+Preconditions:
+- Logged in as a user with `group_admin`, `neighborhood_admin`, or `platform_admin` access to the target group.
+- A second existing user account exists and is not yet an active member of the target group.
+
+Steps:
+1. Open `/dashboard/{groupId}/members`.
+2. Open the invite dialog.
+3. Fill the invite email with the second user account and choose a role.
+4. Submit the invite.
+5. Sign out and sign in as the invited user.
+6. Open `/dashboard/invites`.
+7. Accept the invite.
+8. Open `/dashboard` and verify the group is now available.
+
+Expected:
+- The invited user sees the pending invite, acceptance succeeds, and the group membership becomes active only after acceptance.
+
+### Test Run: New User Registers From Invite
+Preconditions:
+- Logged in as a user with permission to manage the target group.
+- An email address that does not yet belong to any VecinoHub account is available.
+
+Steps:
+1. Send a group invite to the unused email address.
+2. Open the invite email link or navigate to `/dashboard/invites?invite=<token>` while signed out.
+3. Verify redirect to `/login` preserves the destination.
+4. Complete sign-up and email OTP verification with that email.
+5. Verify redirect back to `/dashboard/invites`.
+6. Accept the invite.
+
+Expected:
+- The newly registered user lands in the invite inbox after verification, can accept the invite, and then gains access to the invited group.
 
 ## Feature: Dashboard Localization
 
