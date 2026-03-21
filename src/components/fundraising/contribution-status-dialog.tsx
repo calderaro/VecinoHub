@@ -63,6 +63,7 @@ export function ContributionStatusDialog({
                 onChange={(event) =>
                   setStatus(event.target.value as Contribution["status"])
                 }
+                data-testid="contribution-status-select"
               >
                 <option value="submitted">{t("statuses.submitted")}</option>
                 <option value="confirmed">{t("statuses.confirmed")}</option>

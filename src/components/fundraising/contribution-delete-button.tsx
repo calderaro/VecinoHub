@@ -24,6 +24,7 @@ export function ContributionDeleteButton({
       type="button"
       onClick={() => deleteContribution.mutate({ contributionId })}
       disabled={deleteContribution.isPending}
+      data-testid={`contribution-delete-${contributionId}`}
     >
       {deleteContribution.isPending ? t("deleting") : t("delete")}
     </button>

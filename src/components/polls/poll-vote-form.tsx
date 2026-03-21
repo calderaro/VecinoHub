@@ -53,6 +53,7 @@ export function PollVoteForm({
   return (
     <form
       className="mt-4 grid gap-3"
+      data-testid="poll-vote-form"
       onSubmit={(event) => {
         event.preventDefault();
         setError(null);
@@ -84,6 +85,7 @@ export function PollVoteForm({
                 checked={optionId === option.id}
                 onChange={() => setOptionId(option.id)}
                 className="mt-1 accent-teal-600"
+                data-testid={`poll-vote-option-${option.id}`}
               />
               <div className="space-y-1">
                 <div className="font-medium">{option.label}</div>
@@ -123,6 +125,7 @@ export function PollVoteForm({
         className="w-full rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={!isValid || vote.isPending}
+        data-testid="poll-vote-submit"
       >
         {vote.isPending ? t("submitting") : t("submit")}
       </button>

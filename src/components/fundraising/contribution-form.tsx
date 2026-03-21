@@ -73,6 +73,7 @@ export function ContributionForm({
   return (
     <form
       className="mx-auto mt-4 grid w-full max-w-2xl gap-3"
+      data-testid="contribution-form"
       onSubmit={(event) => {
         event.preventDefault();
         setError(null);

@@ -98,6 +98,7 @@ export function PollOptionsManager({
             <div
               key={option.id}
               className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900"
+              data-testid={`poll-option-${option.id}`}
             >
               <div className="space-y-1">
                 <div className="font-medium">{option.label}</div>
@@ -118,6 +119,7 @@ export function PollOptionsManager({
                   type="button"
                   onClick={() => openEdit(option)}
                   disabled={!canEdit}
+                  data-testid={`poll-options-edit-${option.id}`}
                 >
                   {t("edit")}
                 </button>
@@ -126,6 +128,7 @@ export function PollOptionsManager({
                   type="button"
                   onClick={() => setDeleteOption(option)}
                   disabled={!canEdit}
+                  data-testid={`poll-options-delete-${option.id}`}
                 >
                   {t("delete")}
                 </button>
@@ -149,6 +152,7 @@ export function PollOptionsManager({
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   required
+                  data-testid="poll-options-label"
                 />
               </label>
               <label className="space-y-2 text-sm text-stone-500">
@@ -157,6 +161,7 @@ export function PollOptionsManager({
                   className="mt-2 min-h-[80px] w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
+                  data-testid="poll-options-description"
                 />
               </label>
               <label className="space-y-2 text-sm text-stone-500">
@@ -166,6 +171,7 @@ export function PollOptionsManager({
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   inputMode="decimal"
+                  data-testid="poll-options-amount"
                 />
               </label>
             </div>
@@ -214,6 +220,7 @@ export function PollOptionsManager({
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   required
+                  data-testid="poll-options-label"
                 />
               </label>
               <label className="space-y-2 text-sm text-stone-500">
@@ -222,6 +229,7 @@ export function PollOptionsManager({
                   className="mt-2 min-h-[80px] w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
+                  data-testid="poll-options-description"
                 />
               </label>
               <label className="space-y-2 text-sm text-stone-500">
@@ -231,6 +239,7 @@ export function PollOptionsManager({
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   inputMode="decimal"
+                  data-testid="poll-options-amount"
                 />
               </label>
             </div>
@@ -280,12 +289,14 @@ export function PollOptionsManager({
                 type="button"
                 onClick={() => setDeleteOption(null)}
                 disabled={removeOption.isPending}
+                data-testid="poll-options-delete-cancel"
               >
                 {t("cancel")}
               </button>
               <button
                 className="rounded-lg border border-rose-300 px-4 py-2 text-sm text-red-700 hover:border-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
                 type="button"
+                data-testid="poll-options-delete-confirm"
                 onClick={() =>
                   removeOption.mutate({ optionId: deleteOption.id })
                 }

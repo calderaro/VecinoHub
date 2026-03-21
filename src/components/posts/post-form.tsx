@@ -232,6 +232,7 @@ export function PostForm({
                     name="publish-setting"
                     checked={publishSetting === "immediate"}
                     onChange={() => setPublishSetting("immediate")}
+                    data-testid="post-form-publish-immediate"
                   />
                   <div>
                     <p className="text-sm font-medium text-stone-800">Publish immediately</p>
@@ -248,6 +249,7 @@ export function PostForm({
                     name="publish-setting"
                     checked={publishSetting === "draft"}
                     onChange={() => setPublishSetting("draft")}
+                    data-testid="post-form-publish-draft"
                   />
                   <div>
                     <p className="text-sm font-medium text-stone-800">Save as draft</p>
@@ -262,6 +264,7 @@ export function PostForm({
                     name="publish-setting"
                     checked={publishSetting === "scheduled"}
                     onChange={() => setPublishSetting("scheduled")}
+                    data-testid="post-form-publish-scheduled"
                   />
                   <div>
                     <p className="text-sm font-medium text-stone-800">Schedule for later</p>
