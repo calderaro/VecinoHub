@@ -13,5 +13,7 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
     setupFiles: ["./tests/setup-env.ts"],
+    include: ["tests/**/*.test.ts"],
+    exclude: ["tests/e2e/**", "playwright/**", "node_modules/**", ".tmp/**"],
   },
 });

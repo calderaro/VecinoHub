@@ -27,7 +27,7 @@
 ## Folder Layout (Proposed)
 - `src/app/`: Next.js routes and pages.
 - `src/server/trpc/`: tRPC router, context, and middleware.
-- `src/services/`: domain services for users, groups, polls, fundraising.
+- `src/services/`: domain services for users, groups, polls, fundraising, funds.
 - `src/db/`: Drizzle config, schema, migrations.
 - `src/components/`: shared UI components.
 - `src/lib/`: shared utilities and helpers.

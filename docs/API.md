@@ -53,6 +53,18 @@
 - `fundraising.confirmContribution` / `fundraising.rejectContribution` / `fundraising.updateContributionStatus` (mutation, neighborhood admin or platform admin)
 - list/detail/progress/stats queries are neighborhood scoped
 
+### funds
+- `funds.listFunds` / `funds.getOverview` / `funds.listPeriods` / `funds.getPeriodDetail` / `funds.listMovements` (query, neighborhood scoped)
+- `funds.getGroupSummary` (query, group member scoped)
+- `funds.createFund` / `funds.updateFund` (mutation, neighborhood admin or platform admin)
+- `funds.createChargeTemplate` / `funds.updateChargeTemplate` (mutation, neighborhood admin or platform admin)
+- `funds.createChargePeriod` / `funds.generateChargePeriod` (mutation, neighborhood admin or platform admin)
+- `funds.submitPayment` (mutation, group member with scope checks)
+- `funds.confirmPayment` / `funds.rejectPayment` (mutation, neighborhood admin or platform admin)
+- `funds.recordExpense` / `funds.recordManualIncome` / `funds.recordAdjustment` (mutation, neighborhood admin or platform admin)
+- `funds.waiveGroupCharge` / `funds.reverseMovement` (mutation, neighborhood admin or platform admin)
+- all fund reads and writes are scoped by `fundId` within the authorized neighborhood
+
 ### events
 - `events.list` / `events.get` (query, neighborhood scoped)
 - `events.create` / `events.update` / `events.remove` (mutation, neighborhood admin or platform admin)
@@ -66,3 +78,5 @@
 - `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
 - Cross-entity writes enforce neighborhood consistency server-side.
 - `users.updateRole` accepts `user | admin | platform_admin` for compatibility during transition.
+- Fund mutations accept explicit `fundId` or `periodId` / `groupChargeId` as needed; services must validate that the referenced fund belongs to the authorized neighborhood.
+- Fund payment submissions must validate active group membership and ensure allocations target charges within the same fund and neighborhood.

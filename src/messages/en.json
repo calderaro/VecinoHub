@@ -156,6 +156,7 @@
       "groups": "Groups",
       "polls": "Polls",
       "fundraising": "Fundraising",
+      "funds": "Funds",
       "events": "Events",
       "posts": "Posts"
     },
@@ -175,6 +176,11 @@
           "open": "Open",
           "paused": "Paused",
           "pending": "Pending"
+        },
+        "funds": {
+          "active": "Active",
+          "archived": "Archived",
+          "overdue": "Overdue"
         },
         "events": {
           "upcoming": "Upcoming",
@@ -895,6 +901,175 @@
       "cancel": "Cancel",
       "deleting": "Deleting...",
       "deletedToast": "Group deleted."
+    },
+    "funds": {
+      "list": {
+        "title": "Neighborhood funds",
+        "subtitle": "Track every named fund, current balance, open periods, and pending payments for this neighborhood.",
+        "newFund": "New fund",
+        "empty": "No funds created yet.",
+        "table": {
+          "name": "Fund",
+          "status": "Status",
+          "balance": "Balance",
+          "periods": "Open periods",
+          "pending": "Pending payments"
+        }
+      },
+      "formPage": {
+        "createTitle": "Create fund",
+        "createSubtitle": "Set up a named neighborhood fund with its own balance and payment periods.",
+        "editTitle": "Edit fund",
+        "editSubtitle": "Update this fund's settings and visibility status."
+      },
+      "form": {
+        "created": "Fund created.",
+        "updated": "Fund updated.",
+        "validation": "Fund name is required.",
+        "saveError": "Unable to save fund.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save",
+        "fields": {
+          "name": "Fund name",
+          "namePlaceholder": "Maintenance fund",
+          "description": "Description",
+          "descriptionPlaceholder": "What this fund is for and how neighbors should use it.",
+          "currency": "Currency",
+          "status": "Status"
+        }
+      },
+      "detail": {
+        "noDescription": "No description yet.",
+        "actions": {
+          "periods": "Periods",
+          "settings": "Settings",
+          "edit": "Edit fund"
+        },
+        "stats": {
+          "balance": "Current balance",
+          "openPeriods": "Open periods",
+          "pendingPayments": "Pending payments",
+          "overdueCharges": "Overdue charges"
+        },
+        "recentPeriods": {
+          "title": "Recent periods",
+          "empty": "No charge periods created yet."
+        },
+        "recentMovements": {
+          "title": "Recent movements",
+          "empty": "No fund movements yet."
+        },
+        "templates": {
+          "title": "Charge templates",
+          "empty": "No templates configured yet."
+        }
+      },
+      "periods": {
+        "title": "{name} periods",
+        "subtitle": "Review each billing period, expected collections, and current payment progress.",
+        "newPeriod": "New period",
+        "empty": "No periods created yet.",
+        "table": {
+          "title": "Period",
+          "status": "Status",
+          "dueDate": "Due date",
+          "expected": "Expected",
+          "collected": "Collected"
+        }
+      },
+      "periodFormPage": {
+        "title": "Create charge period",
+        "subtitle": "Create a manual period or generate one from an active template."
+      },
+      "periodForm": {
+        "created": "Charge period created.",
+        "validationDueDate": "Due date is required.",
+        "validationManual": "Title and amount per group are required for manual periods.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Create period",
+        "fields": {
+          "template": "Template",
+          "manualOption": "Manual period",
+          "title": "Title",
+          "titleOptional": "Leave blank to use the template title",
+          "titleRequired": "March 2026 fee",
+          "description": "Description",
+          "descriptionPlaceholder": "Optional details for this period.",
+          "amountPerGroup": "Amount per group",
+          "dueDate": "Due date"
+        }
+      },
+      "periodDetail": {
+        "chargesTitle": "Group charges",
+        "paymentsTitle": "Submitted payments",
+        "paymentsEmpty": "No payments submitted for this period yet.",
+        "table": {
+          "group": "Group",
+          "status": "Status",
+          "due": "Amount due",
+          "paid": "Paid",
+          "remaining": "Remaining"
+        }
+      },
+      "settings": {
+        "title": "{name} settings",
+        "subtitle": "Manage recurring templates and register manual balance adjustments.",
+        "templatesTitle": "Recurring templates",
+        "templatesEmpty": "No recurring templates configured yet.",
+        "adjustmentTitle": "Manual adjustment"
+      },
+      "templateForm": {
+        "created": "Template created.",
+        "validation": "Title, default amount, and start date are required.",
+        "saving": "Saving...",
+        "save": "Create template",
+        "fields": {
+          "title": "Template title",
+          "frequency": "Frequency",
+          "defaultAmount": "Default amount per group",
+          "dueDayOfMonth": "Due day of month",
+          "startsOn": "Starts on",
+          "endsOn": "Ends on",
+          "description": "Description"
+        },
+        "frequency": {
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "annual": "Annual",
+          "oneOff": "One-off"
+        }
+      },
+      "movementFormPage": {
+        "expenseTitle": "Record expense",
+        "expenseSubtitle": "Log an outgoing movement for this fund.",
+        "incomeTitle": "Record manual income",
+        "incomeSubtitle": "Log a credit that did not come from a resident payment."
+      },
+      "movementForm": {
+        "saved": "Movement recorded.",
+        "validation": "Amount and description are required.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save movement",
+        "fields": {
+          "amount": "Amount",
+          "entrySide": "Entry side",
+          "effectiveAt": "Effective date",
+          "description": "Description"
+        },
+        "entrySide": {
+          "credit": "Credit",
+          "debit": "Debit"
+        }
+      },
+      "paymentActions": {
+        "confirmed": "Payment confirmed.",
+        "rejected": "Payment rejected.",
+        "confirm": "Confirm",
+        "reject": "Reject"
+      }
     }
   },
   "platform": {
@@ -994,7 +1169,15 @@
     "submitted": "Submitted",
     "confirmed": "Confirmed",
     "rejected": "Rejected",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "paused": "Paused",
+    "unpaid": "Unpaid",
+    "paid": "Paid",
+    "partial": "Partial",
+    "overdue": "Overdue",
+    "waived": "Waived",
+    "archived": "Archived",
+    "cancelled": "Cancelled"
   },
   "dashboard": {
     "empty": {
@@ -1044,6 +1227,16 @@
         "due": "Due {date}",
         "daysLeft": "{count} day left{count, plural, one {} other {s}}"
       },
+      "funds": {
+        "title": "Neighborhood Funds",
+        "count": "{count} fund{count, plural, one {} other {s}} available",
+        "viewAll": "View all funds",
+        "empty": "No funds available.",
+        "emptyHint": "Shared neighborhood funds will appear here once the admin team configures them.",
+        "balance": "Balance: {amount}",
+        "periods": "{count} open period{count, plural, one {} other {s}}",
+        "pending": "{count} pending payment{count, plural, one {} other {s}}"
+      },
       "members": {
         "title": "Group Members",
         "count": "{count} member{count, plural, one {} other {s}} in this group",
@@ -1061,6 +1254,7 @@
       "members": "Members",
       "polls": "Polls",
       "fundraising": "Fundraising",
+      "funds": "Funds",
       "events": "Events",
       "posts": "Posts"
     },
@@ -1261,6 +1455,70 @@
     "contributionDelete": {
       "delete": "Delete",
       "deleting": "Deleting"
+    },
+    "funds": {
+      "list": {
+        "label": "Shared money",
+        "title": "Funds",
+        "subtitle": "Review each neighborhood fund, current balance, and payment progress for your group.",
+        "empty": "No funds available yet.",
+        "noDescription": "No description yet.",
+        "balance": "Current balance",
+        "periods": "Open periods",
+        "pending": "Pending payments"
+      },
+      "detail": {
+        "label": "Neighborhood fund",
+        "noDescription": "No description yet.",
+        "payNow": "Pay now",
+        "stats": {
+          "balance": "Current balance",
+          "outstanding": "My outstanding amount",
+          "openPeriods": "Open periods"
+        },
+        "myChargesTitle": "My charges",
+        "myChargesEmpty": "Your group has no charges for this fund yet.",
+        "movementsTitle": "Recent movements",
+        "movementsEmpty": "No movements recorded yet."
+      },
+      "periodDetail": {
+        "label": "Charge period",
+        "payNow": "Pay this period",
+        "myChargeTitle": "My charge",
+        "amountDue": "Amount due",
+        "amountPaid": "Amount paid",
+        "remaining": "Remaining balance",
+        "boardTitle": "Neighborhood payment board",
+        "table": {
+          "group": "Group",
+          "status": "Status",
+          "paid": "Paid",
+          "remaining": "Remaining"
+        }
+      },
+      "paymentPage": {
+        "title": "Submit payment",
+        "subtitle": "Register your payment for {period}."
+      },
+      "paymentForm": {
+        "submitted": "Payment submitted for review.",
+        "validation": "Amount and payment date are required.",
+        "referenceRequired": "A transfer reference is required for wire transfers.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Submit payment",
+        "fields": {
+          "method": "Payment method",
+          "amount": "Amount",
+          "paidAt": "Payment date",
+          "reference": "Transfer reference",
+          "notes": "Notes"
+        },
+        "methods": {
+          "cash": "Cash",
+          "wire_transfer": "Wire transfer"
+        }
+      }
     }
   }
 }

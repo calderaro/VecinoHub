@@ -10,6 +10,33 @@ export const neighborhoodStatusSchema = z.enum(["active", "inactive"]);
 export const statusSchema = z.enum(["active", "inactive"]);
 export const preferredLanguageSchema = z.enum(["es", "en"]);
 export const contributionMethodSchema = z.enum(["cash", "wire_transfer"]);
+export const fundStatusSchema = z.enum(["active", "archived"]);
+export const fundTemplateStatusSchema = z.enum(["active", "paused", "archived"]);
+export const fundChargeFrequencySchema = z.enum([
+  "monthly",
+  "quarterly",
+  "annual",
+  "one_off",
+]);
+export const fundChargePeriodStatusSchema = z.enum(["open", "closed", "cancelled"]);
+export const fundGroupChargeStatusSchema = z.enum([
+  "unpaid",
+  "partial",
+  "paid",
+  "overdue",
+  "waived",
+]);
+export const fundPaymentStatusSchema = z.enum(["submitted", "confirmed", "rejected"]);
+export const fundPaymentMethodSchema = z.enum(["cash", "wire_transfer"]);
+export const fundMovementTypeSchema = z.enum([
+  "opening_balance",
+  "payment",
+  "expense",
+  "manual_income",
+  "adjustment",
+  "reversal",
+]);
+export const fundEntrySideSchema = z.enum(["credit", "debit"]);
 export const usernameSchema = z
   .string()
   .trim()

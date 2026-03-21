@@ -36,6 +36,7 @@
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
 - Residents cannot open `/dashboard/[groupId]/fundraising/[campaignId]` for a campaign outside an active neighborhood/group relationship.
+- Residents cannot open `/dashboard/[groupId]/fund/[fundId]` or fund period/payment routes for a fund outside an active neighborhood/group relationship.
 - Group member operations reject cross-neighborhood group/user combinations.
 - Removing or inactivating a neighborhood membership immediately revokes stale group-admin manage access in that neighborhood.
 - Removing or inactivating a neighborhood membership also revokes stale read access to group detail and member lists.
@@ -62,6 +63,13 @@
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Resident campaign detail only shows contributions submitted by the signed-in user for the selected group.
 - Former or inactive group memberships do not expose contributions in fundraising detail pages.
+- Funds: neighborhood admin can create multiple named funds in an authorized neighborhood.
+- Funds: neighborhood admin can create due periods, record expenses/manual income/adjustments, and confirm/reject fund payments.
+- Fund balances are derived from confirmed movements only; rejected payments do not change balance.
+- Residents can view fund balance, confirmed movements, and group-level paid/unpaid status for their authorized neighborhood only.
+- Residents can submit fund payments only for their own active groups.
+- Partial fund payments move the group charge to `partial`, full allocations move it to `paid`, and overdue periods display correctly after due date.
+- Residents cannot see payer identity on fund status boards; admins can see submitter and confirmer details.
 - Re-adding a neighborhood membership does not automatically restore prior group memberships or group-admin access.
 - Events: create/edit/delete and list/detail render correctly.
 - Posts: create/edit/publish/unpublish/delete flows work.
@@ -75,10 +83,14 @@
   - platform neighborhood detail/edit/delete
   - platform neighborhood membership management
   - neighborhood admin members management
+  - neighborhood fund list/detail/periods/movements
+  - resident fund list/detail/payment flow
   - neighborhood switcher entries in `UserMenu`
 - Keyboard close (`Esc`) still closes `UserMenu`.
 - Responsive checks on:
   - `/dashboard/[groupId]`
+  - `/dashboard/[groupId]/fund`
   - `/profile`
   - `/admin`
+  - `/admin/[neighborhoodId]/fund`
   - `/platform`

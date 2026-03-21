@@ -12,7 +12,8 @@ Current seed creates multi-neighborhood baseline data:
   - `jardines-del-sur`
 - Neighborhood memberships including neighborhood admins and neighbors.
 - 2 groups (one per neighborhood) with active memberships.
-- Poll/campaign/events/posts across neighborhoods.
+- Poll/campaign/fund/events/posts coverage across neighborhoods.
+- Named neighborhood funds with seeded periods, charges, payments, and ledger movements.
 
 ## Local Setup
 1. `npm run db:up`

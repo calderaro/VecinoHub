@@ -40,6 +40,48 @@ export const campaignStatusEnum = pgEnum("campaign_status", [
   "open",
   "closed",
 ]);
+export const fundStatusEnum = pgEnum("fund_status", ["active", "archived"]);
+export const fundTemplateStatusEnum = pgEnum("fund_template_status", [
+  "active",
+  "paused",
+  "archived",
+]);
+export const fundChargeFrequencyEnum = pgEnum("fund_charge_frequency", [
+  "monthly",
+  "quarterly",
+  "annual",
+  "one_off",
+]);
+export const fundChargePeriodStatusEnum = pgEnum("fund_charge_period_status", [
+  "open",
+  "closed",
+  "cancelled",
+]);
+export const fundGroupChargeStatusEnum = pgEnum("fund_group_charge_status", [
+  "unpaid",
+  "partial",
+  "paid",
+  "overdue",
+  "waived",
+]);
+export const fundPaymentStatusEnum = pgEnum("fund_payment_status", [
+  "submitted",
+  "confirmed",
+  "rejected",
+]);
+export const fundPaymentMethodEnum = pgEnum("fund_payment_method", [
+  "cash",
+  "wire_transfer",
+]);
+export const fundMovementTypeEnum = pgEnum("fund_movement_type", [
+  "opening_balance",
+  "payment",
+  "expense",
+  "manual_income",
+  "adjustment",
+  "reversal",
+]);
+export const fundEntrySideEnum = pgEnum("fund_entry_side", ["credit", "debit"]);
 export const postStatusEnum = pgEnum("post_status", ["draft", "published"]);
 
 
@@ -321,6 +363,201 @@ export const fundraisingContributions = pgTable(
   (table) => [
     index("fundraising_contributions_campaign_id_idx").on(table.campaignId),
     index("fundraising_contributions_group_id_idx").on(table.groupId),
+  ]
+);
+
+export const neighborhoodFunds = pgTable(
+  "neighborhood_funds",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    currencyCode: text("currency_code").notNull().default("MXN"),
+    status: fundStatusEnum("status").notNull().default("active"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("neighborhood_funds_neighborhood_id_idx").on(table.neighborhoodId),
+    uniqueIndex("neighborhood_funds_neighborhood_name_unique").on(
+      table.neighborhoodId,
+      sql`lower(${table.name})`
+    ),
+  ]
+);
+
+export const fundChargeTemplates = pgTable(
+  "fund_charge_templates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fundId: uuid("fund_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    status: fundTemplateStatusEnum("status").notNull().default("active"),
+    frequency: fundChargeFrequencyEnum("frequency").notNull(),
+    defaultAmount: numeric("default_amount", { precision: 12, scale: 2 }).notNull(),
+    dueDayOfMonth: integer("due_day_of_month"),
+    startsOn: date("starts_on").notNull(),
+    endsOn: date("ends_on"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("fund_charge_templates_fund_id_idx").on(table.fundId),
+    index("fund_charge_templates_neighborhood_id_idx").on(table.neighborhoodId),
+  ]
+);
+
+export const fundChargePeriods = pgTable(
+  "fund_charge_periods",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fundId: uuid("fund_id").notNull(),
+    templateId: uuid("template_id"),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    amountPerGroup: numeric("amount_per_group", { precision: 12, scale: 2 }).notNull(),
+    dueDate: date("due_date").notNull(),
+    status: fundChargePeriodStatusEnum("status").notNull().default("open"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("fund_charge_periods_fund_id_idx").on(table.fundId),
+    index("fund_charge_periods_template_id_idx").on(table.templateId),
+    index("fund_charge_periods_neighborhood_id_idx").on(table.neighborhoodId),
+    index("fund_charge_periods_due_date_idx").on(table.dueDate),
+  ]
+);
+
+export const fundGroupCharges = pgTable(
+  "fund_group_charges",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    periodId: uuid("period_id").notNull(),
+    groupId: uuid("group_id").notNull(),
+    amountDue: numeric("amount_due", { precision: 12, scale: 2 }).notNull(),
+    amountPaid: numeric("amount_paid", { precision: 12, scale: 2 })
+      .notNull()
+      .default("0"),
+    status: fundGroupChargeStatusEnum("status").notNull().default("unpaid"),
+    waivedBy: uuid("waived_by"),
+    waivedReason: text("waived_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("fund_group_charges_period_group_unique").on(
+      table.periodId,
+      table.groupId
+    ),
+    index("fund_group_charges_period_id_idx").on(table.periodId),
+    index("fund_group_charges_group_id_idx").on(table.groupId),
+    index("fund_group_charges_status_idx").on(table.status),
+  ]
+);
+
+export const fundPaymentSubmissions = pgTable(
+  "fund_payment_submissions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fundId: uuid("fund_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    groupChargeId: uuid("group_charge_id").notNull(),
+    groupId: uuid("group_id").notNull(),
+    submittedBy: uuid("submitted_by").notNull(),
+    method: fundPaymentMethodEnum("method").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    paidAt: date("paid_at").notNull(),
+    reference: text("reference"),
+    notes: text("notes"),
+    status: fundPaymentStatusEnum("status").notNull().default("submitted"),
+    confirmedBy: uuid("confirmed_by"),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    rejectionReason: text("rejection_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("fund_payment_submissions_fund_id_idx").on(table.fundId),
+    index("fund_payment_submissions_neighborhood_id_idx").on(table.neighborhoodId),
+    index("fund_payment_submissions_group_charge_id_idx").on(table.groupChargeId),
+    index("fund_payment_submissions_group_id_idx").on(table.groupId),
+    index("fund_payment_submissions_status_idx").on(table.status),
+  ]
+);
+
+export const fundPaymentAllocations = pgTable(
+  "fund_payment_allocations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    paymentId: uuid("payment_id").notNull(),
+    groupChargeId: uuid("group_charge_id").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("fund_payment_allocations_payment_charge_unique").on(
+      table.paymentId,
+      table.groupChargeId
+    ),
+    index("fund_payment_allocations_payment_id_idx").on(table.paymentId),
+    index("fund_payment_allocations_group_charge_id_idx").on(table.groupChargeId),
+  ]
+);
+
+export const fundMovements = pgTable(
+  "fund_movements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fundId: uuid("fund_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    type: fundMovementTypeEnum("type").notNull(),
+    entrySide: fundEntrySideEnum("entry_side").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    effectiveAt: timestamp("effective_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    description: text("description").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceId: uuid("source_id"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("fund_movements_fund_id_idx").on(table.fundId),
+    index("fund_movements_neighborhood_id_idx").on(table.neighborhoodId),
+    index("fund_movements_effective_at_idx").on(table.effectiveAt),
   ]
 );
 

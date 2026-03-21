@@ -1,6 +1,7 @@
 export { DashboardHeader } from "./DashboardHeader";
 export { DashboardIntro } from "./DashboardIntro";
 export { EventsCard } from "./EventsCard";
+export { FundsCard } from "./FundsCard";
 export { FundraisingCard } from "./FundraisingCard";
 export { MembersCard } from "./MembersCard";
 export { NoGroupState } from "./NoGroupState";

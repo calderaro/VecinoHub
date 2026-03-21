@@ -84,6 +84,10 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [ ] User: view contribution status history.
 - [x] Pages: use services directly for SSR read-only fundraising data.
 
+## 8.1) Neighborhood Fund Management
+- [ ] Implement multi-fund neighborhood fund management MVP.
+- [ ] Follow the detailed execution plan in `docs/FUND_MANAGEMENT_IMPLEMENTATION_PLAN.md`.
+
 ## 9) UI/UX Pages
 - [x] Auth pages (login, register).
 - [x] Dashboard with role-based widgets.

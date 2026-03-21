@@ -20,6 +20,7 @@ export function AppNav({ basePath }: { basePath: string }) {
       label: t("fundraising"),
       testId: "nav-fundraising",
     },
+    { href: `${basePath}/fund`, label: t("funds"), testId: "nav-funds" },
     { href: `${basePath}/events`, label: t("events"), testId: "nav-events" },
     { href: `${basePath}/posts`, label: t("posts"), testId: "nav-posts" },
   ];

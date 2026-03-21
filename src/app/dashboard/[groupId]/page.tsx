@@ -5,6 +5,7 @@ import { ChevronRightIcon } from "lucide-react";
 import {
   DashboardIntro,
   EventsCard,
+  FundsCard,
   FundraisingCard,
   MembersCard,
   PollsCard,
@@ -20,6 +21,7 @@ import {
   toPostSnippet,
 } from "@/components/dashboard-v2/mappers";
 import { listEventsPaged } from "@/services/events";
+import { listNeighborhoodFunds } from "@/services/funds";
 import { listCampaignsPaged } from "@/services/fundraising";
 import { getGroupById, listGroupMembers } from "@/services/groups";
 import { listPollsPaged } from "@/services/polls";
@@ -67,6 +69,9 @@ export default async function DashboardPage({
     status: "open",
     limit: 5,
     offset: 0,
+  });
+  const funds = await listNeighborhoodFunds(scopedContext, {
+    neighborhoodId: group.neighborhoodId,
   });
 
   const locale = await getLocale();
@@ -138,6 +143,17 @@ export default async function DashboardPage({
       urgencyLabel,
     };
   });
+
+  const fundItems = funds.slice(0, 5).map((fund) => ({
+    id: fund.id,
+    href: `/dashboard/${resolvedParams.groupId}/fund/${fund.id}`,
+    title: fund.name,
+    balanceLabel: t("funds.balance", {
+      amount: formatDashboardNumber(fund.balance, locale),
+    }),
+    periodsLabel: t("funds.periods", { count: fund.openPeriods }),
+    statusLabel: t("funds.pending", { count: fund.pendingPayments }),
+  }));
 
   const memberItems = members.slice(0, 5).map((member) => {
     const name = member.name ?? member.username ?? member.email;
@@ -212,6 +228,17 @@ export default async function DashboardPage({
           totalCount={campaigns.total}
           items={fundraisingItems}
           testId="dashboard-overview-fundraising"
+        />
+
+        <FundsCard
+          title={t("funds.title")}
+          viewAllLabel={t("funds.viewAll")}
+          viewAllHref={`/dashboard/${resolvedParams.groupId}/fund`}
+          emptyTitle={t("funds.empty")}
+          emptyBody={t("funds.emptyHint")}
+          totalCount={funds.length}
+          items={fundItems}
+          testId="dashboard-overview-funds"
         />
 
         <div className="lg:col-span-2">

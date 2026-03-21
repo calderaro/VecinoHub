@@ -8,9 +8,16 @@ import {
   neighborhoodMemberships,
   neighborhoods,
   events,
+  fundChargePeriods,
+  fundChargeTemplates,
+  fundGroupCharges,
+  fundMovements,
+  fundPaymentAllocations,
+  fundPaymentSubmissions,
   posts,
   fundraisingContributions,
   fundraisingCampaigns,
+  neighborhoodFunds,
   pollOptions,
   polls,
   users,
@@ -280,6 +287,159 @@ async function main() {
       method: "cash",
       amount: "150.00",
       status: "submitted",
+    },
+  ]);
+
+  const today = new Date();
+  const formatDate = (value: Date) => value.toISOString().split("T")[0] ?? "";
+  const addDays = (value: Date, days: number) =>
+    new Date(value.getTime() + 1000 * 60 * 60 * 24 * days);
+
+  const [maintenanceFund, reserveFund] = await db
+    .insert(neighborhoodFunds)
+    .values([
+      {
+        name: "Maintenance Fund",
+        description: "General maintenance, repairs, and common-area supplies.",
+        currencyCode: "MXN",
+        neighborhoodId: centroNeighborhood.id,
+        createdBy: admin.id,
+      },
+      {
+        name: "Security Fund",
+        description: "Security service and neighborhood watch expenses.",
+        currencyCode: "MXN",
+        neighborhoodId: surNeighborhood.id,
+        createdBy: luis.id,
+      },
+    ])
+    .returning();
+
+  const [maintenanceTemplate] = await db
+    .insert(fundChargeTemplates)
+    .values({
+      fundId: maintenanceFund.id,
+      neighborhoodId: centroNeighborhood.id,
+      title: "Monthly maintenance fee",
+      description: "Recurring common-area maintenance contribution.",
+      status: "active",
+      frequency: "monthly",
+      defaultAmount: "250.00",
+      dueDayOfMonth: 15,
+      startsOn: formatDate(addDays(today, -30)),
+      createdBy: admin.id,
+    })
+    .returning();
+
+  const [maintenancePeriod, securityPeriod] = await db
+    .insert(fundChargePeriods)
+    .values([
+      {
+        fundId: maintenanceFund.id,
+        templateId: maintenanceTemplate.id,
+        neighborhoodId: centroNeighborhood.id,
+        title: "Maintenance - current month",
+        description: "Current month maintenance contribution.",
+        amountPerGroup: "250.00",
+        dueDate: formatDate(addDays(today, 7)),
+        status: "open",
+        createdBy: admin.id,
+      },
+      {
+        fundId: reserveFund.id,
+        neighborhoodId: surNeighborhood.id,
+        title: "Security - current month",
+        description: "Current month neighborhood security fee.",
+        amountPerGroup: "180.00",
+        dueDate: formatDate(addDays(today, 10)),
+        status: "open",
+        createdBy: luis.id,
+      },
+    ])
+    .returning();
+
+  const [maintenanceCharge, securityCharge] = await db
+    .insert(fundGroupCharges)
+    .values([
+      {
+        periodId: maintenancePeriod.id,
+        groupId: casa101.id,
+        amountDue: "250.00",
+        amountPaid: "250.00",
+        status: "paid",
+      },
+      {
+        periodId: securityPeriod.id,
+        groupId: casa202.id,
+        amountDue: "180.00",
+        amountPaid: "0.00",
+        status: "unpaid",
+      },
+    ])
+    .returning();
+
+  const [confirmedPayment] = await db
+    .insert(fundPaymentSubmissions)
+    .values([
+      {
+        fundId: maintenanceFund.id,
+        neighborhoodId: centroNeighborhood.id,
+        groupChargeId: maintenanceCharge.id,
+        groupId: casa101.id,
+        submittedBy: ana.id,
+        method: "wire_transfer",
+        amount: "250.00",
+        paidAt: formatDate(addDays(today, -2)),
+        reference: "MNT-250",
+        notes: "Paid in full by transfer.",
+        status: "confirmed",
+        confirmedBy: admin.id,
+        confirmedAt: new Date(),
+      },
+      {
+        fundId: reserveFund.id,
+        neighborhoodId: surNeighborhood.id,
+        groupChargeId: securityCharge.id,
+        groupId: casa202.id,
+        submittedBy: luis.id,
+        method: "cash",
+        amount: "180.00",
+        paidAt: formatDate(addDays(today, -1)),
+        notes: "Cash delivered to neighborhood admin.",
+        status: "submitted",
+      },
+    ])
+    .returning();
+
+  await db.insert(fundPaymentAllocations).values({
+    paymentId: confirmedPayment.id,
+    groupChargeId: maintenanceCharge.id,
+    amount: "250.00",
+  });
+
+  await db.insert(fundMovements).values([
+    {
+      fundId: maintenanceFund.id,
+      neighborhoodId: centroNeighborhood.id,
+      type: "payment",
+      entrySide: "credit",
+      amount: "250.00",
+      effectiveAt: new Date(`${formatDate(addDays(today, -2))}T12:00:00.000Z`),
+      description: "Confirmed maintenance payment for Casa 101",
+      sourceType: "payment",
+      sourceId: confirmedPayment.id,
+      createdBy: admin.id,
+    },
+    {
+      fundId: maintenanceFund.id,
+      neighborhoodId: centroNeighborhood.id,
+      type: "expense",
+      entrySide: "debit",
+      amount: "80.00",
+      effectiveAt: new Date(`${formatDate(today)}T12:00:00.000Z`),
+      description: "Garden supplies and common-area cleaning",
+      sourceType: "expense",
+      createdBy: admin.id,
     },
   ]);
 

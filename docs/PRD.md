@@ -1,7 +1,7 @@
 # Product Requirements Document — VecinoHub
 
 ## 1) Overview
-VecinoHub is a multi-neighborhood administration web app where residents (organized by house groups) can manage membership, vote on polls, submit fundraising contributions, and consume neighborhood announcements/events.
+VecinoHub is a multi-neighborhood administration web app where residents (organized by house groups) can manage membership, vote on polls, submit fundraising contributions, manage neighborhood funds, and consume neighborhood announcements/events.
 
 Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, PostgreSQL, better-auth.
 
@@ -41,10 +41,12 @@ Stack: Next.js, tRPC, SuperJSON, Tailwind, TypeScript, Drizzle, PostgreSQL, bett
 - `group_memberships`
 - `polls`, `poll_options`, `votes`
 - `fundraising_campaigns`, `fundraising_contributions`
+- `neighborhood_funds`, `fund_charge_templates`, `fund_charge_periods`
+- `fund_group_charges`, `fund_payment_submissions`, `fund_payment_allocations`, `fund_movements`
 - `events`
 - `posts`
 
-All domain entities (`groups`, `polls`, `fundraising_campaigns`, `events`, `posts`) are neighborhood-scoped.
+All domain entities (`groups`, `polls`, `fundraising_campaigns`, `neighborhood_funds`, `fund_charge_templates`, `fund_charge_periods`, `events`, `posts`) are neighborhood-scoped.
 
 ## 6) Core Flows
 
@@ -55,18 +57,21 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `events`, `post
 
 ### Neighborhood administration
 - Manage groups and group memberships within authorized neighborhoods only.
-- Manage neighborhood polls, campaigns, events, and posts.
+- Manage neighborhood polls, campaigns, funds, events, and posts.
+- Manage multiple named funds, dues, payment confirmations, and fund movements.
 - Read and operate only within their neighborhood boundaries.
 
 ### Resident dashboard
 - Access dashboard only for groups where user is an active member.
-- View and participate in neighborhood-scoped polls, fundraising, events, and posts.
+- View and participate in neighborhood-scoped polls, fundraising, funds, events, and posts.
+- View neighborhood fund balances and confirmed movements and track paid/unpaid status by group.
+- Submit fund payments for their own group.
 - Update own profile and switch active neighborhood context when member of multiple neighborhoods.
 
 ## 7) Permission Summary
 - `platform_admin`: full cross-neighborhood read/write and user role management.
-- `neighborhood_admin`: CRUD for neighborhood content and group management only in authorized neighborhoods.
-- `neighbor`: read/participate flows for own neighborhood/group permissions.
+- `neighborhood_admin`: CRUD for neighborhood content, funds, and group management only in authorized neighborhoods.
+- `neighbor`: read/participate flows for own neighborhood/group permissions, including fund transparency and payment submission.
 - `group_admin`: manage only their own group details, members, and group roles.
 - `group_member`: read-only access for their own group.
 
@@ -80,6 +85,8 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `events`, `post
 - Neighborhood admins cannot access or modify foreign neighborhood data.
 - Residents cannot access admin/platform shells.
 - No cross-tenant leaks in service-level read/write flows.
+- Residents can view neighborhood fund balances and confirmed movements only in authorized neighborhoods.
+- Neighborhood admins can manage multiple named funds and confirm fund payments only in their neighborhoods.
 - `npm run lint` and `npm run build` pass after migration and refactor.
 
 ## 10) Open Follow-ups

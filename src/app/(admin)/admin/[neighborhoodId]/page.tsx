@@ -14,6 +14,7 @@ import {
   CalendarIcon,
   CoinsIcon,
   FileTextIcon,
+  LandmarkIcon,
   PlusIcon,
   UsersIcon,
   VoteIcon,
@@ -25,6 +26,7 @@ import {
   listOpenCampaignsWithProgress,
   getFundraisingStats,
 } from "@/services/fundraising";
+import { listNeighborhoodFunds } from "@/services/funds";
 import { getGroupsStats } from "@/services/groups";
 import { listNeighborhoodMembersPaged, getNeighborhoodById } from "@/services/neighborhoods";
 import {
@@ -139,6 +141,7 @@ export default async function AdminNeighborhoodPage({
     pollsStats,
     activePolls,
     fundraisingStats,
+    funds,
     openCampaigns,
     eventsStats,
     upcomingEvents,
@@ -153,6 +156,7 @@ export default async function AdminNeighborhoodPage({
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
     getFundraisingStats(serviceContext),
+    listNeighborhoodFunds(serviceContext, { neighborhoodId }),
     listOpenCampaignsWithProgress(serviceContext),
     getEventsStats(serviceContext),
     listUpcomingEvents(serviceContext),
@@ -256,6 +260,31 @@ export default async function AdminNeighborhoodPage({
               label: t("kpi.fundraising.pending"),
               value: fundraisingStats.pendingContributions,
               color: "text-amber-600",
+            },
+          ]}
+        />
+
+        <KpiCard
+          href={`${adminBasePath}/fund`}
+          title={tNav("funds")}
+          icon={<LandmarkIcon className="h-4.5 w-4.5 text-teal-700" />}
+          iconBg="bg-teal-50"
+          testId="admin-overview-stats-funds"
+          stats={[
+            {
+              label: t("kpi.funds.active"),
+              value: funds.filter((fund) => fund.status === "active").length,
+              color: "text-teal-600",
+            },
+            {
+              label: t("kpi.funds.archived"),
+              value: funds.filter((fund) => fund.status === "archived").length,
+              color: "text-stone-600",
+            },
+            {
+              label: t("kpi.funds.overdue"),
+              value: funds.reduce((sum, fund) => sum + fund.overdueCharges, 0),
+              color: "text-red-600",
             },
           ]}
         />

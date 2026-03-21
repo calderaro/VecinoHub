@@ -10,8 +10,14 @@ type StatusBadgeVariant =
   | "scheduled"
   | "submitted"
   | "pending"
+  | "paid"
+  | "partial"
+  | "overdue"
+  | "waived"
+  | "archived"
   | "paused"
   | "closed"
+  | "cancelled"
   | "ended"
   | "unpublished"
   | "inactive"
@@ -38,8 +44,14 @@ const statusStyles: Record<StatusBadgeVariant, string> = {
   scheduled: "bg-amber-50 text-amber-700 ring-amber-200",
   submitted: "bg-amber-50 text-amber-700 ring-amber-200",
   pending: "bg-amber-50 text-amber-700 ring-amber-200",
+  paid: "bg-teal-50 text-teal-700 ring-teal-200",
+  partial: "bg-blue-50 text-blue-700 ring-blue-200",
+  overdue: "bg-red-50 text-red-600 ring-red-200",
+  waived: "bg-violet-50 text-violet-700 ring-violet-200",
+  archived: "bg-stone-100 text-stone-600 ring-stone-200",
   paused: "bg-violet-50 text-violet-700 ring-violet-200",
   closed: "bg-stone-100 text-stone-600 ring-stone-200",
+  cancelled: "bg-red-50 text-red-600 ring-red-200",
   ended: "bg-stone-100 text-stone-600 ring-stone-200",
   unpublished: "bg-stone-100 text-stone-600 ring-stone-200",
   inactive: "bg-stone-100 text-stone-500 ring-stone-200",

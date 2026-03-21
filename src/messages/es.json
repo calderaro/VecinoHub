@@ -156,6 +156,7 @@
       "groups": "Grupos",
       "polls": "Votaciones",
       "fundraising": "Recaudación",
+      "funds": "Fondos",
       "events": "Eventos",
       "posts": "Publicaciones"
     },
@@ -175,6 +176,11 @@
           "open": "Abierto",
           "paused": "Pausado",
           "pending": "Pendiente"
+        },
+        "funds": {
+          "active": "Activos",
+          "archived": "Archivados",
+          "overdue": "Vencidos"
         },
         "events": {
           "upcoming": "Próximos",
@@ -895,6 +901,175 @@
       "cancel": "Cancelar",
       "deleting": "Eliminando...",
       "deletedToast": "Grupo eliminado."
+    },
+    "funds": {
+      "list": {
+        "title": "Fondos del vecindario",
+        "subtitle": "Da seguimiento a cada fondo, su saldo actual, periodos abiertos y pagos pendientes de la colonia.",
+        "newFund": "Nuevo fondo",
+        "empty": "Todavía no hay fondos creados.",
+        "table": {
+          "name": "Fondo",
+          "status": "Estado",
+          "balance": "Saldo",
+          "periods": "Periodos abiertos",
+          "pending": "Pagos pendientes"
+        }
+      },
+      "formPage": {
+        "createTitle": "Crear fondo",
+        "createSubtitle": "Configura un fondo con nombre propio, saldo independiente y periodos de cobro.",
+        "editTitle": "Editar fondo",
+        "editSubtitle": "Actualiza la configuración y el estado visible de este fondo."
+      },
+      "form": {
+        "created": "Fondo creado.",
+        "updated": "Fondo actualizado.",
+        "validation": "El nombre del fondo es obligatorio.",
+        "saveError": "No se pudo guardar el fondo.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar",
+        "fields": {
+          "name": "Nombre del fondo",
+          "namePlaceholder": "Fondo de mantenimiento",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Para qué sirve este fondo y cómo deben usarlo los vecinos.",
+          "currency": "Moneda",
+          "status": "Estado"
+        }
+      },
+      "detail": {
+        "noDescription": "Aún no hay descripción.",
+        "actions": {
+          "periods": "Periodos",
+          "settings": "Configuración",
+          "edit": "Editar fondo"
+        },
+        "stats": {
+          "balance": "Saldo actual",
+          "openPeriods": "Periodos abiertos",
+          "pendingPayments": "Pagos pendientes",
+          "overdueCharges": "Cobros vencidos"
+        },
+        "recentPeriods": {
+          "title": "Periodos recientes",
+          "empty": "Todavía no hay periodos de cobro."
+        },
+        "recentMovements": {
+          "title": "Movimientos recientes",
+          "empty": "Todavía no hay movimientos."
+        },
+        "templates": {
+          "title": "Plantillas de cobro",
+          "empty": "Todavía no hay plantillas configuradas."
+        }
+      },
+      "periods": {
+        "title": "Periodos de {name}",
+        "subtitle": "Revisa cada periodo de cobro, lo esperado y el avance actual de pagos.",
+        "newPeriod": "Nuevo periodo",
+        "empty": "Todavía no hay periodos creados.",
+        "table": {
+          "title": "Periodo",
+          "status": "Estado",
+          "dueDate": "Fecha límite",
+          "expected": "Esperado",
+          "collected": "Cobrado"
+        }
+      },
+      "periodFormPage": {
+        "title": "Crear periodo de cobro",
+        "subtitle": "Crea un periodo manual o genera uno desde una plantilla activa."
+      },
+      "periodForm": {
+        "created": "Periodo de cobro creado.",
+        "validationDueDate": "La fecha límite es obligatoria.",
+        "validationManual": "El título y el monto por grupo son obligatorios para periodos manuales.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Crear periodo",
+        "fields": {
+          "template": "Plantilla",
+          "manualOption": "Periodo manual",
+          "title": "Título",
+          "titleOptional": "Déjalo vacío para usar el título de la plantilla",
+          "titleRequired": "Cuota marzo 2026",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Detalles opcionales para este periodo.",
+          "amountPerGroup": "Monto por grupo",
+          "dueDate": "Fecha límite"
+        }
+      },
+      "periodDetail": {
+        "chargesTitle": "Cobros por grupo",
+        "paymentsTitle": "Pagos enviados",
+        "paymentsEmpty": "Todavía no se han enviado pagos para este periodo.",
+        "table": {
+          "group": "Grupo",
+          "status": "Estado",
+          "due": "Monto a pagar",
+          "paid": "Pagado",
+          "remaining": "Pendiente"
+        }
+      },
+      "settings": {
+        "title": "Configuración de {name}",
+        "subtitle": "Administra plantillas recurrentes y registra ajustes manuales de saldo.",
+        "templatesTitle": "Plantillas recurrentes",
+        "templatesEmpty": "Todavía no hay plantillas recurrentes.",
+        "adjustmentTitle": "Ajuste manual"
+      },
+      "templateForm": {
+        "created": "Plantilla creada.",
+        "validation": "Título, monto predeterminado y fecha de inicio son obligatorios.",
+        "saving": "Guardando...",
+        "save": "Crear plantilla",
+        "fields": {
+          "title": "Título de la plantilla",
+          "frequency": "Frecuencia",
+          "defaultAmount": "Monto predeterminado por grupo",
+          "dueDayOfMonth": "Día de vencimiento",
+          "startsOn": "Inicia el",
+          "endsOn": "Termina el",
+          "description": "Descripción"
+        },
+        "frequency": {
+          "monthly": "Mensual",
+          "quarterly": "Trimestral",
+          "annual": "Anual",
+          "oneOff": "Única vez"
+        }
+      },
+      "movementFormPage": {
+        "expenseTitle": "Registrar gasto",
+        "expenseSubtitle": "Registra una salida de dinero para este fondo.",
+        "incomeTitle": "Registrar ingreso manual",
+        "incomeSubtitle": "Registra un ingreso que no proviene de un pago vecinal."
+      },
+      "movementForm": {
+        "saved": "Movimiento registrado.",
+        "validation": "El monto y la descripción son obligatorios.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar movimiento",
+        "fields": {
+          "amount": "Monto",
+          "entrySide": "Tipo de entrada",
+          "effectiveAt": "Fecha efectiva",
+          "description": "Descripción"
+        },
+        "entrySide": {
+          "credit": "Crédito",
+          "debit": "Débito"
+        }
+      },
+      "paymentActions": {
+        "confirmed": "Pago confirmado.",
+        "rejected": "Pago rechazado.",
+        "confirm": "Confirmar",
+        "reject": "Rechazar"
+      }
     }
   },
   "platform": {
@@ -994,7 +1169,15 @@
     "submitted": "Enviado",
     "confirmed": "Confirmado",
     "rejected": "Rechazado",
-    "inactive": "Inactivo"
+    "inactive": "Inactivo",
+    "paused": "Pausado",
+    "unpaid": "Pendiente",
+    "paid": "Pagado",
+    "partial": "Parcial",
+    "overdue": "Vencido",
+    "waived": "Condonado",
+    "archived": "Archivado",
+    "cancelled": "Cancelado"
   },
   "dashboard": {
     "empty": {
@@ -1044,6 +1227,16 @@
         "due": "Vence {date}",
         "daysLeft": "Queda {count} día{count, plural, one {} other {s}}"
       },
+      "funds": {
+        "title": "Fondos del vecindario",
+        "count": "{count} fondo{count, plural, one {} other {s}} disponible{count, plural, one {} other {s}}",
+        "viewAll": "Ver todos los fondos",
+        "empty": "No hay fondos disponibles.",
+        "emptyHint": "Los fondos compartidos aparecerán aquí cuando el equipo administrador los configure.",
+        "balance": "Saldo: {amount}",
+        "periods": "{count} periodo{count, plural, one {} other {s}} abierto{count, plural, one {} other {s}}",
+        "pending": "{count} pago{count, plural, one {} other {s}} pendiente{count, plural, one {} other {s}}"
+      },
       "members": {
         "title": "Miembros del grupo",
         "count": "{count} miembro{count, plural, one {} other {s}} en este grupo",
@@ -1061,6 +1254,7 @@
       "members": "Miembros",
       "polls": "Votaciones",
       "fundraising": "Recaudación",
+      "funds": "Fondos",
       "events": "Eventos",
       "posts": "Publicaciones"
     },
@@ -1261,6 +1455,70 @@
     "contributionDelete": {
       "delete": "Eliminar",
       "deleting": "Eliminando"
+    },
+    "funds": {
+      "list": {
+        "label": "Dinero compartido",
+        "title": "Fondos",
+        "subtitle": "Revisa cada fondo del vecindario, su saldo actual y el avance de pagos de tu grupo.",
+        "empty": "Todavía no hay fondos disponibles.",
+        "noDescription": "Aún no hay descripción.",
+        "balance": "Saldo actual",
+        "periods": "Periodos abiertos",
+        "pending": "Pagos pendientes"
+      },
+      "detail": {
+        "label": "Fondo vecinal",
+        "noDescription": "Aún no hay descripción.",
+        "payNow": "Pagar ahora",
+        "stats": {
+          "balance": "Saldo actual",
+          "outstanding": "Mi saldo pendiente",
+          "openPeriods": "Periodos abiertos"
+        },
+        "myChargesTitle": "Mis cobros",
+        "myChargesEmpty": "Tu grupo aún no tiene cobros en este fondo.",
+        "movementsTitle": "Movimientos recientes",
+        "movementsEmpty": "Todavía no hay movimientos registrados."
+      },
+      "periodDetail": {
+        "label": "Periodo de cobro",
+        "payNow": "Pagar este periodo",
+        "myChargeTitle": "Mi cobro",
+        "amountDue": "Monto a pagar",
+        "amountPaid": "Monto pagado",
+        "remaining": "Saldo pendiente",
+        "boardTitle": "Tablero de pagos del vecindario",
+        "table": {
+          "group": "Grupo",
+          "status": "Estado",
+          "paid": "Pagado",
+          "remaining": "Pendiente"
+        }
+      },
+      "paymentPage": {
+        "title": "Registrar pago",
+        "subtitle": "Registra tu pago para {period}."
+      },
+      "paymentForm": {
+        "submitted": "Pago enviado para revisión.",
+        "validation": "El monto y la fecha de pago son obligatorios.",
+        "referenceRequired": "La referencia es obligatoria para transferencias.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Enviar pago",
+        "fields": {
+          "method": "Método de pago",
+          "amount": "Monto",
+          "paidAt": "Fecha de pago",
+          "reference": "Referencia de transferencia",
+          "notes": "Notas"
+        },
+        "methods": {
+          "cash": "Efectivo",
+          "wire_transfer": "Transferencia"
+        }
+      }
     }
   }
 }

@@ -18,7 +18,7 @@
   - redirects to first available group in active neighborhood context.
   - no-group users see waiting state.
 - `/dashboard/[groupId]`
-  - overview cards: posts, events, polls, fundraising, members.
+  - overview cards: posts, events, polls, fundraising, funds, members.
   - sticky header with `UserMenu`.
   - `UserMenu` supports:
     - profile link
@@ -35,6 +35,13 @@
   - `/dashboard/[groupId]/fundraising/[campaignId]`
     - shows campaign summary plus only the signed-in resident's own submissions for the selected group.
   - `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
+  - `/dashboard/[groupId]/fund`
+    - lists the active neighborhood's named funds with summary cards.
+  - `/dashboard/[groupId]/fund/[fundId]`
+    - shows fund balance, recent confirmed movements, current due summary for the signed-in resident's group, and neighborhood group payment status.
+  - `/dashboard/[groupId]/fund/[fundId]/[periodId]`
+    - shows due-period detail, the resident's group obligation, and neighborhood payment-status board.
+  - `/dashboard/[groupId]/fund/[fundId]/[periodId]/pay`
   - `/dashboard/[groupId]/events`
   - `/dashboard/[groupId]/events/[eventId]`
   - `/dashboard/[groupId]/posts`
@@ -55,6 +62,16 @@
     - group creation accepts an optional existing user email for the initial group admin.
   - `/admin/[neighborhoodId]/polls`, `/admin/[neighborhoodId]/polls/new`, `/admin/[neighborhoodId]/polls/[pollId]`, `/admin/[neighborhoodId]/polls/[pollId]/edit`
   - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
+  - `/admin/[neighborhoodId]/fund`
+    - neighborhood fund list with balances, overdue counts, and create-fund CTA.
+  - `/admin/[neighborhoodId]/fund/new`
+  - `/admin/[neighborhoodId]/fund/[fundId]`
+    - fund overview with pending payments, recent movements, and active recurring templates.
+  - `/admin/[neighborhoodId]/fund/[fundId]/edit`
+  - `/admin/[neighborhoodId]/fund/[fundId]/periods`, `/admin/[neighborhoodId]/fund/[fundId]/periods/new`, `/admin/[neighborhoodId]/fund/[fundId]/periods/[periodId]`
+  - `/admin/[neighborhoodId]/fund/[fundId]/movements/new-expense`
+  - `/admin/[neighborhoodId]/fund/[fundId]/movements/new-income`
+  - `/admin/[neighborhoodId]/fund/[fundId]/settings`
   - `/admin/[neighborhoodId]/events`, `/admin/[neighborhoodId]/events/new`, `/admin/[neighborhoodId]/events/[eventId]`, `/admin/[neighborhoodId]/events/[eventId]/edit`
   - `/admin/[neighborhoodId]/posts`, `/admin/[neighborhoodId]/posts/new`, `/admin/[neighborhoodId]/posts/[postId]`, `/admin/[neighborhoodId]/posts/[postId]/edit`
   - `/admin/[neighborhoodId]/users`
