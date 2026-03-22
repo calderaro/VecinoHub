@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { SearchIcon, XIcon } from "lucide-react";
 
 import { useToast } from "@/components/ui/toast";
 import { StatusBadge } from "@/components/ui-v3";
@@ -45,6 +46,7 @@ export function DashboardRequestAccess({
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [note, setNote] = useState("");
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const neighborhoodLookup = trpc.groupAccessRequests.lookupNeighborhood.useQuery(
     { slug: lookupSlug },
@@ -90,154 +92,56 @@ export function DashboardRequestAccess({
   const requestableGroupItems = requestableGroups.data ?? [];
   const isCreating = createRequest.isPending;
   const isCancelling = cancelRequest.isPending;
+  const hasActiveLookup = Boolean(lookupSlug || neighborhoodLookup.data);
+
+  function resetFormState() {
+    setSlugInput("");
+    setLookupSlug("");
+    setSelectedGroupId("");
+    setNote("");
+  }
+
+  function closeDialog() {
+    setDialogOpen(false);
+    resetFormState();
+  }
 
   return (
     <div className="space-y-8" data-testid="dashboard-request-access-root">
-      <section className="space-y-4 rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-stone-900">{t("form.title")}</h2>
-          <p className="text-sm text-stone-500">{t("form.subtitle")}</p>
-        </div>
-
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const trimmedSlug = slugInput.trim();
-
-            if (!trimmedSlug) {
-              addToast(t("form.slugRequired"), "error");
-              return;
-            }
-
-            setLookupSlug(trimmedSlug);
-            setSelectedGroupId("");
-          }}
-        >
-          <label className="space-y-2 text-sm text-stone-700">
-            <span>{t("form.slugLabel")}</span>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input
-                value={slugInput}
-                onChange={(event) => setSlugInput(event.target.value)}
-                placeholder={t("form.slugPlaceholder")}
-                className="vh-v3-focus flex-1 rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
-                data-testid="request-access-slug-input"
-              />
+      <section className="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm">
+        <div className="grid gap-6 px-6 py-6 md:grid-cols-[1.25fr_0.75fr] md:px-8 md:py-7">
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-teal-600">
+              {t("cta.eyebrow")}
+            </p>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-stone-900">{t("cta.title")}</h2>
+              <p className="max-w-2xl text-sm leading-6 text-stone-600">{t("cta.subtitle")}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
               <button
-                type="submit"
-                className="vh-v3-focus rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={neighborhoodLookup.isLoading}
-                data-testid="request-access-slug-submit"
+                type="button"
+                className="vh-v3-focus inline-flex items-center gap-2 rounded-full bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+                onClick={() => setDialogOpen(true)}
+                data-testid="request-access-open-dialog"
               >
-                {neighborhoodLookup.isLoading ? t("form.searching") : t("form.search")}
+                <SearchIcon className="h-4 w-4" />
+                {t("cta.action")}
               </button>
             </div>
-          </label>
-        </form>
-
-        {lookupError ? (
-          <p
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
-            data-testid="request-access-lookup-error"
-          >
-            {lookupError}
-          </p>
-        ) : null}
-
-        {neighborhoodLookup.data ? (
-          <div
-            className="rounded-xl border border-teal-100 bg-teal-50/60 p-4"
-            data-testid="request-access-neighborhood-result"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-teal-600">
-                  {t("form.neighborhoodLabel")}
-                </p>
-                <p className="text-lg font-semibold text-stone-900">
-                  {neighborhoodLookup.data.name}
-                </p>
-                <p className="text-sm text-stone-500">/{neighborhoodLookup.data.slug}</p>
-              </div>
-              <StatusBadge
-                variant="active"
-                label={t("form.groupsCount", { count: requestableGroupItems.length })}
-              />
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <label className="space-y-2 text-sm text-stone-700">
-                <span>{t("form.groupLabel")}</span>
-                <select
-                  value={selectedGroupId}
-                  onChange={(event) => setSelectedGroupId(event.target.value)}
-                  className="vh-v3-focus w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={requestableGroups.isLoading || requestableGroupItems.length === 0}
-                  data-testid="request-access-group-select"
-                >
-                  <option value="">{t("form.groupPlaceholder")}</option>
-                  {requestableGroupItems.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                      {group.address ? ` - ${group.address}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {requestableGroups.isLoading ? (
-                <p className="text-sm text-stone-500">{t("form.loadingGroups")}</p>
-              ) : null}
-
-              {!requestableGroups.isLoading && requestableGroupItems.length === 0 ? (
-                <p
-                  className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                  data-testid="request-access-groups-empty"
-                >
-                  {t("form.noGroups")}
-                </p>
-              ) : null}
-
-              <label className="space-y-2 text-sm text-stone-700">
-                <span>{t("form.noteLabel")}</span>
-                <textarea
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder={t("form.notePlaceholder")}
-                  className="vh-v3-focus min-h-28 w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
-                  maxLength={500}
-                  data-testid="request-access-note"
-                />
-              </label>
-
-              <div className="flex flex-wrap justify-end gap-2">
-                <button
-                  type="button"
-                  className="vh-v3-focus rounded-lg px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100"
-                  onClick={() => {
-                    setLookupSlug("");
-                    setSelectedGroupId("");
-                    setNote("");
-                  }}
-                  disabled={isCreating}
-                  data-testid="request-access-reset"
-                >
-                  {t("form.reset")}
-                </button>
-                <button
-                  type="button"
-                  className="vh-v3-focus rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => createRequest.mutate({ groupId: selectedGroupId, note: note.trim() || undefined })}
-                  disabled={!selectedGroupId || isCreating}
-                  data-testid="request-access-submit"
-                >
-                  {isCreating ? t("form.submitting") : t("form.submit")}
-                </button>
-              </div>
-            </div>
           </div>
-        ) : null}
+
+          <div className="rounded-2xl border border-stone-200 bg-stone-50/80 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-stone-500">
+              {t("cta.checklistTitle")}
+            </p>
+            <ul className="mt-3 space-y-3 text-sm text-stone-600">
+              <li>{t("cta.checklistSlug")}</li>
+              <li>{t("cta.checklistGroup")}</li>
+              <li>{t("cta.checklistReview")}</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section className="space-y-4">
@@ -376,6 +280,205 @@ export function DashboardRequestAccess({
           </div>
         )}
       </section>
+
+      {dialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/45 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="request-access-dialog-title"
+          data-testid="request-access-dialog"
+        >
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-stone-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-stone-100 px-6 py-5">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-600">
+                  {t("form.eyebrow")}
+                </p>
+                <h2
+                  id="request-access-dialog-title"
+                  className="text-xl font-semibold text-stone-900"
+                >
+                  {t("form.title")}
+                </h2>
+                <p className="text-sm text-stone-500">{t("form.subtitle")}</p>
+              </div>
+
+              <button
+                type="button"
+                className="vh-v3-focus rounded-full border border-stone-200 p-2 text-stone-500 transition-colors hover:bg-stone-50 hover:text-stone-700"
+                onClick={closeDialog}
+                data-testid="request-access-dialog-close"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-5 px-6 py-5">
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const trimmedSlug = slugInput.trim();
+
+                  if (!trimmedSlug) {
+                    addToast(t("form.slugRequired"), "error");
+                    return;
+                  }
+
+                  setLookupSlug(trimmedSlug);
+                  setSelectedGroupId("");
+                }}
+              >
+                <label className="space-y-2 text-sm text-stone-700">
+                  <span>{t("form.slugLabel")}</span>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      value={slugInput}
+                      onChange={(event) => setSlugInput(event.target.value)}
+                      placeholder={t("form.slugPlaceholder")}
+                      className="vh-v3-focus flex-1 rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+                      data-testid="request-access-slug-input"
+                    />
+                    <button
+                      type="submit"
+                      className="vh-v3-focus rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={neighborhoodLookup.isLoading}
+                      data-testid="request-access-slug-submit"
+                    >
+                      {neighborhoodLookup.isLoading ? t("form.searching") : t("form.search")}
+                    </button>
+                  </div>
+                </label>
+              </form>
+
+              {lookupError ? (
+                <p
+                  className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+                  data-testid="request-access-lookup-error"
+                >
+                  {lookupError}
+                </p>
+              ) : null}
+
+              {neighborhoodLookup.data ? (
+                <div
+                  className="rounded-2xl border border-teal-100 bg-teal-50/60 p-4"
+                  data-testid="request-access-neighborhood-result"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-teal-600">
+                        {t("form.neighborhoodLabel")}
+                      </p>
+                      <p className="text-lg font-semibold text-stone-900">
+                        {neighborhoodLookup.data.name}
+                      </p>
+                      <p className="text-sm text-stone-500">/{neighborhoodLookup.data.slug}</p>
+                    </div>
+                    <StatusBadge
+                      variant="active"
+                      label={t("form.groupsCount", { count: requestableGroupItems.length })}
+                    />
+                  </div>
+
+                  <div className="mt-4 space-y-4">
+                    <label className="space-y-2 text-sm text-stone-700">
+                      <span>{t("form.groupLabel")}</span>
+                      <select
+                        value={selectedGroupId}
+                        onChange={(event) => setSelectedGroupId(event.target.value)}
+                        className="vh-v3-focus w-full rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-sm text-stone-900 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={requestableGroups.isLoading || requestableGroupItems.length === 0}
+                        data-testid="request-access-group-select"
+                      >
+                        <option value="">{t("form.groupPlaceholder")}</option>
+                        {requestableGroupItems.map((group) => (
+                          <option key={group.id} value={group.id}>
+                            {group.name}
+                            {group.address ? ` - ${group.address}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {requestableGroups.isLoading ? (
+                      <p className="text-sm text-stone-500">{t("form.loadingGroups")}</p>
+                    ) : null}
+
+                    {!requestableGroups.isLoading && requestableGroupItems.length === 0 ? (
+                      <p
+                        className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
+                        data-testid="request-access-groups-empty"
+                      >
+                        {t("form.noGroups")}
+                      </p>
+                    ) : null}
+
+                    <label className="space-y-2 text-sm text-stone-700">
+                      <span>{t("form.noteLabel")}</span>
+                      <textarea
+                        value={note}
+                        onChange={(event) => setNote(event.target.value)}
+                        placeholder={t("form.notePlaceholder")}
+                        className="vh-v3-focus min-h-28 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+                        maxLength={500}
+                        data-testid="request-access-note"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : hasActiveLookup ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-500">
+                  {t("form.waiting")}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 px-6 py-4">
+              <button
+                type="button"
+                className="vh-v3-focus rounded-lg px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100"
+                onClick={resetFormState}
+                disabled={isCreating}
+                data-testid="request-access-reset"
+              >
+                {t("form.reset")}
+              </button>
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  className="vh-v3-focus rounded-lg px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100"
+                  onClick={closeDialog}
+                  disabled={isCreating}
+                  data-testid="request-access-cancel-dialog"
+                >
+                  {t("form.close")}
+                </button>
+                <button
+                  type="button"
+                  className="vh-v3-focus rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() =>
+                    createRequest.mutate(
+                      { groupId: selectedGroupId, note: note.trim() || undefined },
+                      {
+                        onSuccess: () => {
+                          closeDialog();
+                        },
+                      }
+                    )
+                  }
+                  disabled={!selectedGroupId || isCreating}
+                  data-testid="request-access-submit"
+                >
+                  {isCreating ? t("form.submitting") : t("form.submit")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -55,7 +55,7 @@
 - Rejecting an invite does not create group membership.
 - Users signed in with a different email from the invite target cannot accept or reject that invite.
 - Group managers can resend and cancel pending invites for their own group only.
-- Signed-in users can open `/dashboard/request-access`, look up an active neighborhood by exact slug, and see requestable groups in that neighborhood.
+- Signed-in users can open `/dashboard/request-access`, launch the access-request dialog, look up an active neighborhood by exact slug, and see requestable groups in that neighborhood.
 - Creating a group access request does not create resident access before approval.
 - A user cannot create a duplicate pending request for the same group.
 - A requester can cancel only their own pending request.
@@ -104,7 +104,7 @@
 - New/updated UI includes test ids:
   - group members tabs and tab panels
   - dashboard invites inbox and invite actions
-  - dashboard request-access flow and requester history
+  - dashboard request-access dialog flow and requester history
   - group invite creation and pending invite management
   - group access request review actions
   - group self-leave action and confirmation dialog

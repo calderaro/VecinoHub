@@ -27,6 +27,7 @@
   - works even when the user has zero accepted group memberships.
 - `/dashboard/request-access`
   - self-service request flow for signed-in residents who are not yet members of a target group.
+  - page presents a CTA summary and opens the request form inside a dialog.
   - exact neighborhood slug lookup, then group selection, optional note, and submit action.
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.

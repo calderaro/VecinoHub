@@ -1301,13 +1301,24 @@
       }
     },
     "requestAccess": {
-      "label": "Resident onboarding",
-      "title": "Request access",
-      "subtitle": "Ask to join a neighborhood group. Your request stays pending until a manager reviews it.",
-      "form": {
-        "title": "Find your neighborhood",
-        "subtitle": "Enter the neighborhood slug shared by your admin team, then choose the group you want to join.",
-        "slugLabel": "Neighborhood slug",
+  "label": "Resident onboarding",
+  "title": "Request access",
+  "subtitle": "Ask to join a neighborhood group. Your request stays pending until a manager reviews it.",
+  "cta": {
+    "eyebrow": "New access request",
+    "title": "Start a request when you're ready to join a group",
+    "subtitle": "Use the neighborhood slug shared by your admin team, pick the group you belong to, and leave a short note so the reviewer can verify your residency faster.",
+    "action": "Request group access",
+    "checklistTitle": "What you'll need",
+    "checklistSlug": "The neighborhood slug shared by the admin team.",
+    "checklistGroup": "The specific group, home, or building you belong to.",
+    "checklistReview": "A short note with address details or residency context."
+  },
+  "form": {
+    "eyebrow": "Request access",
+    "title": "Find your neighborhood",
+    "subtitle": "Enter the neighborhood slug shared by your admin team, then choose the group you want to join.",
+    "slugLabel": "Neighborhood slug",
         "slugPlaceholder": "colonia-centro",
         "slugRequired": "Neighborhood slug is required.",
         "search": "Find neighborhood",
@@ -1319,12 +1330,14 @@
         "loadingGroups": "Loading available groups...",
         "noGroups": "No requestable groups are currently available in this neighborhood.",
         "noteLabel": "Note for the reviewer",
-        "notePlaceholder": "Optional context such as your address, house number, or who referred you.",
-        "reset": "Clear",
-        "submit": "Submit request",
-        "submitting": "Submitting...",
-        "searchError": "Unable to load neighborhood details."
-      },
+    "notePlaceholder": "Optional context such as your address, house number, or who referred you.",
+    "reset": "Clear",
+    "close": "Close",
+    "submit": "Submit request",
+    "submitting": "Submitting...",
+    "searchError": "Unable to load neighborhood details.",
+    "waiting": "Search for a neighborhood to continue with the request details."
+  },
       "pending": {
         "title": "Pending requests",
         "subtitle": "These requests are still waiting for review.",

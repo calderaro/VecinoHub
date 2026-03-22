@@ -1301,13 +1301,24 @@
       }
     },
     "requestAccess": {
-      "label": "Ingreso de residentes",
-      "title": "Solicitar acceso",
-      "subtitle": "Pide unirte a un grupo del vecindario. Tu solicitud quedará pendiente hasta que un manager la revise.",
-      "form": {
-        "title": "Busca tu vecindario",
-        "subtitle": "Ingresa el slug de la colonia que te compartió el equipo administrador y después elige el grupo al que quieres unirte.",
-        "slugLabel": "Slug de la colonia",
+  "label": "Ingreso de residentes",
+  "title": "Solicitar acceso",
+  "subtitle": "Pide unirte a un grupo del vecindario. Tu solicitud quedará pendiente hasta que un manager la revise.",
+  "cta": {
+    "eyebrow": "Nueva solicitud de acceso",
+    "title": "Inicia una solicitud cuando estés listo para unirte a un grupo",
+    "subtitle": "Usa el slug de la colonia que te compartió el equipo administrador, elige el grupo al que perteneces y deja una nota breve para que la revisión sea más rápida.",
+    "action": "Solicitar acceso al grupo",
+    "checklistTitle": "Lo que necesitas",
+    "checklistSlug": "El slug de la colonia que te compartió el equipo administrador.",
+    "checklistGroup": "El grupo, casa o edificio específico al que perteneces.",
+    "checklistReview": "Una nota breve con tu dirección o contexto de residencia."
+  },
+  "form": {
+    "eyebrow": "Solicitar acceso",
+    "title": "Busca tu vecindario",
+    "subtitle": "Ingresa el slug de la colonia que te compartió el equipo administrador y después elige el grupo al que quieres unirte.",
+    "slugLabel": "Slug de la colonia",
         "slugPlaceholder": "colonia-centro",
         "slugRequired": "El slug de la colonia es obligatorio.",
         "search": "Buscar colonia",
@@ -1319,12 +1330,14 @@
         "loadingGroups": "Cargando grupos disponibles...",
         "noGroups": "No hay grupos disponibles para solicitar en esta colonia.",
         "noteLabel": "Nota para la revisión",
-        "notePlaceholder": "Contexto opcional como tu dirección, número de casa o quién te refirió.",
-        "reset": "Limpiar",
-        "submit": "Enviar solicitud",
-        "submitting": "Enviando...",
-        "searchError": "No se pudieron cargar los datos de la colonia."
-      },
+    "notePlaceholder": "Contexto opcional como tu dirección, número de casa o quién te refirió.",
+    "reset": "Limpiar",
+    "close": "Cerrar",
+    "submit": "Enviar solicitud",
+    "submitting": "Enviando...",
+    "searchError": "No se pudieron cargar los datos de la colonia.",
+    "waiting": "Busca una colonia para continuar con los detalles de la solicitud."
+  },
       "pending": {
         "title": "Solicitudes pendientes",
         "subtitle": "Estas solicitudes siguen esperando revisión.",

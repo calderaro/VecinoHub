@@ -289,15 +289,16 @@ Steps:
 1. Create a disposable group in the target neighborhood from `/admin/{neighborhoodId}/groups/new`.
 2. Sign out and sign in as the second user account.
 3. Open `/dashboard/request-access`.
-4. Enter the exact neighborhood slug and submit the lookup.
-5. Select the disposable group, add an optional note, and submit the request.
-6. Verify the pending request appears in the requester view.
-7. Sign out and sign back in as the authorized manager.
-8. Open the disposable group detail page.
-9. Approve the pending access request from the request-review section.
-10. Sign out and sign back in as the requester.
-11. Open `/dashboard/request-access` and verify the request moved to history.
-12. Open the approved group dashboard from the request history.
+4. Open the access-request dialog from the page CTA.
+5. Enter the exact neighborhood slug and submit the lookup.
+6. Select the disposable group, add an optional note, and submit the request.
+7. Verify the pending request appears in the requester view.
+8. Sign out and sign back in as the authorized manager.
+9. Open the disposable group detail page.
+10. Approve the pending access request from the request-review section.
+11. Sign out and sign back in as the requester.
+12. Open `/dashboard/request-access` and verify the request moved to history.
+13. Open the approved group dashboard from the request history.
 
 Expected:
 - Request creation succeeds without granting access before approval.
