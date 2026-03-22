@@ -136,6 +136,7 @@
     "dashboard": "Panel",
     "profile": "Perfil",
     "invites": "Invitaciones",
+    "requestAccess": "Solicitar acceso",
     "adminPanel": "Panel admin",
     "switchGroup": "Cambiar grupo",
     "groups": "Grupos",
@@ -1185,7 +1186,8 @@
       "title": "Aún no tienes grupo",
       "body": "Tu cuenta está pendiente de asignación. Espera a que un admin de grupo te agregue a una casa.",
       "status": "Esperando asignación del admin",
-      "help": "Si crees que esto es un error, contacta al administrador del edificio."
+      "help": "Si crees que esto es un error, contacta al administrador del edificio.",
+      "requestAccess": "Solicitar acceso"
     },
     "groupSelector": {
       "title": "Selecciona un grupo",
@@ -1298,10 +1300,70 @@
         "rejected": "Invitación rechazada."
       }
     },
+    "requestAccess": {
+      "label": "Ingreso de residentes",
+      "title": "Solicitar acceso",
+      "subtitle": "Pide unirte a un grupo del vecindario. Tu solicitud quedará pendiente hasta que un manager la revise.",
+      "form": {
+        "title": "Busca tu vecindario",
+        "subtitle": "Ingresa el slug de la colonia que te compartió el equipo administrador y después elige el grupo al que quieres unirte.",
+        "slugLabel": "Slug de la colonia",
+        "slugPlaceholder": "colonia-centro",
+        "slugRequired": "El slug de la colonia es obligatorio.",
+        "search": "Buscar colonia",
+        "searching": "Buscando...",
+        "neighborhoodLabel": "Colonia",
+        "groupsCount": "{count} grupo{count, plural, one {} other {s}} disponible{count, plural, one {} other {s}} para solicitar",
+        "groupLabel": "Grupo",
+        "groupPlaceholder": "Selecciona un grupo",
+        "loadingGroups": "Cargando grupos disponibles...",
+        "noGroups": "No hay grupos disponibles para solicitar en esta colonia.",
+        "noteLabel": "Nota para la revisión",
+        "notePlaceholder": "Contexto opcional como tu dirección, número de casa o quién te refirió.",
+        "reset": "Limpiar",
+        "submit": "Enviar solicitud",
+        "submitting": "Enviando...",
+        "searchError": "No se pudieron cargar los datos de la colonia."
+      },
+      "pending": {
+        "title": "Solicitudes pendientes",
+        "subtitle": "Estas solicitudes siguen esperando revisión.",
+        "count": "{count} pendientes",
+        "empty": "No hay solicitudes pendientes.",
+        "cancel": "Cancelar solicitud",
+        "cancelling": "Cancelando..."
+      },
+      "history": {
+        "title": "Historial de solicitudes",
+        "subtitle": "Solicitudes aprobadas, rechazadas, canceladas o vencidas.",
+        "empty": "Aún no hay solicitudes anteriores.",
+        "openGroup": "Abrir panel del grupo"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "approved": "Aprobada",
+        "rejected": "Rechazada",
+        "cancelled": "Cancelada",
+        "expired": "Vencida"
+      },
+      "submittedOn": "Enviada el {date}",
+      "reviewedOn": "Revisada el {date}",
+      "expiresOn": "Vence el {date}",
+      "noteLabel": "Nota",
+      "toasts": {
+        "created": "Solicitud de acceso enviada.",
+        "cancelled": "Solicitud de acceso cancelada."
+      }
+    },
     "groupMembers": {
-      "title": "Miembros",
-      "add": "Invitar miembro",
-      "empty": "Aún no hay miembros.",
+    "title": "Miembros",
+    "add": "Invitar miembro",
+    "tabs": {
+      "members": "Miembros",
+      "invites": "Invitaciones",
+      "requests": "Solicitudes"
+    },
+    "empty": "Aún no hay miembros.",
       "remove": "Eliminar",
       "roles": {
         "group_admin": "Admin del grupo",
@@ -1315,6 +1377,8 @@
         "invited": "Invitación enviada.",
         "resent": "Invitación reenviada.",
         "cancelled": "Invitación cancelada.",
+        "requestApproved": "Solicitud de acceso aprobada.",
+        "requestRejected": "Solicitud de acceso rechazada.",
         "left": "Saliste del grupo.",
         "removed": "Miembro eliminado del grupo.",
         "roleUpdated": "Rol del grupo actualizado."
@@ -1334,6 +1398,19 @@
         "resending": "Reenviando...",
         "cancel": "Cancelar",
         "cancelling": "Cancelando..."
+      },
+      "requests": {
+        "title": "Solicitudes de acceso",
+        "count": "{count} pendientes",
+        "empty": "No hay solicitudes de acceso pendientes para este grupo.",
+        "pending": "Pendiente",
+        "createdOn": "Enviada el {date}",
+        "expiresOn": "Vence el {date}",
+        "note": "Nota",
+        "approve": "Aprobar",
+        "approving": "Aprobando...",
+        "reject": "Rechazar",
+        "rejecting": "Rechazando..."
       },
       "addDialog": {
         "title": "Invitar miembro",

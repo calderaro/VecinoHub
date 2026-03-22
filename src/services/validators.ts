@@ -15,6 +15,13 @@ export const groupInviteStatusSchema = z.enum([
   "cancelled",
   "expired",
 ]);
+export const groupAccessRequestStatusSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+  "cancelled",
+  "expired",
+]);
 export const preferredLanguageSchema = z.enum(["es", "en"]);
 export const contributionMethodSchema = z.enum(["cash", "wire_transfer"]);
 export const fundStatusSchema = z.enum(["active", "archived"]);

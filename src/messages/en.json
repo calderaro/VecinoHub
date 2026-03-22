@@ -136,6 +136,7 @@
     "dashboard": "Dashboard",
     "profile": "Profile",
     "invites": "Invites",
+    "requestAccess": "Request access",
     "adminPanel": "Admin Panel",
     "switchGroup": "Switch Group",
     "groups": "Groups",
@@ -1185,7 +1186,8 @@
       "title": "No group assigned yet",
       "body": "Your account is pending group assignment. Please wait for a group admin to add you to a house.",
       "status": "Waiting for admin assignment",
-      "help": "If you believe this is an error, please contact your building administrator."
+      "help": "If you believe this is an error, please contact your building administrator.",
+      "requestAccess": "Request access"
     },
     "groupSelector": {
       "title": "Select a group",
@@ -1298,10 +1300,70 @@
         "rejected": "Invite rejected."
       }
     },
+    "requestAccess": {
+      "label": "Resident onboarding",
+      "title": "Request access",
+      "subtitle": "Ask to join a neighborhood group. Your request stays pending until a manager reviews it.",
+      "form": {
+        "title": "Find your neighborhood",
+        "subtitle": "Enter the neighborhood slug shared by your admin team, then choose the group you want to join.",
+        "slugLabel": "Neighborhood slug",
+        "slugPlaceholder": "colonia-centro",
+        "slugRequired": "Neighborhood slug is required.",
+        "search": "Find neighborhood",
+        "searching": "Searching...",
+        "neighborhoodLabel": "Neighborhood",
+        "groupsCount": "{count} requestable group{count, plural, one {} other {s}}",
+        "groupLabel": "Group",
+        "groupPlaceholder": "Select a group",
+        "loadingGroups": "Loading available groups...",
+        "noGroups": "No requestable groups are currently available in this neighborhood.",
+        "noteLabel": "Note for the reviewer",
+        "notePlaceholder": "Optional context such as your address, house number, or who referred you.",
+        "reset": "Clear",
+        "submit": "Submit request",
+        "submitting": "Submitting...",
+        "searchError": "Unable to load neighborhood details."
+      },
+      "pending": {
+        "title": "Pending requests",
+        "subtitle": "These requests are still waiting for review.",
+        "count": "{count} pending",
+        "empty": "No pending requests.",
+        "cancel": "Cancel request",
+        "cancelling": "Cancelling..."
+      },
+      "history": {
+        "title": "Request history",
+        "subtitle": "Approved, rejected, cancelled, or expired requests.",
+        "empty": "No past requests yet.",
+        "openGroup": "Open group dashboard"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "submittedOn": "Submitted on {date}",
+      "reviewedOn": "Reviewed on {date}",
+      "expiresOn": "Expires on {date}",
+      "noteLabel": "Note",
+      "toasts": {
+        "created": "Access request submitted.",
+        "cancelled": "Access request cancelled."
+      }
+    },
     "groupMembers": {
-      "title": "Members",
-      "add": "Invite member",
-      "empty": "No members yet.",
+    "title": "Members",
+    "add": "Invite member",
+    "tabs": {
+      "members": "Members",
+      "invites": "Invitations",
+      "requests": "Requests"
+    },
+    "empty": "No members yet.",
       "remove": "Remove",
       "roles": {
         "group_admin": "Group admin",
@@ -1315,6 +1377,8 @@
         "invited": "Invite sent.",
         "resent": "Invite resent.",
         "cancelled": "Invite cancelled.",
+        "requestApproved": "Access request approved.",
+        "requestRejected": "Access request rejected.",
         "left": "You left the group.",
         "removed": "Member removed from the group.",
         "roleUpdated": "Group role updated."
@@ -1334,6 +1398,19 @@
         "resending": "Resending...",
         "cancel": "Cancel",
         "cancelling": "Cancelling..."
+      },
+      "requests": {
+        "title": "Access requests",
+        "count": "{count} pending",
+        "empty": "No pending access requests for this group.",
+        "pending": "Pending",
+        "createdOn": "Submitted on {date}",
+        "expiresOn": "Expires on {date}",
+        "note": "Note",
+        "approve": "Approve",
+        "approving": "Approving...",
+        "reject": "Reject",
+        "rejecting": "Rejecting..."
       },
       "addDialog": {
         "title": "Invite group member",

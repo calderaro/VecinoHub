@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  Search,
   Settings,
   Shield,
   User,
@@ -249,6 +250,17 @@ export function UserMenu({
             >
               <Mail className={styles.itemIcon} aria-hidden="true" />
               {t("invites")}
+            </Link>
+
+            <Link
+              href="/dashboard/request-access"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className={styles.item}
+              data-testid="user-menu-request-access"
+            >
+              <Search className={styles.itemIcon} aria-hidden="true" />
+              {t("requestAccess")}
             </Link>
 
             {canSeeAdminLink ? (

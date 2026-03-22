@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { listGroupAccessRequests } from "@/services/group-access-requests";
 import { GroupMembers } from "@/components/groups/group-members";
 import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
@@ -32,6 +33,11 @@ export default async function MembersPage({
         groupId: resolvedParams.groupId,
       })
     : { pending: [], history: [] };
+  const accessRequests = group.viewerCanManage
+    ? await listGroupAccessRequests(serviceContext, {
+        groupId: resolvedParams.groupId,
+      })
+    : { pending: [], history: [] };
   const t = await getTranslations("dashboard.membersPage");
 
   return (
@@ -48,19 +54,15 @@ export default async function MembersPage({
         </p>
       </header>
 
-      <section
-        className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm"
-        data-testid="dashboard-members-list"
-      >
-        <GroupMembers
-          groupId={group.id}
-          members={members}
-          invites={invites.pending}
-          canManage={group.viewerCanManage}
-          viewerUserId={session.user.id}
-          viewerMembershipRole={group.viewerMembershipRole}
-        />
-      </section>
+      <GroupMembers
+        groupId={group.id}
+        members={members}
+        invites={invites.pending}
+        accessRequests={accessRequests.pending}
+        canManage={group.viewerCanManage}
+        viewerUserId={session.user.id}
+        viewerMembershipRole={group.viewerMembershipRole}
+      />
     </div>
   );
 }

@@ -32,6 +32,8 @@
 
 ## Neighbor
 - Read own neighborhood/group dashboard data only while holding at least one active group membership in that neighborhood.
+- Submit group access requests for their own account while signed in.
+- Read and cancel only their own access requests.
 - Vote for own groups in active polls.
 - Submit/delete own group contributions while campaign is open.
 - Read neighborhood fund balances, confirmed movements, and group-level paid/unpaid status in authorized neighborhoods.
@@ -43,6 +45,7 @@
 ## Group Admin
 - Manage their own group details, members, and group roles.
 - Create, resend, and cancel invites for their own group.
+- Review, approve, and reject access requests for their own group.
 - Can leave their own group if at least one other active `group_admin` remains.
 - No elevated cross-neighborhood privileges.
 
@@ -62,5 +65,7 @@
   - fund charge template/period/movement: fund neighborhood must match the authorized neighborhood
   - fund payment: fund, group, charge period, and allocation rows must belong to the same neighborhood and fund
   - invite: group invite neighborhood must match the target group neighborhood, and invite acceptance must require an email match with the signed-in user
+  - access request create: target group must belong to an active neighborhood, requester must be authenticated, and request creation must not create access directly
+  - access request review: only group/neighborhood/platform managers within scope may approve or reject, and approval must activate group membership plus synchronized resident neighborhood membership
   - leave group: the actor may only leave their own active membership, and the final active `group_admin` in a group cannot leave
 - tRPC routers must map `ServiceError` only; never leak raw errors.

@@ -65,6 +65,7 @@ All domain entities (`groups`, `polls`, `fundraising_campaigns`, `neighborhood_f
 - Access dashboard only for groups where user is an active member.
 - Resident access to a neighborhood is derived from having at least one active group membership in that neighborhood.
 - A standalone `neighbor` neighborhood membership must not grant resident access if the user has no active group memberships in that neighborhood.
+- Registered users who are not yet group members may submit a request to join a neighborhood group for manager approval; the request itself must not grant access before approval.
 - View and participate in neighborhood-scoped polls, fundraising, funds, events, and posts.
 - View neighborhood fund balances and confirmed movements and track paid/unpaid status by group.
 - Submit fund payments for their own group.

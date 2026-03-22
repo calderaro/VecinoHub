@@ -20,6 +20,7 @@ mem.public.none(`
   CREATE TYPE group_role AS ENUM ('group_member', 'group_admin');
   CREATE TYPE membership_status AS ENUM ('active', 'inactive');
   CREATE TYPE group_invite_status AS ENUM ('pending', 'accepted', 'rejected', 'cancelled', 'expired');
+  CREATE TYPE group_access_request_status AS ENUM ('pending', 'approved', 'rejected', 'cancelled', 'expired');
   CREATE TYPE poll_status AS ENUM ('draft', 'active', 'closed');
   CREATE TYPE contribution_method AS ENUM ('cash', 'wire_transfer');
   CREATE TYPE contribution_status AS ENUM ('submitted', 'confirmed', 'rejected');
@@ -121,6 +122,28 @@ mem.public.none(`
   CREATE INDEX group_invites_group_status_idx ON group_invites (group_id, status);
   CREATE INDEX group_invites_neighborhood_status_idx ON group_invites (neighborhood_id, status);
   CREATE INDEX group_invites_email_status_idx ON group_invites (lower(email), status);
+
+  CREATE TABLE group_access_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id uuid NOT NULL,
+    neighborhood_id uuid NOT NULL,
+    requested_by uuid NOT NULL,
+    status group_access_request_status NOT NULL DEFAULT 'pending',
+    note text,
+    reviewed_by uuid,
+    reviewed_at timestamptz,
+    approved_at timestamptz,
+    rejected_at timestamptz,
+    cancelled_at timestamptz,
+    expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE INDEX group_access_requests_group_status_idx ON group_access_requests (group_id, status);
+  CREATE INDEX group_access_requests_neighborhood_status_idx ON group_access_requests (neighborhood_id, status);
+  CREATE INDEX group_access_requests_requested_by_status_idx ON group_access_requests (requested_by, status);
+  CREATE INDEX group_access_requests_expires_at_idx ON group_access_requests (expires_at);
 
   CREATE TABLE polls (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

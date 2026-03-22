@@ -36,6 +36,13 @@ export const groupInviteStatusEnum = pgEnum("group_invite_status", [
   "cancelled",
   "expired",
 ]);
+export const groupAccessRequestStatusEnum = pgEnum("group_access_request_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "cancelled",
+  "expired",
+]);
 export const pollStatusEnum = pgEnum("poll_status", ["draft", "active", "closed"]);
 export const contributionMethodEnum = pgEnum("contribution_method", ["cash", "wire_transfer"]);
 export const contributionStatusEnum = pgEnum("contribution_status", [
@@ -311,6 +318,45 @@ export const groupInvites = pgTable(
     ),
     index("group_invites_email_status_idx").on(sql`lower(${table.email})`, table.status),
     index("group_invites_expires_at_idx").on(table.expiresAt),
+  ]
+);
+
+export const groupAccessRequests = pgTable(
+  "group_access_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    groupId: uuid("group_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    requestedBy: uuid("requested_by").notNull(),
+    status: groupAccessRequestStatusEnum("status").notNull().default("pending"),
+    note: text("note"),
+    reviewedBy: uuid("reviewed_by"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    rejectedAt: timestamp("rejected_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("group_access_requests_pending_group_user_unique")
+      .on(table.groupId, table.requestedBy)
+      .where(sql`${table.status} = 'pending'::group_access_request_status`),
+    index("group_access_requests_group_status_idx").on(table.groupId, table.status),
+    index("group_access_requests_neighborhood_status_idx").on(
+      table.neighborhoodId,
+      table.status
+    ),
+    index("group_access_requests_requested_by_status_idx").on(
+      table.requestedBy,
+      table.status
+    ),
+    index("group_access_requests_expires_at_idx").on(table.expiresAt),
   ]
 );
 

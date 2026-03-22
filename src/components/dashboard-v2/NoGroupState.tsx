@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ClockIcon, HomeIcon, LogOutIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +15,8 @@ type NoGroupStateProps = {
   helpText: string;
   signOutLabel: string;
   signingOutLabel: string;
+  actionHref?: string;
+  actionLabel?: string;
   fullScreen?: boolean;
 };
 
@@ -25,6 +28,8 @@ export function NoGroupState({
   helpText,
   signOutLabel,
   signingOutLabel,
+  actionHref,
+  actionLabel,
   fullScreen = true,
 }: NoGroupStateProps) {
   const router = useRouter();
@@ -65,18 +70,32 @@ export function NoGroupState({
         </div>
 
         <p className="mt-6 text-xs text-stone-400">{helpText}</p>
-        <button
-          type="button"
-          onClick={() => {
-            void handleSignOut();
-          }}
-          disabled={isSigningOut}
-          data-testid="dashboard-no-group-signout"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 hover:border-stone-300 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <LogOutIcon className="h-4 w-4" aria-hidden="true" />
-          {isSigningOut ? signingOutLabel : signOutLabel}
-        </button>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {actionHref && actionLabel ? (
+            <Link
+              href={actionHref}
+              data-testid="dashboard-no-group-action"
+              className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+            >
+              <HomeIcon className="h-4 w-4" aria-hidden="true" />
+              {actionLabel}
+            </Link>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => {
+              void handleSignOut();
+            }}
+            disabled={isSigningOut}
+            data-testid="dashboard-no-group-signout"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 hover:border-stone-300 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <LogOutIcon className="h-4 w-4" aria-hidden="true" />
+            {isSigningOut ? signingOutLabel : signOutLabel}
+          </button>
+        </div>
       </div>
     </main>
   );

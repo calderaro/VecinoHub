@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
+import { listGroupAccessRequests } from "@/services/group-access-requests";
 import { GroupDetailActions } from "@/components/groups/group-detail-actions";
 import { GroupMembers } from "@/components/groups/group-members";
 import { StatusBadge } from "@/components/ui-v3";
@@ -47,7 +48,7 @@ export default async function GroupDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const [group, members, invites] = await Promise.all([
+  const [group, members, invites, accessRequests] = await Promise.all([
     getGroupById(serviceContext, {
       groupId: resolvedParams.groupId,
     }),
@@ -55,6 +56,9 @@ export default async function GroupDetailPage({
       groupId: resolvedParams.groupId,
     }),
     listGroupInvites(serviceContext, {
+      groupId: resolvedParams.groupId,
+    }),
+    listGroupAccessRequests(serviceContext, {
       groupId: resolvedParams.groupId,
     }),
   ]);
@@ -113,6 +117,7 @@ export default async function GroupDetailPage({
             groupId={group.id}
             members={members}
             invites={invites.pending}
+            accessRequests={accessRequests.pending}
             canManage
             viewerUserId={session.user.id}
             viewerMembershipRole={group.viewerMembershipRole}

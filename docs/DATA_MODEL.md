@@ -9,6 +9,7 @@
 - `group_role`: `group_member`, `group_admin`
 - `membership_status`: `active`, `inactive`
 - `group_invite_status`: `pending`, `accepted`, `rejected`, `cancelled`, `expired`
+- `group_access_request_status`: `pending`, `approved`, `rejected`, `cancelled`, `expired`
 - `poll_status`: `draft`, `active`, `closed`
 - `contribution_method`: `cash`, `wire_transfer`
 - `contribution_status`: `submitted`, `confirmed`, `rejected`
@@ -98,6 +99,28 @@
 - `created_at`
 - `updated_at`
 - Unique: one active pending invite per (`group_id`, lower(`email`))
+
+## group_access_requests
+- `id` (pk)
+- `group_id` (fk -> groups.id)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `requested_by` (fk -> users.id)
+- `status`
+- `note` (nullable)
+- `reviewed_by` (fk -> users.id, nullable)
+- `reviewed_at` (nullable)
+- `approved_at` (nullable)
+- `rejected_at` (nullable)
+- `cancelled_at` (nullable)
+- `expires_at`
+- `created_at`
+- `updated_at`
+- Unique: one active pending request per (`group_id`, `requested_by`)
+- Semantics:
+  - Requests are user-initiated and never grant access on creation.
+  - Approval creates or reactivates the target `group_membership`.
+  - Approval also reactivates the synchronized `neighbor` membership in the parent neighborhood.
+  - Requests are scoped to a single group and one signed-in requester account.
 
 ## polls
 - `id` (pk)
@@ -282,6 +305,8 @@
   - `groups.neighborhood_id`
   - `group_invites(group_id, status)`
   - `group_invites(lower(email), status)`
+  - `group_access_requests(group_id, status)`
+  - `group_access_requests(requested_by, status)`
   - `polls.neighborhood_id`
   - `fundraising_campaigns.neighborhood_id`
   - `neighborhood_funds(neighborhood_id)`

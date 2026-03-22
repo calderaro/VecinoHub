@@ -66,22 +66,26 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [x] Pages: use services directly for SSR read-only group data.
 
 ## 6.1) Group Invitations
-- [ ] Add `group_invites` schema + enum and generate migration.
-- [ ] Extract a shared transactional mailer utility and reuse SMTP config for invite emails.
-- [ ] Add `src/services/group-invites.ts` with create/list/resend/cancel/accept/reject flows.
-- [ ] Add `groupInvites` tRPC router.
-- [ ] Add `/dashboard/invites` SSR page and client actions.
-- [ ] Update `/dashboard` no-group behavior to account for pending invites.
-- [ ] Update group member management UI to use invite-by-email and show pending invites.
-- [ ] Update translations, QA, and Playwright run docs.
+- [x] Add `group_invites` schema + enum and generate migration.
+- [x] Extract a shared transactional mailer utility and reuse SMTP config for invite emails.
+- [x] Add `src/services/group-invites.ts` with create/list/resend/cancel/accept/reject flows.
+- [x] Add `groupInvites` tRPC router.
+- [x] Add `/dashboard/invites` SSR page and client actions.
+- [x] Update `/dashboard` no-group behavior to account for pending invites.
+- [x] Update group member management UI to use invite-by-email and show pending invites.
+- [x] Update translations, QA, and Playwright run docs.
 
 ## 6.2) Derived Resident Neighborhood Access
-- [ ] Tighten resident neighborhood authorization so regular residents only access a neighborhood through active group membership in that neighborhood.
-- [ ] Keep `neighborhood_admin` memberships explicit and valid without group membership.
-- [ ] Synchronize `neighbor` neighborhood memberships with active group membership counts inside the same neighborhood.
-- [ ] Update leave/remove/invite acceptance flows to maintain the synchronized `neighbor` membership correctly.
-- [ ] Backfill existing data so residents without active groups do not retain active neighborhood access.
-- [ ] Update QA, permissions, and access-control tests for the derived-access rule.
+- [x] Tighten resident neighborhood authorization so regular residents only access a neighborhood through active group membership in that neighborhood.
+- [x] Keep `neighborhood_admin` memberships explicit and valid without group membership.
+- [x] Synchronize `neighbor` neighborhood memberships with active group membership counts inside the same neighborhood.
+- [x] Update leave/remove/invite acceptance flows to maintain the synchronized `neighbor` membership correctly.
+- [x] Backfill existing data so residents without active groups do not retain active neighborhood access.
+- [x] Update QA, permissions, and access-control tests for the derived-access rule.
+
+## 6.3) Group Access Requests
+- [x] Add a registered-user request flow for joining a group with manager approval.
+- [x] Follow the detailed execution plan in `docs/GROUP_ACCESS_REQUESTS_IMPLEMENTATION_PLAN.md`.
 
 ## 7) Polls & Voting
 - [x] Admin: create/edit/close polls.

@@ -55,7 +55,17 @@
 - Rejecting an invite does not create group membership.
 - Users signed in with a different email from the invite target cannot accept or reject that invite.
 - Group managers can resend and cancel pending invites for their own group only.
+- Signed-in users can open `/dashboard/request-access`, look up an active neighborhood by exact slug, and see requestable groups in that neighborhood.
+- Creating a group access request does not create resident access before approval.
+- A user cannot create a duplicate pending request for the same group.
+- A requester can cancel only their own pending request.
+- Group admins, neighborhood admins, and platform admins can review requests only within their scope.
+- Approving a request creates or reactivates the requester’s `group_membership` as `group_member`.
+- Approving a request also creates or reactivates the synchronized `neighbor` neighborhood membership.
+- Rejecting a request closes it without creating resident access.
+- `/dashboard/request-access` shows pending requests separately from request history.
 - Group members remain read-only in `/dashboard/[groupId]/members`.
+- `/dashboard/[groupId]/members` renders separate tabs for members, invitations, and requests, and each tab shows only its own content panel.
 - Group members can leave their own group from `/dashboard/[groupId]/members` and are redirected back to `/dashboard`.
 - Group admins can leave their own group only when another active group admin remains.
 - The last active group admin in a group cannot leave and sees a clear error message.
@@ -92,8 +102,11 @@
 
 ## UI and Accessibility
 - New/updated UI includes test ids:
+  - group members tabs and tab panels
   - dashboard invites inbox and invite actions
+  - dashboard request-access flow and requester history
   - group invite creation and pending invite management
+  - group access request review actions
   - group self-leave action and confirmation dialog
   - platform neighborhood creation/list
   - platform global users list/detail

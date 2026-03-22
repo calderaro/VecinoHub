@@ -18,28 +18,36 @@
 - `/dashboard`
   - redirects to first available group in active neighborhood context.
   - users with no groups but pending invites are redirected to `/dashboard/invites`.
-  - users with neither groups nor invites see waiting state.
+  - users with neither groups nor invites see waiting state with a request-access CTA.
   - users with no active groups in a neighborhood must not keep resident access there solely because of a standalone `neighbor` membership.
 - `/dashboard/invites`
   - invite inbox for the signed-in user.
   - lists pending group invites that match the signed-in account email.
   - supports accept/reject actions.
   - works even when the user has zero accepted group memberships.
+- `/dashboard/request-access`
+  - self-service request flow for signed-in residents who are not yet members of a target group.
+  - exact neighborhood slug lookup, then group selection, optional note, and submit action.
+  - shows the requester’s pending requests and request history.
+  - supports requester-side cancel for pending requests.
 - `/dashboard/[groupId]`
   - overview cards: posts, events, polls, fundraising, funds, members.
   - sticky header with `UserMenu`.
   - `UserMenu` supports:
     - profile link
     - invites link
+    - request access link
     - group switcher
     - neighborhood switcher (if user has >1 neighborhood)
     - admin/platform entries based on role
 - Resident modules:
 - `/dashboard/[groupId]/members`
   - read-only for `group_member`.
+  - uses tabs for members, invitations, and requests.
   - signed-in members can leave their own group from this page.
   - the leave action must be blocked for the last active `group_admin` until another admin is assigned.
-  - `group_admin`, `neighborhood_admin`, and `platform_admin` can invite members, cancel/resend pending invites, add/remove existing accepted members, and change group roles.
+  - `group_admin`, `neighborhood_admin`, and `platform_admin` can invite members, cancel/resend pending invites, review access requests, add/remove existing accepted members, and change group roles.
+  - the invite CTA is surfaced from the Invitations tab.
 - `/dashboard/[groupId]/polls`
   - `/dashboard/[groupId]/polls/[pollId]`
   - `/dashboard/[groupId]/fundraising`

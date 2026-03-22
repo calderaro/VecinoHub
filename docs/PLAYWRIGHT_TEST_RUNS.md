@@ -151,12 +151,14 @@ Preconditions:
 
 Steps:
 1. Open `/dashboard/{groupId}/members`.
-2. Verify `group-members-add` is visible.
-3. Send an invite with `group-members-add`, `group-members-add-role`, and `group-members-add-submit`.
-4. Sign in as the invited user and accept the invite in `/dashboard/invites`.
-5. Sign back in as the group admin.
-6. Change that user via `group-members-role-{userId}`.
-7. Remove that user with the remove action.
+2. Verify `group-members-tab-members`, `group-members-tab-invites`, and `group-members-tab-requests` are visible.
+3. Open the invitations tab and verify `group-members-add` is visible.
+4. Send an invite with `group-members-add`, `group-members-add-role`, and `group-members-add-submit`.
+5. Sign in as the invited user and accept the invite in `/dashboard/invites`.
+6. Sign back in as the group admin.
+7. Open the members tab.
+8. Change that user via `group-members-role-{userId}`.
+9. Remove that user with the remove action.
 
 Expected:
 - The group admin can invite users, remove members, and switch `group_member` / `group_admin` roles only inside their own group.
@@ -167,9 +169,10 @@ Preconditions:
 
 Steps:
 1. Open `/dashboard/{groupId}/members`.
-2. Verify the members list renders.
-3. Verify `group-members-add` is not present.
-4. Verify no `group-members-role-{userId}` control is shown.
+2. Verify `group-members-tab-members` is visible and the members list renders.
+3. Verify `group-members-tab-invites` and `group-members-tab-requests` are not present.
+4. Verify `group-members-add` is not present.
+5. Verify no `group-members-role-{userId}` control is shown.
 
 Expected:
 - The group member can read the roster but cannot change membership or roles.
@@ -274,6 +277,32 @@ Steps:
 
 Expected:
 - The newly registered user lands in the invite inbox after verification, can accept the invite, and then gains access to the invited group.
+
+## Feature: Group Access Requests
+
+### Test Run: Registered User Requests Access and Manager Approves
+Preconditions:
+- Logged in as a `neighborhood_admin` for the target neighborhood.
+- A second existing signed-in user account exists and is not yet an active member of the disposable target group.
+
+Steps:
+1. Create a disposable group in the target neighborhood from `/admin/{neighborhoodId}/groups/new`.
+2. Sign out and sign in as the second user account.
+3. Open `/dashboard/request-access`.
+4. Enter the exact neighborhood slug and submit the lookup.
+5. Select the disposable group, add an optional note, and submit the request.
+6. Verify the pending request appears in the requester view.
+7. Sign out and sign back in as the authorized manager.
+8. Open the disposable group detail page.
+9. Approve the pending access request from the request-review section.
+10. Sign out and sign back in as the requester.
+11. Open `/dashboard/request-access` and verify the request moved to history.
+12. Open the approved group dashboard from the request history.
+
+Expected:
+- Request creation succeeds without granting access before approval.
+- The manager can review and approve the request only inside the authorized group scope.
+- Approval activates the requester’s group access and the requester can open the approved group dashboard afterward.
 
 ## Feature: Dashboard Localization
 
@@ -545,7 +574,15 @@ Poll Management:
 - admin-poll-results-row-<id>
 
 Group Members:
+- group-members-tabs
+- group-members-tab-members
+- group-members-tab-invites
+- group-members-tab-requests
+- group-members-panel-members
+- group-members-panel-invites
+- group-members-panel-requests
 - group-members-add
+- group-members-add-role
 - group-members-add-submit
 - group-members-add-cancel
 - group-members-remove-confirm

@@ -101,6 +101,8 @@ export default async function DashboardGroupSelectorPage() {
             helpText={tEmpty("help")}
             signOutLabel={tUserMenu("signOut")}
             signingOutLabel={tUserMenu("signingOut")}
+            actionHref="/dashboard/request-access"
+            actionLabel={tEmpty("requestAccess")}
             fullScreen={false}
           />
         ) : (

@@ -51,6 +51,16 @@
 - `groupInvites.accept` (mutation, authenticated user whose account email matches the invite email)
 - `groupInvites.reject` (mutation, authenticated user whose account email matches the invite email)
 
+### groupAccessRequests
+- `groupAccessRequests.listMine` (query, authenticated)
+- `groupAccessRequests.lookupNeighborhood` (query, authenticated, exact active-neighborhood slug lookup for request creation)
+- `groupAccessRequests.listRequestableGroups` (query, authenticated, active groups in the selected neighborhood excluding the actor's active memberships and pending requests)
+- `groupAccessRequests.create` (mutation, authenticated verified user)
+- `groupAccessRequests.cancel` (mutation, authenticated requester only)
+- `groupAccessRequests.listForGroup` (query, group admin / neighborhood admin / platform admin)
+- `groupAccessRequests.approve` (mutation, group admin / neighborhood admin / platform admin)
+- `groupAccessRequests.reject` (mutation, group admin / neighborhood admin / platform admin)
+
 ### polls
 - `polls.create` / `polls.update` / `polls.close` / `polls.reopen` / `polls.reset` (mutation, neighborhood admin or platform admin)
 - `polls.addOption` / `polls.updateOption` / `polls.removeOption` (mutation, neighborhood admin or platform admin)
@@ -87,6 +97,8 @@
 - Neighborhood-scoped creates accept optional `neighborhoodId`; if omitted, services resolve from active context/admin memberships.
 - `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
 - Group invite creation accepts an email for both existing and not-yet-registered people; membership is created only on acceptance.
+- Group access request creation is signed-in-user initiated; it must not create any membership until an authorized reviewer approves it.
+- Group access request approval always grants `group_member` and reactivates the synchronized `neighbor` neighborhood membership for the requester.
 - `groups.leave` inactivates the signed-in user’s membership in the target group and also inactivates the synchronized `neighbor` neighborhood membership when that was the user’s last active group in the neighborhood.
 - `groups.leave` must reject attempts by the last active `group_admin` in a group until another active admin exists.
 - For regular residents, neighborhood-scoped reads must resolve authorization through active group membership in that neighborhood; a standalone `neighbor` membership is only a synchronized support record.
