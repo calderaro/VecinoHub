@@ -159,6 +159,7 @@
       "polls": "Votaciones",
       "fundraising": "Recaudación",
       "funds": "Fondos",
+      "resources": "Recursos",
       "events": "Eventos",
       "posts": "Publicaciones"
     },
@@ -183,6 +184,11 @@
           "active": "Activos",
           "archived": "Archivados",
           "overdue": "Vencidos"
+        },
+        "resources": {
+          "active": "Activos",
+          "inactive": "Inactivos",
+          "reserved": "Reservados"
         },
         "events": {
           "upcoming": "Próximos",
@@ -236,6 +242,158 @@
         "viewAll": "Administrar roles de colonia",
         "empty": "Todavía no hay administradores de colonia.",
         "emptyHint": "Asigna el rol de admin de colonia a un usuario existente para mostrarlo aquí."
+      }
+    },
+    "resources": {
+      "list": {
+        "title": "Recursos",
+        "subtitle": "Administra espacios reservables, disponibilidad semanal y reglas activas de esta colonia.",
+        "links": {
+          "blocks": "Bloqueos",
+          "reservations": "Reservas",
+          "new": "Nuevo recurso"
+        },
+        "empty": "Todavía no hay recursos configurados.",
+        "table": {
+          "name": "Nombre",
+          "status": "Estado",
+          "capacity": "Capacidad",
+          "upcomingReservations": "Reservas próximas",
+          "futureBlocks": "Bloqueos futuros",
+          "noLocation": "Sin ubicación"
+        }
+      },
+      "createPage": {
+        "back": "Volver a recursos",
+        "title": "Nuevo recurso",
+        "subtitle": "Define la ficha del recurso, el horario semanal y sus reglas de reservación."
+      },
+      "editPage": {
+        "back": "Volver al recurso",
+        "title": "Editar recurso",
+        "subtitle": "Actualiza la información, el horario semanal y las políticas de reservación."
+      },
+      "detail": {
+        "noDescription": "Todavía no hay descripción.",
+        "noLocation": "Sin ubicación",
+        "links": {
+          "reservations": "Reservas",
+          "edit": "Editar recurso"
+        },
+        "summary": {
+          "title": "Resumen",
+          "type": "Tipo",
+          "capacity": "Capacidad",
+          "upcomingReservations": "Reservas próximas",
+          "upcomingBlocks": "Bloqueos próximos"
+        },
+        "rules": {
+          "title": "Resumen de reglas",
+          "advanceWindow": "Ventana de anticipación",
+          "duration": "Duración",
+          "buffers": "Buffers",
+          "concurrentReservations": "Reservas simultáneas",
+          "requireNoDebt": "Exigir cuotas al corriente"
+        },
+        "upcomingBlocks": {
+          "title": "Bloqueos próximos",
+          "empty": "No hay bloqueos administrativos próximos."
+        },
+        "calendarTitle": "Próximos 14 días",
+        "yes": "Sí",
+        "no": "No"
+      },
+      "reservationsPage": {
+        "title": "Reservas de recursos",
+        "subtitle": "Revisa las reservas programadas e históricas de la colonia.",
+        "empty": "Aún no hay reservas.",
+        "table": {
+          "resource": "Recurso",
+          "group": "Grupo",
+          "title": "Reserva",
+          "start": "Inicio",
+          "status": "Estado"
+        }
+      },
+      "blocksPage": {
+        "title": "Bloqueos de recursos",
+        "subtitle": "Crea ventanas de mantenimiento o bloqueo operativo y revisa los bloqueos actuales.",
+        "empty": "Aún no hay bloqueos.",
+        "table": {
+          "resource": "Recurso",
+          "reason": "Motivo",
+          "start": "Inicio",
+          "end": "Fin",
+          "actions": "Acciones"
+        }
+      },
+      "form": {
+        "created": "Recurso creado.",
+        "updated": "Recurso actualizado.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "submitCreate": "Crear recurso",
+        "submitEdit": "Guardar cambios",
+        "sections": {
+          "basic": "Información básica",
+          "availability": "Disponibilidad semanal",
+          "rules": "Reglas de reservación",
+          "financial": "Cobros y políticas"
+        },
+        "fields": {
+          "name": "Nombre",
+          "type": "Tipo",
+          "location": "Ubicación",
+          "capacity": "Capacidad",
+          "status": "Estado",
+          "description": "Descripción",
+          "requiresDeposit": "Requiere depósito",
+          "depositAmount": "Monto del depósito",
+          "reservationFee": "Costo de reservación",
+          "usageRules": "Reglas visibles de uso",
+          "termsText": "Términos y notas"
+        },
+        "rules": {
+          "minAdvanceHours": "Anticipación mínima (horas)",
+          "maxAdvanceDays": "Anticipación máxima (días)",
+          "minDurationMinutes": "Duración mínima (minutos)",
+          "maxDurationMinutes": "Duración máxima (minutos)",
+          "bufferBeforeMinutes": "Buffer antes de la reserva (minutos)",
+          "bufferAfterMinutes": "Buffer después de la reserva (minutos)",
+          "maxReservationsPerMonth": "Máximo de reservas por mes",
+          "maxReservationsPerYear": "Máximo de reservas por año",
+          "maxActiveReservations": "Máximo de reservas futuras activas",
+          "maxConcurrentReservations": "Máximo de reservas simultáneas",
+          "cancellationLimitHours": "Límite para cancelar (horas)",
+          "requireNoDebt": "Exigir cuotas al corriente",
+          "lateCancellationCountsAsUsage": "La cancelación tardía cuenta como uso",
+          "lateCancellationForfeitsDeposit": "La cancelación tardía pierde el depósito"
+        },
+        "errors": {
+          "nameRequired": "Ingresa un nombre para el recurso antes de guardar.",
+          "availabilityRequired": "Activa al menos una ventana de disponibilidad antes de guardar.",
+          "resourceIdRequired": "Se requiere el identificador del recurso para guardar cambios."
+        }
+      },
+      "blockForm": {
+        "title": "Crear bloqueo",
+        "created": "Bloqueo creado.",
+        "resource": "Recurso",
+        "date": "Fecha",
+        "startTime": "Hora de inicio",
+        "endTime": "Hora de fin",
+        "reason": "Motivo",
+        "notes": "Notas",
+        "saving": "Guardando...",
+        "submit": "Crear bloqueo",
+        "placeholders": {
+          "date": "Selecciona la fecha del bloqueo",
+          "startTime": "Selecciona la hora de inicio",
+          "endTime": "Selecciona la hora de fin"
+        },
+        "errors": {
+          "required": "Selecciona un recurso y una fecha antes de guardar."
+        }
       }
     },
     "users": {
@@ -693,6 +851,9 @@
       "saveErrorTitle": "No se pudo guardar la campaña",
       "cancel": "Cancelar",
       "descriptionPlaceholder": "Explica qué financiará esta campaña y por qué es importante.",
+      "placeholders": {
+        "dueDate": "Selecciona la fecha límite"
+      },
       "preview": {
         "newCampaign": "Nueva campaña",
         "fundraisingCampaign": "Campaña de recaudación",
@@ -780,6 +941,9 @@
         "reference": "Referencia",
         "date": "Fecha"
       },
+      "placeholders": {
+        "date": "Selecciona la fecha de transferencia"
+      },
       "methods": {
         "cash": "Efectivo",
         "wire_transfer": "Transferencia"
@@ -814,12 +978,18 @@
       "saving": "Guardando...",
       "saveChanges": "Guardar cambios",
       "locationPlaceholder": "Salón comunitario",
+      "clearEndTime": "Borrar hora de fin",
+      "scheduleHint": "Todos los horarios del evento se muestran en {timeZone}.",
       "fields": {
         "title": "Título",
         "startTime": "Inicio",
         "endTime": "Fin",
         "location": "Lugar",
         "description": "Descripción"
+      },
+      "placeholders": {
+        "startTime": "Selecciona el inicio del evento",
+        "endTime": "Selecciona el fin del evento"
       }
     },
     "eventActions": {
@@ -1001,6 +1171,9 @@
           "descriptionPlaceholder": "Detalles opcionales para este periodo.",
           "amountPerGroup": "Monto por grupo",
           "dueDate": "Fecha límite"
+        },
+        "placeholders": {
+          "dueDate": "Selecciona la fecha límite"
         }
       },
       "periodDetail": {
@@ -1036,6 +1209,10 @@
           "endsOn": "Termina el",
           "description": "Descripción"
         },
+        "placeholders": {
+          "startsOn": "Selecciona la fecha de inicio",
+          "endsOn": "Selecciona la fecha de fin"
+        },
         "frequency": {
           "monthly": "Mensual",
           "quarterly": "Trimestral",
@@ -1060,6 +1237,9 @@
           "entrySide": "Tipo de entrada",
           "effectiveAt": "Fecha efectiva",
           "description": "Descripción"
+        },
+        "placeholders": {
+          "effectiveAt": "Selecciona la fecha efectiva"
         },
         "entrySide": {
           "credit": "Crédito",
@@ -1179,7 +1359,37 @@
     "overdue": "Vencido",
     "waived": "Condonado",
     "archived": "Archivado",
-    "cancelled": "Cancelado"
+    "cancelled": "Cancelado",
+    "approved": "Aprobado",
+    "completed": "Completado",
+    "expired": "Vencido"
+  },
+  "resourcesUi": {
+    "actions": {
+      "cancel": "Cancelar",
+      "cancelling": "Cancelando...",
+      "remove": "Eliminar",
+      "removing": "Eliminando...",
+      "reservationCancelled": "Reserva cancelada.",
+      "blockRemoved": "Bloqueo eliminado."
+    },
+    "calendar": {
+      "availableWindows": "Ventanas disponibles",
+      "noAvailability": "No hay disponibilidad semanal.",
+      "reservations": "Reservas",
+      "noReservations": "No hay reservas.",
+      "unknownGroup": "Grupo no identificado",
+      "blocks": "Bloqueos",
+      "noBlocks": "No hay bloqueos."
+    },
+    "blockReasons": {
+      "maintenance": "Mantenimiento",
+      "cleaning": "Limpieza",
+      "repair": "Reparación",
+      "neighborhood_event": "Evento del vecindario",
+      "unavailable": "No disponible",
+      "other": "Otro"
+    }
   },
   "dashboard": {
     "empty": {
@@ -1240,6 +1450,14 @@
         "periods": "{count} periodo{count, plural, one {} other {s}} abierto{count, plural, one {} other {s}}",
         "pending": "{count} pago{count, plural, one {} other {s}} pendiente{count, plural, one {} other {s}}"
       },
+      "resources": {
+        "title": "Recursos",
+        "viewAll": "Ver recursos",
+        "empty": "No hay recursos disponibles.",
+        "emptyHint": "Las amenidades reservables aparecerán aquí cuando el equipo admin las configure.",
+        "upcoming": "{count} reserva{count, plural, one {} other {s}} próxima{count, plural, one {} other {s}}",
+        "noDescription": "Sin detalles."
+      },
       "members": {
         "title": "Miembros del grupo",
         "count": "{count} miembro{count, plural, one {} other {s}} en este grupo",
@@ -1258,8 +1476,76 @@
       "polls": "Votaciones",
       "fundraising": "Recaudación",
       "funds": "Fondos",
+      "resources": "Recursos",
       "events": "Eventos",
       "posts": "Publicaciones"
+    },
+    "resourcesPage": {
+      "eyebrow": "Recursos",
+      "title": "Recursos del vecindario",
+      "subtitle": "Explora amenidades reservables y revisa las próximas reservas de tu grupo.",
+      "links": {
+        "myReservations": "Mis reservas"
+      },
+      "empty": "Todavía no hay recursos disponibles en esta colonia.",
+      "noDescription": "Sin detalles por ahora.",
+      "cards": {
+        "type": "Tipo",
+        "capacity": "Capacidad",
+        "upcoming": "Próximas"
+      }
+    },
+    "resourceDetail": {
+      "noDescription": "Todavía no hay descripción.",
+      "noLocation": "Sin ubicación",
+      "reserve": "Reservar",
+      "availability": "Disponibilidad",
+      "rules": {
+        "title": "Reglas",
+        "advanceNotice": "Anticipación",
+        "duration": "Duración",
+        "monthlyLimit": "Límite mensual",
+        "yearlyLimit": "Límite anual",
+        "cancellationCutoff": "Límite para cancelar"
+      }
+    },
+    "resourceReservationForm": {
+      "title": "Reservar {resourceName}",
+      "subtitle": "Esta reserva se creará para {groupName}.",
+      "created": "Reserva creada.",
+      "cancel": "Cancelar",
+      "submitting": "Enviando...",
+      "submit": "Crear reserva",
+      "fields": {
+        "date": "Fecha",
+        "title": "Título o motivo",
+        "startTime": "Hora de inicio",
+        "endTime": "Hora de fin",
+        "attendeeCount": "Asistentes estimados",
+        "notes": "Notas"
+      },
+      "placeholders": {
+        "date": "Selecciona la fecha de la reserva",
+        "startTime": "Selecciona la hora de inicio",
+        "endTime": "Selecciona la hora de fin"
+      },
+      "errors": {
+        "required": "Ingresa una fecha y un título antes de enviar.",
+        "dateOutOfRange": "La hora de inicio seleccionada ya no cabe dentro de la ventana permitida. Elige otra fecha."
+      }
+    },
+    "resourceReservations": {
+      "title": "Mis reservas",
+      "subtitle": "Reservas próximas, pasadas y canceladas de este grupo.",
+      "empty": "Aún no hay reservas.",
+      "table": {
+        "resource": "Recurso",
+        "title": "Reserva",
+        "start": "Inicio",
+        "status": "Estado",
+        "actions": "Acciones",
+        "noActions": "—"
+      }
     },
     "membersPage": {
       "label": "Padrón de casa",
@@ -1598,6 +1884,9 @@
         "reference": "Referencia",
         "date": "Fecha"
       },
+      "placeholders": {
+        "date": "Selecciona la fecha de transferencia"
+      },
       "methods": {
         "cash": "Efectivo",
         "wire_transfer": "Transferencia"
@@ -1665,11 +1954,29 @@
           "reference": "Referencia de transferencia",
           "notes": "Notas"
         },
+        "placeholders": {
+          "paidAt": "Selecciona la fecha de pago"
+        },
         "methods": {
           "cash": "Efectivo",
           "wire_transfer": "Transferencia"
         }
       }
+    }
+  },
+  "dateTimePicker": {
+    "cancel": "Cancelar",
+    "apply": "Aplicar",
+    "close": "Cerrar",
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "time24": "Hora (24h)",
+    "hour": "Hora",
+    "minute": "Minuto",
+    "placeholders": {
+      "date": "Selecciona una fecha",
+      "time": "Selecciona una hora",
+      "datetime": "Selecciona fecha y hora"
     }
   }
 }

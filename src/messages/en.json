@@ -159,6 +159,7 @@
       "polls": "Polls",
       "fundraising": "Fundraising",
       "funds": "Funds",
+      "resources": "Resources",
       "events": "Events",
       "posts": "Posts"
     },
@@ -183,6 +184,11 @@
           "active": "Active",
           "archived": "Archived",
           "overdue": "Overdue"
+        },
+        "resources": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "reserved": "Reserved"
         },
         "events": {
           "upcoming": "Upcoming",
@@ -236,6 +242,158 @@
         "viewAll": "Manage neighborhood roles",
         "empty": "No neighborhood admins yet.",
         "emptyHint": "Assign the neighborhood admin role to an existing user to show them here."
+      }
+    },
+    "resources": {
+      "list": {
+        "title": "Resources",
+        "subtitle": "Manage reservable spaces, weekly availability, and rule coverage for this neighborhood.",
+        "links": {
+          "blocks": "Blocks",
+          "reservations": "Reservations",
+          "new": "New resource"
+        },
+        "empty": "No resources have been configured yet.",
+        "table": {
+          "name": "Name",
+          "status": "Status",
+          "capacity": "Capacity",
+          "upcomingReservations": "Upcoming reservations",
+          "futureBlocks": "Future blocks",
+          "noLocation": "No location set"
+        }
+      },
+      "createPage": {
+        "back": "Back to resources",
+        "title": "New resource",
+        "subtitle": "Define the resource profile, weekly schedule, and reservation rules."
+      },
+      "editPage": {
+        "back": "Back to resource",
+        "title": "Edit resource",
+        "subtitle": "Update the resource details, weekly schedule, and reservation policies."
+      },
+      "detail": {
+        "noDescription": "No description provided yet.",
+        "noLocation": "No location set",
+        "links": {
+          "reservations": "Reservations",
+          "edit": "Edit resource"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "Type",
+          "capacity": "Capacity",
+          "upcomingReservations": "Upcoming reservations",
+          "upcomingBlocks": "Upcoming blocks"
+        },
+        "rules": {
+          "title": "Rule snapshot",
+          "advanceWindow": "Advance window",
+          "duration": "Duration",
+          "buffers": "Buffers",
+          "concurrentReservations": "Concurrent reservations",
+          "requireNoDebt": "Require no overdue dues"
+        },
+        "upcomingBlocks": {
+          "title": "Upcoming blocks",
+          "empty": "No upcoming administrative blocks."
+        },
+        "calendarTitle": "Next 14 days",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "reservationsPage": {
+        "title": "Resource reservations",
+        "subtitle": "Review scheduled and historical reservations across the neighborhood.",
+        "empty": "No reservations yet.",
+        "table": {
+          "resource": "Resource",
+          "group": "Group",
+          "title": "Reservation",
+          "start": "Start",
+          "status": "Status"
+        }
+      },
+      "blocksPage": {
+        "title": "Resource blocks",
+        "subtitle": "Create maintenance or operational blackout windows and review current blocks.",
+        "empty": "No blocks yet.",
+        "table": {
+          "resource": "Resource",
+          "reason": "Reason",
+          "start": "Start",
+          "end": "End",
+          "actions": "Actions"
+        }
+      },
+      "form": {
+        "created": "Resource created.",
+        "updated": "Resource updated.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "submitCreate": "Create resource",
+        "submitEdit": "Save changes",
+        "sections": {
+          "basic": "Basic information",
+          "availability": "Weekly availability",
+          "rules": "Reservation rules",
+          "financial": "Finance and policy"
+        },
+        "fields": {
+          "name": "Name",
+          "type": "Type",
+          "location": "Location",
+          "capacity": "Capacity",
+          "status": "Status",
+          "description": "Description",
+          "requiresDeposit": "Requires deposit",
+          "depositAmount": "Deposit amount",
+          "reservationFee": "Reservation fee",
+          "usageRules": "Visible usage rules",
+          "termsText": "Terms and notes"
+        },
+        "rules": {
+          "minAdvanceHours": "Minimum advance notice (hours)",
+          "maxAdvanceDays": "Maximum advance notice (days)",
+          "minDurationMinutes": "Minimum duration (minutes)",
+          "maxDurationMinutes": "Maximum duration (minutes)",
+          "bufferBeforeMinutes": "Buffer before reservation (minutes)",
+          "bufferAfterMinutes": "Buffer after reservation (minutes)",
+          "maxReservationsPerMonth": "Maximum reservations per month",
+          "maxReservationsPerYear": "Maximum reservations per year",
+          "maxActiveReservations": "Maximum active future reservations",
+          "maxConcurrentReservations": "Maximum concurrent reservations",
+          "cancellationLimitHours": "Cancellation cutoff (hours)",
+          "requireNoDebt": "Require no overdue dues",
+          "lateCancellationCountsAsUsage": "Late cancellation counts as usage",
+          "lateCancellationForfeitsDeposit": "Late cancellation forfeits deposit"
+        },
+        "errors": {
+          "nameRequired": "Enter a resource name before saving.",
+          "availabilityRequired": "Enable at least one availability window before saving.",
+          "resourceIdRequired": "Resource id is required to save changes."
+        }
+      },
+      "blockForm": {
+        "title": "Create block",
+        "created": "Block created.",
+        "resource": "Resource",
+        "date": "Date",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "reason": "Reason",
+        "notes": "Notes",
+        "saving": "Saving...",
+        "submit": "Create block",
+        "placeholders": {
+          "date": "Select block date",
+          "startTime": "Select start time",
+          "endTime": "Select end time"
+        },
+        "errors": {
+          "required": "Select a resource and date before saving."
+        }
       }
     },
     "users": {
@@ -693,6 +851,9 @@
       "saveErrorTitle": "Failed to save campaign",
       "cancel": "Cancel",
       "descriptionPlaceholder": "Explain what this campaign will fund and why it matters.",
+      "placeholders": {
+        "dueDate": "Select due date"
+      },
       "preview": {
         "newCampaign": "New Campaign",
         "fundraisingCampaign": "Fundraising campaign",
@@ -780,6 +941,9 @@
         "reference": "Reference",
         "date": "Date"
       },
+      "placeholders": {
+        "date": "Select transfer date"
+      },
       "methods": {
         "cash": "Cash",
         "wire_transfer": "Wire transfer"
@@ -814,12 +978,18 @@
       "saving": "Saving...",
       "saveChanges": "Save changes",
       "locationPlaceholder": "Community hall",
+      "clearEndTime": "Clear end time",
+      "scheduleHint": "All event times are shown in {timeZone}.",
       "fields": {
         "title": "Title",
         "startTime": "Start time",
         "endTime": "End time",
         "location": "Location",
         "description": "Description"
+      },
+      "placeholders": {
+        "startTime": "Select event start",
+        "endTime": "Select event end"
       }
     },
     "eventActions": {
@@ -1001,6 +1171,9 @@
           "descriptionPlaceholder": "Optional details for this period.",
           "amountPerGroup": "Amount per group",
           "dueDate": "Due date"
+        },
+        "placeholders": {
+          "dueDate": "Select due date"
         }
       },
       "periodDetail": {
@@ -1036,6 +1209,10 @@
           "endsOn": "Ends on",
           "description": "Description"
         },
+        "placeholders": {
+          "startsOn": "Select start date",
+          "endsOn": "Select end date"
+        },
         "frequency": {
           "monthly": "Monthly",
           "quarterly": "Quarterly",
@@ -1060,6 +1237,9 @@
           "entrySide": "Entry side",
           "effectiveAt": "Effective date",
           "description": "Description"
+        },
+        "placeholders": {
+          "effectiveAt": "Select effective date"
         },
         "entrySide": {
           "credit": "Credit",
@@ -1179,7 +1359,37 @@
     "overdue": "Overdue",
     "waived": "Waived",
     "archived": "Archived",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "approved": "Approved",
+    "completed": "Completed",
+    "expired": "Expired"
+  },
+  "resourcesUi": {
+    "actions": {
+      "cancel": "Cancel",
+      "cancelling": "Cancelling...",
+      "remove": "Remove",
+      "removing": "Removing...",
+      "reservationCancelled": "Reservation cancelled.",
+      "blockRemoved": "Block removed."
+    },
+    "calendar": {
+      "availableWindows": "Available windows",
+      "noAvailability": "No weekly availability.",
+      "reservations": "Reservations",
+      "noReservations": "No reservations.",
+      "unknownGroup": "Unknown group",
+      "blocks": "Blocks",
+      "noBlocks": "No blocks."
+    },
+    "blockReasons": {
+      "maintenance": "Maintenance",
+      "cleaning": "Cleaning",
+      "repair": "Repair",
+      "neighborhood_event": "Neighborhood event",
+      "unavailable": "Unavailable",
+      "other": "Other"
+    }
   },
   "dashboard": {
     "empty": {
@@ -1240,6 +1450,14 @@
         "periods": "{count} open period{count, plural, one {} other {s}}",
         "pending": "{count} pending payment{count, plural, one {} other {s}}"
       },
+      "resources": {
+        "title": "Resources",
+        "viewAll": "View all resources",
+        "empty": "No resources available.",
+        "emptyHint": "Reservable amenities will appear here once the admin team configures them.",
+        "upcoming": "{count} upcoming reservation{count, plural, one {} other {s}}",
+        "noDescription": "No details yet."
+      },
       "members": {
         "title": "Group Members",
         "count": "{count} member{count, plural, one {} other {s}} in this group",
@@ -1258,8 +1476,76 @@
       "polls": "Polls",
       "fundraising": "Fundraising",
       "funds": "Funds",
+      "resources": "Resources",
       "events": "Events",
       "posts": "Posts"
+    },
+    "resourcesPage": {
+      "eyebrow": "Resources",
+      "title": "Neighborhood resources",
+      "subtitle": "Browse reservable amenities and review your group’s upcoming reservations.",
+      "links": {
+        "myReservations": "My reservations"
+      },
+      "empty": "No resources are available in this neighborhood yet.",
+      "noDescription": "No details yet.",
+      "cards": {
+        "type": "Type",
+        "capacity": "Capacity",
+        "upcoming": "Upcoming"
+      }
+    },
+    "resourceDetail": {
+      "noDescription": "No description provided yet.",
+      "noLocation": "No location set",
+      "reserve": "Reserve",
+      "availability": "Availability",
+      "rules": {
+        "title": "Rules",
+        "advanceNotice": "Advance notice",
+        "duration": "Duration",
+        "monthlyLimit": "Monthly limit",
+        "yearlyLimit": "Yearly limit",
+        "cancellationCutoff": "Cancellation cutoff"
+      }
+    },
+    "resourceReservationForm": {
+      "title": "Reserve {resourceName}",
+      "subtitle": "This reservation will be created for {groupName}.",
+      "created": "Reservation created.",
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "submit": "Create reservation",
+      "fields": {
+        "date": "Date",
+        "title": "Event title or reason",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "attendeeCount": "Estimated attendees",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "date": "Select reservation date",
+        "startTime": "Select start time",
+        "endTime": "Select end time"
+      },
+      "errors": {
+        "required": "Enter a date and title before submitting.",
+        "dateOutOfRange": "The selected start time no longer fits the allowed reservation window. Choose another date."
+      }
+    },
+    "resourceReservations": {
+      "title": "My reservations",
+      "subtitle": "Upcoming, past, and cancelled reservations for this group.",
+      "empty": "No reservations yet.",
+      "table": {
+        "resource": "Resource",
+        "title": "Reservation",
+        "start": "Start",
+        "status": "Status",
+        "actions": "Actions",
+        "noActions": "—"
+      }
     },
     "membersPage": {
       "label": "House roster",
@@ -1598,6 +1884,9 @@
         "reference": "Reference",
         "date": "Date"
       },
+      "placeholders": {
+        "date": "Select transfer date"
+      },
       "methods": {
         "cash": "Cash",
         "wire_transfer": "Wire transfer"
@@ -1665,11 +1954,29 @@
           "reference": "Transfer reference",
           "notes": "Notes"
         },
+        "placeholders": {
+          "paidAt": "Select payment date"
+        },
         "methods": {
           "cash": "Cash",
           "wire_transfer": "Wire transfer"
         }
       }
+    }
+  },
+  "dateTimePicker": {
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "close": "Close",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "time24": "Time (24h)",
+    "hour": "Hour",
+    "minute": "Minute",
+    "placeholders": {
+      "date": "Select date",
+      "time": "Select time",
+      "datetime": "Select date and time"
     }
   }
 }
