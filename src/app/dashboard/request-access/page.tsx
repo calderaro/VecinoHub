@@ -22,20 +22,24 @@ export const metadata: Metadata = {
 export default async function DashboardRequestAccessPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ slug?: string }>;
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getSession();
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const initialSlug =
+    typeof resolvedSearchParams.slug === "string" ? resolvedSearchParams.slug.trim() : "";
 
   if (!session) {
     const params = new URLSearchParams({
       tab: "signup",
-      next: "/dashboard/request-access",
+      next: initialSlug
+        ? `/dashboard/request-access?slug=${encodeURIComponent(initialSlug)}`
+        : "/dashboard/request-access",
     });
     redirect(`/login?${params.toString()}`);
   }
-
-  const resolvedSearchParams = (await searchParams) ?? {};
-  const initialSlug = resolvedSearchParams.slug?.trim() ?? "";
 
   const baseContext = { user: session.user };
   const unscopedContext = {
