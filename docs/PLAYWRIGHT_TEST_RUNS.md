@@ -30,6 +30,117 @@ Seeded Accounts (if available):
 - Neighborhood admin (Centro): ana@vecinohub.local / User123!
 - Neighborhood admin (Sur): luis@vecinohub.local / User123!
 
+## Feature: Neighborhood Resources
+
+### Test Run: Neighborhood Admin Creates a Resource
+Preconditions:
+- Logged in as a `neighborhood_admin` or `platform_admin`.
+- Target neighborhood exists.
+
+Steps:
+1. Open `/admin/{neighborhoodId}/resources`.
+2. Click `admin-resource-add`.
+3. Fill `resource-form-name`, `resource-form-type`, `resource-form-location`, and `resource-form-capacity`.
+4. Enable at least one weekly window with `resource-form-day-enabled-{day}` and set `resource-form-day-start-{day}` plus `resource-form-day-end-{day}`.
+5. Fill core rules such as `resource-form-min-advance`, `resource-form-max-advance`, `resource-form-min-duration`, and `resource-form-max-duration`.
+6. Submit the form.
+
+Expected:
+- User lands on `/admin/{neighborhoodId}/resources/{resourceId}`.
+- The new resource appears in `admin-resource-table`.
+- The configured weekday windows match the selected neighborhood-local times after reopening the edit form.
+
+### Test Run: Resident Creates a Reservation
+Preconditions:
+- Logged in as a resident with an active membership for `{groupId}`.
+- At least one active resource exists in the group neighborhood.
+
+Steps:
+1. Open `/dashboard/{groupId}/resources`.
+2. Click one resource card `dashboard-resource-card-{resourceId}`.
+3. Click `dashboard-resource-reserve`.
+4. Fill `resource-reservation-date`, `resource-reservation-start`, `resource-reservation-end`, and `resource-reservation-title`.
+5. Submit `resource-reservation-submit`.
+6. Open `/dashboard/{groupId}/resources/reservations`.
+
+Expected:
+- The reservation is created and appears in `dashboard-reservations-table`.
+- The slot is shown as occupied in the resource detail calendar after refresh.
+- The displayed reservation time matches the neighborhood timezone even if the browser timezone differs.
+
+### Test Run: Resident Cannot Reserve a Blocked or Occupied Slot
+Preconditions:
+- Logged in as a resident with an active membership for `{groupId}`.
+- A target resource already has either an approved reservation or an admin block in the requested window.
+
+Steps:
+1. Open `/dashboard/{groupId}/resources/{resourceId}/reserve`.
+2. Attempt to submit a reservation that overlaps the blocked or already reserved time.
+
+Expected:
+- Submission fails with a visible validation error.
+- No new row appears in `dashboard-reservations-table`.
+
+### Test Run: Neighborhood Admin Manages Resource Blocks
+Preconditions:
+- Logged in as a `neighborhood_admin` or `platform_admin`.
+- At least one resource exists in the target neighborhood.
+
+Steps:
+1. Open `/admin/{neighborhoodId}/resources/blocks`.
+2. Fill `resource-block-resource`, `resource-block-date`, `resource-block-start`, `resource-block-end`, and `resource-block-reason`.
+3. Submit `resource-block-submit`.
+4. Verify the new row appears in `admin-resource-blocks-table`.
+5. Remove it with `admin-resource-block-remove-{blockId}`.
+
+Expected:
+- Block creation and removal succeed without leaving stale rows behind.
+
+## Feature: Port-Time and Shared DateTime Picker
+
+### Test Run: Platform Admin Selects a Neighborhood Timezone
+Preconditions:
+- Logged in as `platform_admin`.
+- At least one neighborhood exists.
+
+Steps:
+1. Open `/platform/{neighborhoodId}/edit`.
+2. Open the timezone select and search for a valid IANA timezone such as `America/Mexico_City`.
+3. Save the form.
+4. Open `/platform/{neighborhoodId}`.
+
+Expected:
+- The edit form never accepts free-form timezone text.
+- The saved timezone is shown on the detail page and survives refresh.
+
+### Test Run: Event Uses Shared DateTime Dialog
+Preconditions:
+- Logged in as a `neighborhood_admin` or `platform_admin`.
+
+Steps:
+1. Open `/admin/{neighborhoodId}/events/new`.
+2. Open `event-form-start` and select a date, hour, and minute in the dialog.
+3. Open `event-form-end` and select a later date/time in the dialog.
+4. Submit the form.
+5. Open the created event detail page.
+
+Expected:
+- Both fields use the custom dialog rather than browser-native pickers.
+- The created event shows the same intended neighborhood-local clock time on list and detail pages.
+
+### Test Run: Browser Timezone Does Not Change Neighborhood Time
+Preconditions:
+- A neighborhood with a non-UTC timezone exists.
+- A resource reservation or event already exists in that neighborhood.
+
+Steps:
+1. Open the relevant detail page in one browser profile/timezone and note the displayed clock time.
+2. Open the same page in another browser profile configured to a different local timezone.
+
+Expected:
+- The displayed neighborhood-scoped time is identical in both sessions.
+- Only locale formatting changes are allowed; the underlying neighborhood clock time must not shift.
+
 ## Feature: Multi-Neighborhood and Platform Admin
 
 ### Test Run: Platform Admin Creates Neighborhood
