@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reporte de Producto - VecinoHub</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --accent: #0f766e;
+        --border: #d1d5db;
+        --bg: #ffffff;
+        --panel: #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 48px 56px 64px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.15;
+      }
+
+      .meta {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .intro {
+        margin: 28px 0 0;
+        font-size: 17px;
+      }
+
+      section {
+        margin-top: 32px;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+        color: var(--accent);
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 22px;
+      }
+
+      li {
+        margin: 0 0 10px;
+      }
+
+      .impact {
+        margin-top: 36px;
+        padding: 20px 24px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel);
+      }
+
+      .impact h2 {
+        margin-bottom: 10px;
+      }
+
+      .note {
+        margin-top: 28px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      @media print {
+        .page {
+          padding: 28px 34px 40px;
+        }
+
+        h1 {
+          font-size: 30px;
+        }
+
+        h2 {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <p class="eyebrow">VecinoHub</p>
+      <h1>Reporte de producto de las últimas 2 semanas</h1>
+      <p class="meta">Periodo: del 14 al 28 de marzo de 2026</p>
+
+      <p class="intro">
+        Durante las últimas dos semanas, VecinoHub avanzó en tres frentes principales:
+        incorporación de residentes, operación administrativa de colonias y madurez de flujos
+        internos. El resultado más importante es que ahora los residentes tienen formas más
+        simples de integrarse al grupo correcto, mientras que los administradores cuentan con
+        mejores herramientas para gestionar membresías, finanzas y recursos compartidos.
+      </p>
+
+      <section>
+        <h2>1. Mejoras en incorporación y acceso de residentes</h2>
+        <ul>
+          <li>
+            Los administradores de grupo ahora pueden invitar personas por correo electrónico,
+            incluso si todavía no están registradas en la plataforma.
+          </li>
+          <li>
+            Los residentes ahora pueden solicitar acceso a un grupo directamente desde el
+            dashboard, sin depender únicamente de coordinación manual con administradores.
+          </li>
+          <li>
+            El flujo de solicitud de acceso se mejoró con una experiencia más clara dentro de un
+            diálogo, lo que facilita iniciar y completar la solicitud.
+          </li>
+          <li>
+            Los administradores de colonia ahora pueden compartir un enlace directo de ingreso a su
+            colonia. Ese enlace precarga la colonia correspondiente para que el residente solo
+            tenga que elegir su grupo y enviar la solicitud.
+          </li>
+          <li>
+            Se mejoró el flujo para salir de un grupo, asegurando que los accesos se actualicen
+            correctamente cuando un usuario deja de pertenecer a él.
+          </li>
+          <li>
+            Los usuarios que aún no tienen grupo ahora ven un estado inicial más útil, con una
+            llamada clara a solicitar acceso.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2. Nuevas capacidades para administración de la colonia</h2>
+        <ul>
+          <li>
+            Se incorporó una funcionalidad de gestión de fondos de colonia, dando a los
+            administradores una forma más completa de organizar y consultar movimientos
+            financieros.
+          </li>
+          <li>
+            Se añadió una nueva funcionalidad de reservación de recursos, para administrar espacios
+            o activos compartidos dentro de la colonia.
+          </li>
+          <li>
+            La gestión de recursos ahora incluye calendario de reservaciones, control de
+            disponibilidad y manejo de bloqueos de agenda.
+          </li>
+          <li>
+            También se mejoró el manejo de horarios para que eventos, reservaciones y otros flujos
+            relacionados respeten mejor la hora local de cada colonia.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Más estabilidad y preparación para operación</h2>
+        <ul>
+          <li>
+            Se amplió la cobertura de pruebas end-to-end en flujos críticos, lo que aumenta la
+            confianza al momento de liberar cambios.
+          </li>
+          <li>
+            Se actualizaron las guías de QA y documentación funcional para reflejar los nuevos
+            flujos de acceso, reservaciones y administración.
+          </li>
+          <li>
+            Se agregó una revisión de buenas prácticas de seguridad para respaldar decisiones de
+            salida a producción.
+          </li>
+          <li>
+            Después de liberar estas mejoras, también se corrigieron rápidamente algunos detalles
+            de estabilidad: ajustes en la interacción del calendario de reservaciones, corrección
+            del enlace compartido para usuarios que no habían iniciado sesión y corrección de un
+            problema de formato de fecha y hora que provocaba una caída en la pantalla de miembros.
+          </li>
+        </ul>
+      </section>
+
+      <section class="impact">
+        <h2>Impacto de producto</h2>
+        <ul>
+          <li>Menor fricción para que nuevos residentes lleguen al grupo correcto.</li>
+          <li>
+            Menor carga operativa para administradores gracias a solicitudes autogestionadas y
+            enlaces reutilizables.
+          </li>
+          <li>
+            Mayor capacidad para que una colonia administre finanzas y recursos compartidos dentro
+            de la plataforma.
+          </li>
+          <li>
+            Mayor confianza en los despliegues por mejor cobertura y correcciones rápidas
+            posteriores al lanzamiento.
+          </li>
+        </ul>
+      </section>
+
+      <p class="note">
+        Documento generado a partir de los cambios registrados en el repositorio entre el 14 y el
+        28 de marzo de 2026.
+      </p>
+    </main>
+  </body>
+</html>
