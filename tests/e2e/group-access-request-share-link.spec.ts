@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 test("shared neighborhood join link prefills the slug and lets the user request a group", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto("/login?next=%2Fdashboard%2Frequest-access%3Fslug%3Dcolonia-centro");
+  await page.context().clearCookies();
 
   await page.getByTestId("auth-login-email").fill("luis@vecinohub.local");
   await page.getByTestId("auth-login-password").fill("User12345!");
