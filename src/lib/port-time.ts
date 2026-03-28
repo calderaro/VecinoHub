@@ -70,6 +70,22 @@ function getFormatter(locale: string, timeZone: string, options: FormatOptions) 
   });
 }
 
+function resolveFormatOptions(defaultOptions: FormatOptions, options?: FormatOptions): FormatOptions {
+  if (!options) {
+    return defaultOptions;
+  }
+
+  // `dateStyle`/`timeStyle` cannot be combined with granular fields like `year` or `hour`.
+  if (options.dateStyle !== undefined || options.timeStyle !== undefined) {
+    return options;
+  }
+
+  return {
+    ...defaultOptions,
+    ...options,
+  };
+}
+
 export function getPortParts(value: Date | string, timeZone: string): PortDateParts {
   const date = value instanceof Date ? value : new Date(value);
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -163,14 +179,20 @@ export function formatPortDateTime(
   locale: string,
   options?: FormatOptions
 ) {
-  return getFormatter(locale, timeZone, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    ...options,
-  }).format(value instanceof Date ? value : new Date(value));
+  return getFormatter(
+    locale,
+    timeZone,
+    resolveFormatOptions(
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      },
+      options
+    )
+  ).format(value instanceof Date ? value : new Date(value));
 }
 
 export function formatPortDate(
@@ -179,12 +201,18 @@ export function formatPortDate(
   locale: string,
   options?: FormatOptions
 ) {
-  return getFormatter(locale, timeZone, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    ...options,
-  }).format(value instanceof Date ? value : new Date(value));
+  return getFormatter(
+    locale,
+    timeZone,
+    resolveFormatOptions(
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      },
+      options
+    )
+  ).format(value instanceof Date ? value : new Date(value));
 }
 
 export function formatPortTime(
@@ -193,12 +221,18 @@ export function formatPortTime(
   locale: string,
   options?: FormatOptions
 ) {
-  return getFormatter(locale, timeZone, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    ...options,
-  }).format(value instanceof Date ? value : new Date(value));
+  return getFormatter(
+    locale,
+    timeZone,
+    resolveFormatOptions(
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      },
+      options
+    )
+  ).format(value instanceof Date ? value : new Date(value));
 }
 
 export function formatPortDateKey(
