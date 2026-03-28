@@ -34,6 +34,8 @@
 - `/dashboard/request-access`
   - self-service request flow for signed-in residents who are not yet members of a target group.
   - page presents a CTA summary and opens the request form inside a dialog.
+  - supports a shareable neighborhood join-link format (`/dashboard/request-access?slug=<neighborhood-slug>`) that preloads and locks the neighborhood slug so the resident only chooses a group and submits the request.
+  - neighborhood admins also see share-link actions for their managed neighborhoods on this page.
   - exact neighborhood slug lookup, then group selection, optional note, and submit action.
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.

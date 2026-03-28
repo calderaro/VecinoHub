@@ -113,6 +113,7 @@
 - `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
 - Group invite creation accepts an email for both existing and not-yet-registered people; membership is created only on acceptance.
 - Group access request creation is signed-in-user initiated; it must not create any membership until an authorized reviewer approves it.
+- The request-access UI may prefill the neighborhood slug from a shareable URL query (`/dashboard/request-access?slug=<neighborhood-slug>`), but server-side request validation and authorization rules remain unchanged.
 - Group access request approval always grants `group_member` and reactivates the synchronized `neighbor` neighborhood membership for the requester.
 - `groups.leave` inactivates the signed-in user’s membership in the target group and also inactivates the synchronized `neighbor` neighborhood membership when that was the user’s last active group in the neighborhood.
 - `groups.leave` must reject attempts by the last active `group_admin` in a group until another active admin exists.

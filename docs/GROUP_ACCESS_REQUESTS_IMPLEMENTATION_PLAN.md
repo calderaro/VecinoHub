@@ -236,7 +236,8 @@ request on behalf of another email address or account.
 2. User opens `/dashboard/request-access` from:
    - the no-group waiting state
    - an optional profile or user-menu link
-3. User enters a neighborhood slug.
+3. User enters a neighborhood slug, or opens a shared join link that
+   preloads the slug in the request-access UI.
 4. System resolves that slug through a public-safe lookup for active
    neighborhoods only.
 5. System shows requestable groups for that neighborhood.

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { SearchIcon, XIcon } from "lucide-react";
+import { CopyIcon, SearchIcon, XIcon } from "lucide-react";
 
 import { useToast } from "@/components/ui/toast";
 import { StatusBadge } from "@/components/ui-v3";
@@ -24,6 +24,19 @@ type GroupAccessRequestItem = {
   reviewedAt: Date | null;
 };
 
+type ShareNeighborhoodLinkOption = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type DashboardRequestAccessProps = {
+  pending: GroupAccessRequestItem[];
+  history: GroupAccessRequestItem[];
+  initialSlug?: string;
+  shareNeighborhoods?: ShareNeighborhoodLinkOption[];
+};
+
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
@@ -34,19 +47,24 @@ function formatDate(value: Date) {
 export function DashboardRequestAccess({
   pending,
   history,
-}: {
-  pending: GroupAccessRequestItem[];
-  history: GroupAccessRequestItem[];
-}) {
+  initialSlug = "",
+  shareNeighborhoods = [],
+}: DashboardRequestAccessProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.requestAccess");
   const { addToast } = useToast();
-  const [slugInput, setSlugInput] = useState("");
-  const [lookupSlug, setLookupSlug] = useState("");
+  const [slugInput, setSlugInput] = useState(initialSlug);
+  const [lookupSlug, setLookupSlug] = useState(initialSlug);
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [note, setNote] = useState("");
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(Boolean(initialSlug));
+
+  const hasPrefilledSlug = initialSlug.length > 0;
+  const shareableNeighborhoods = useMemo(
+    () => shareNeighborhoods.filter((neighborhood) => neighborhood.slug.trim().length > 0),
+    [shareNeighborhoods]
+  );
 
   const neighborhoodLookup = trpc.groupAccessRequests.lookupNeighborhood.useQuery(
     { slug: lookupSlug },
@@ -95,10 +113,21 @@ export function DashboardRequestAccess({
   const hasActiveLookup = Boolean(lookupSlug || neighborhoodLookup.data);
 
   function resetFormState() {
-    setSlugInput("");
-    setLookupSlug("");
+    setSlugInput(initialSlug);
+    setLookupSlug(initialSlug);
     setSelectedGroupId("");
     setNote("");
+  }
+
+  async function copyNeighborhoodJoinLink(slug: string) {
+    const url = `${window.location.origin}/dashboard/request-access?slug=${encodeURIComponent(slug)}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      addToast(t("share.copySuccess"), "success");
+    } catch {
+      addToast(t("share.copyError"), "error");
+    }
   }
 
   function closeDialog() {
@@ -108,6 +137,60 @@ export function DashboardRequestAccess({
 
   return (
     <div className="space-y-8" data-testid="dashboard-request-access-root">
+      {shareableNeighborhoods.length > 0 ? (
+        <section className="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm">
+          <div className="space-y-4 px-6 py-6 md:px-8 md:py-7">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-teal-600">
+                {t("share.eyebrow")}
+              </p>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-semibold text-stone-900">{t("share.title")}</h2>
+                <p className="max-w-3xl text-sm leading-6 text-stone-600">{t("share.subtitle")}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              {shareableNeighborhoods.map((neighborhood) => {
+                const href = `/dashboard/request-access?slug=${encodeURIComponent(neighborhood.slug)}`;
+
+                return (
+                  <article
+                    key={neighborhood.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-stone-50/80 p-4 md:flex-row md:items-center md:justify-between"
+                    data-testid={`request-access-share-${neighborhood.id}`}
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-stone-900">{neighborhood.name}</p>
+                      <p className="text-xs text-stone-500">/{neighborhood.slug}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={href}
+                        className="vh-v3-focus inline-flex items-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                        data-testid={`request-access-share-open-${neighborhood.id}`}
+                      >
+                        {t("share.open")}
+                      </Link>
+                      <button
+                        type="button"
+                        className="vh-v3-focus inline-flex items-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+                        onClick={() => copyNeighborhoodJoinLink(neighborhood.slug)}
+                        data-testid={`request-access-share-copy-${neighborhood.id}`}
+                      >
+                        <CopyIcon className="h-4 w-4" />
+                        {t("share.copy")}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm">
         <div className="grid gap-6 px-6 py-6 md:grid-cols-[1.25fr_0.75fr] md:px-8 md:py-7">
           <div className="space-y-3">
@@ -337,18 +420,22 @@ export function DashboardRequestAccess({
                       value={slugInput}
                       onChange={(event) => setSlugInput(event.target.value)}
                       placeholder={t("form.slugPlaceholder")}
-                      className="vh-v3-focus flex-1 rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none"
+                      className="vh-v3-focus flex-1 rounded-xl border border-stone-200 bg-white px-3.5 py-3 text-sm text-stone-900 placeholder:text-stone-400 transition-colors hover:border-stone-300 focus:border-teal-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-stone-100"
                       data-testid="request-access-slug-input"
+                      disabled={hasPrefilledSlug}
                     />
                     <button
                       type="submit"
                       className="vh-v3-focus rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={neighborhoodLookup.isLoading}
+                      disabled={neighborhoodLookup.isLoading || hasPrefilledSlug}
                       data-testid="request-access-slug-submit"
                     >
                       {neighborhoodLookup.isLoading ? t("form.searching") : t("form.search")}
                     </button>
                   </div>
+                  {hasPrefilledSlug ? (
+                    <p className="text-xs text-stone-500">{t("form.slugLocked")}</p>
+                  ) : null}
                 </label>
               </form>
 
