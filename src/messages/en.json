@@ -1607,6 +1607,7 @@
     "slugLabel": "Neighborhood slug",
         "slugPlaceholder": "colonia-centro",
         "slugRequired": "Neighborhood slug is required.",
+        "slugLocked": "This neighborhood was preselected from a shared join link.",
         "search": "Find neighborhood",
         "searching": "Searching...",
         "neighborhoodLabel": "Neighborhood",
@@ -1652,6 +1653,15 @@
       "toasts": {
         "created": "Access request submitted.",
         "cancelled": "Access request cancelled."
+      },
+      "share": {
+        "eyebrow": "Share join links",
+        "title": "Invite residents with a neighborhood join link",
+        "subtitle": "Neighborhood admins can share a direct link that preloads the neighborhood slug. Residents only need to choose their group and submit the request.",
+        "open": "Open link",
+        "copy": "Copy link",
+        "copySuccess": "Join link copied.",
+        "copyError": "Unable to copy the join link."
       }
     },
     "groupMembers": {

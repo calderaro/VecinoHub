@@ -56,6 +56,8 @@
 - Users signed in with a different email from the invite target cannot accept or reject that invite.
 - Group managers can resend and cancel pending invites for their own group only.
 - Signed-in users can open `/dashboard/request-access`, launch the access-request dialog, look up an active neighborhood by exact slug, and see requestable groups in that neighborhood.
+- Visiting `/dashboard/request-access?slug=<neighborhood-slug>` preloads the neighborhood, locks the slug field, and lets the resident choose only a requestable group plus note.
+- Neighborhood admins can view share-link actions on `/dashboard/request-access` for neighborhoods they manage and copy a join link for each one.
 - Creating a group access request does not create resident access before approval.
 - A user cannot create a duplicate pending request for the same group.
 - A requester can cancel only their own pending request.

@@ -1607,6 +1607,7 @@
     "slugLabel": "Slug de la colonia",
         "slugPlaceholder": "colonia-centro",
         "slugRequired": "El slug de la colonia es obligatorio.",
+        "slugLocked": "Esta colonia fue preseleccionada desde un enlace compartido.",
         "search": "Buscar colonia",
         "searching": "Buscando...",
         "neighborhoodLabel": "Colonia",
@@ -1652,6 +1653,15 @@
       "toasts": {
         "created": "Solicitud de acceso enviada.",
         "cancelled": "Solicitud de acceso cancelada."
+      },
+      "share": {
+        "eyebrow": "Comparte enlaces de ingreso",
+        "title": "Invita residentes con un enlace para unirse a la colonia",
+        "subtitle": "Los admins de colonia pueden compartir un enlace directo que precarga el slug de la colonia. Los residentes solo tienen que elegir su grupo y enviar la solicitud.",
+        "open": "Abrir enlace",
+        "copy": "Copiar enlace",
+        "copySuccess": "Enlace copiado.",
+        "copyError": "No se pudo copiar el enlace."
       }
     },
     "groupMembers": {

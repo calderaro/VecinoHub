@@ -305,6 +305,26 @@ Expected:
 - The manager can review and approve the request only inside the authorized group scope.
 - Approval activates the requester’s group access and the requester can open the approved group dashboard afterward.
 
+### Test Run: Shared Neighborhood Join Link Prefills the Slug
+Preconditions:
+- Logged in as a user who is not yet a member of the target neighborhood group.
+- A target neighborhood exists with a stable slug (for local seed data, `colonia-centro`).
+- At least one requestable group exists in that neighborhood (for local seed data, `Casa 101`).
+
+Steps:
+1. Open `/dashboard/request-access?slug=colonia-centro`.
+2. Verify the request-access dialog opens immediately.
+3. Verify the neighborhood slug field is prefilled with `colonia-centro` and is locked.
+4. Verify the neighborhood lookup resolves automatically.
+5. Verify requestable groups are listed for the neighborhood.
+6. Select a group and submit the request.
+7. Verify the new request appears under pending requests.
+
+Expected:
+- The shared join link preloads the neighborhood context without requiring the resident to type the slug manually.
+- The resident only needs to choose a group and optional note before submitting.
+- The request is created under the correct neighborhood scope.
+
 ## Feature: Dashboard Localization
 
 ### Test Run: Neighbor Dashboard Switches Between Spanish and English

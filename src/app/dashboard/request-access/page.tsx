@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { DashboardRequestAccess } from "@/components/access-requests/dashboard-request-access";
@@ -11,7 +12,18 @@ import {
 } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
-export default async function DashboardRequestAccessPage() {
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default async function DashboardRequestAccessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ slug?: string }>;
+}) {
   const session = await getSession();
 
   if (!session) {
@@ -21,6 +33,9 @@ export default async function DashboardRequestAccessPage() {
     });
     redirect(`/login?${params.toString()}`);
   }
+
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const initialSlug = resolvedSearchParams.slug?.trim() ?? "";
 
   const baseContext = { user: session.user };
   const unscopedContext = {
@@ -66,6 +81,8 @@ export default async function DashboardRequestAccessPage() {
         <DashboardRequestAccess
           pending={requests.pending}
           history={requests.history}
+          initialSlug={initialSlug}
+          shareNeighborhoods={adminNeighborhoods}
         />
       </main>
     </div>

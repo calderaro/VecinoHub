@@ -784,6 +784,7 @@ export async function listNeighborhoodAdminOptions(ctx: ServiceContext) {
       .select({
         id: neighborhoods.id,
         name: neighborhoods.name,
+        slug: neighborhoods.slug,
       })
       .from(neighborhoods)
       .where(eq(neighborhoods.status, "active"))
@@ -794,6 +795,7 @@ export async function listNeighborhoodAdminOptions(ctx: ServiceContext) {
     .select({
       id: neighborhoods.id,
       name: neighborhoods.name,
+      slug: neighborhoods.slug,
     })
     .from(neighborhoodMemberships)
     .innerJoin(neighborhoods, eq(neighborhoodMemberships.neighborhoodId, neighborhoods.id))
