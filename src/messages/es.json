@@ -137,6 +137,7 @@
     "profile": "Perfil",
     "invites": "Invitaciones",
     "requestAccess": "Solicitar acceso",
+    "help": "Ayuda",
     "adminPanel": "Panel admin",
     "switchGroup": "Cambiar grupo",
     "groups": "Grupos",
@@ -148,6 +149,44 @@
     "allNeighborhoods": "Todas las colonias",
     "switchAdminNeighborhood": "Cambiar admin de colonia",
     "adminNeighborhoods": "Admin de colonias"
+  },
+  "help": {
+    "eyebrow": "Centro de ayuda",
+    "navLabel": "Ayuda",
+    "title": "Guías rápidas para entender VecinoHub",
+    "subtitle": "Encuentra respuestas por tarea, entiende qué hace cada flujo y abre ayuda contextual desde las pantallas clave.",
+    "searchPlaceholder": "Buscar por tema, tarea o flujo",
+    "spanishOnlyNotice": "El contenido de ayuda está disponible solo en español por ahora.",
+    "featuredTitle": "Lecturas recomendadas",
+    "featuredSubtitle": "Priorizadas según el tipo de uso más frecuente de tu cuenta.",
+    "gettingStartedTitle": "Cómo aprovechar esta ayuda",
+    "gettingStarted": {
+      "one": "Empieza por el artículo que más se parezca a la tarea que estás intentando resolver.",
+      "two": "Si vienes desde una pantalla específica, usa el botón de Ayuda contextual para obtener una explicación más dirigida.",
+      "three": "Cuando tengas una duda operativa, revisa primero qué pasa después de cada acción para evitar errores de acceso o seguimiento."
+    },
+    "allArticlesTitle": "Todos los artículos",
+    "allArticlesSubtitle": "Documentación breve y orientada a tareas reales dentro del producto.",
+    "emptyTitle": "No encontramos artículos con esa búsqueda.",
+    "emptyBody": "Prueba con otra palabra clave o revisa las guías recomendadas.",
+    "contextButton": "Ayuda",
+    "contextEyebrow": "Ayuda contextual",
+    "contextTitle": "Cómo funciona esta pantalla",
+    "contextSubtitle": "Resumen práctico para entender qué puedes hacer aquí y qué sucede después.",
+    "sections": {
+      "whoUsesIt": "Quién la usa",
+      "keyActions": "Acciones principales",
+      "whatHappensNext": "Qué pasa después"
+    },
+    "fullGuide": "Abrir guía completa",
+    "backToCenter": "Volver al centro de ayuda",
+    "articleScreenHints": "Pantallas relacionadas",
+    "relatedArticles": "Artículos relacionados",
+    "audiences": {
+      "resident": "Residente",
+      "admin": "Admin",
+      "shared": "General"
+    }
   },
   "admin": {
     "nav": {

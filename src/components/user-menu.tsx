@@ -2,6 +2,7 @@
 
 import {
   Building2,
+  CircleHelp,
   Check,
   ChevronDown,
   LayoutDashboard,
@@ -261,6 +262,17 @@ export function UserMenu({
             >
               <Search className={styles.itemIcon} aria-hidden="true" />
               {t("requestAccess")}
+            </Link>
+
+            <Link
+              href="/help"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className={styles.item}
+              data-testid="user-menu-help"
+            >
+              <CircleHelp className={styles.itemIcon} aria-hidden="true" />
+              {t("help")}
             </Link>
 
             {canSeeAdminLink ? (

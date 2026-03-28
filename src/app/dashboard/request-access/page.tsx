@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { DashboardRequestAccess } from "@/components/access-requests/dashboard-request-access";
+import { HelpContextPanel } from "@/components/help/HelpContextPanel";
+import { listContextHelpByScreen } from "@/lib/help-content";
 import { listMyGroupAccessRequests } from "@/services/group-access-requests";
 import { listUserGroups } from "@/services/groups";
 import {
@@ -49,8 +51,9 @@ export default async function DashboardRequestAccessPage({
     },
   };
 
-  const [t, tNav, groups, canAccessAdmin, adminNeighborhoods, requests] =
+  const [locale, t, tNav, groups, canAccessAdmin, adminNeighborhoods, requests] =
     await Promise.all([
+      getLocale(),
       getTranslations("dashboard.requestAccess"),
       getTranslations("nav"),
       listUserGroups(unscopedContext),
@@ -74,12 +77,17 @@ export default async function DashboardRequestAccessPage({
       />
 
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12">
-        <header className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
-            {t("label")}
-          </p>
-          <h1 className="text-3xl font-semibold text-stone-900">{t("title")}</h1>
-          <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
+        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">
+              {t("label")}
+            </p>
+            <h1 className="text-3xl font-semibold text-stone-900">{t("title")}</h1>
+            <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
+          </div>
+          <HelpContextPanel
+            entries={listContextHelpByScreen(locale, "dashboard-request-access")}
+          />
         </header>
 
         <DashboardRequestAccess

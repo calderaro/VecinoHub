@@ -14,6 +14,14 @@
   - second step collects OTP, new password, and password confirmation.
 - `/register` -> redirects to `/login?tab=signup`
 
+## In-App Help
+- `/help`
+  - authenticated help center with task-based articles for residents and admins.
+  - provides article search by title/summary plus featured content by primary audience.
+  - if the UI locale is English, help content still renders in Spanish with a visible availability notice.
+- `/help/[slug]`
+  - article detail view with links back to product routes and related help articles.
+
 ## Global Date/Time UX Contract
 - Neighborhood timezone selection uses a controlled select backed by the shared timezone catalog; free-form timezone text entry is not allowed.
 - Neighborhood-scoped pages render date and time labels in neighborhood port time.
@@ -31,6 +39,7 @@
   - lists pending group invites that match the signed-in account email.
   - supports accept/reject actions.
   - works even when the user has zero accepted group memberships.
+  - exposes contextual help about invite handling and the difference versus access requests.
 - `/dashboard/request-access`
   - self-service request flow for signed-in residents who are not yet members of a target group.
   - page presents a CTA summary and opens the request form inside a dialog.
@@ -39,6 +48,7 @@
   - exact neighborhood slug lookup, then group selection, optional note, and submit action.
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.
+  - exposes contextual help for resident access requests and shared join links.
 - `/dashboard/[groupId]`
   - overview cards: posts, events, polls, fundraising, funds, resources, members.
   - sticky header with `UserMenu`.
@@ -46,6 +56,7 @@
     - profile link
     - invites link
     - request access link
+    - help center link
     - group switcher
     - neighborhood switcher (if user has >1 neighborhood)
     - admin/platform entries based on role
@@ -53,6 +64,7 @@
 - `/dashboard/[groupId]/members`
   - read-only for `group_member`.
   - uses tabs for members, invitations, and requests.
+  - exposes contextual help for member management and access-request review.
   - signed-in members can leave their own group from this page.
   - the leave action must be blocked for the last active `group_admin` until another admin is assigned.
   - `group_admin`, `neighborhood_admin`, and `platform_admin` can invite members, cancel/resend pending invites, review access requests, add/remove existing accepted members, and change group roles.
@@ -66,6 +78,7 @@
     - uses the shared date selector for wire transfer date when required.
   - `/dashboard/[groupId]/fund`
     - lists the active neighborhood's named funds with summary cards.
+    - exposes contextual help that explains resident fund reading and next steps.
   - `/dashboard/[groupId]/fund/[fundId]`
     - shows fund balance, recent confirmed movements, current due summary for the signed-in resident's group, and neighborhood group payment status.
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]`
@@ -74,6 +87,7 @@
     - uses the shared date selector for payment date submission.
   - `/dashboard/[groupId]/resources`
     - resident resource catalog with status badges, basic capacity/type info, and a link to the group reservation history.
+    - exposes contextual help for reservation discovery and resource usage.
   - `/dashboard/[groupId]/resources/[resourceId]`
     - resident resource detail with timezone, rules summary, and availability calendar.
   - `/dashboard/[groupId]/resources/[resourceId]/reserve`
@@ -90,6 +104,7 @@
 - `/profile`
   - profile form (full name, username, language).
   - includes `UserMenu` with group + neighborhood switching.
+  - `UserMenu` includes a help-center link.
 
 ## Neighborhood Admin Shell
 - `/admin/*`
@@ -104,6 +119,7 @@
     - campaign due date and contribution dates use the shared date selector and render in neighborhood time.
   - `/admin/[neighborhoodId]/fund`
     - neighborhood fund list with balances, overdue counts, and create-fund CTA.
+    - exposes contextual help for admin fund operations.
   - `/admin/[neighborhoodId]/fund/new`
   - `/admin/[neighborhoodId]/fund/[fundId]`
     - fund overview with pending payments, recent movements, and active recurring templates.
@@ -115,6 +131,7 @@
     - due dates, movement dates, and template defaults use the shared date selector.
   - `/admin/[neighborhoodId]/resources`
     - neighborhood resource list with status, upcoming reservation count, and future block count.
+    - exposes contextual help for admin resource operations.
   - `/admin/[neighborhoodId]/resources/new`
     - weekly availability windows use the shared time selector and neighborhood timezone-aware validation.
   - `/admin/[neighborhoodId]/resources/[resourceId]`

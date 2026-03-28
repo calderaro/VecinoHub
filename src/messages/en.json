@@ -137,6 +137,7 @@
     "profile": "Profile",
     "invites": "Invites",
     "requestAccess": "Request access",
+    "help": "Help",
     "adminPanel": "Admin Panel",
     "switchGroup": "Switch Group",
     "groups": "Groups",
@@ -148,6 +149,44 @@
     "allNeighborhoods": "All neighborhoods",
     "switchAdminNeighborhood": "Switch Admin Neighborhood",
     "adminNeighborhoods": "Neighborhood Admin"
+  },
+  "help": {
+    "eyebrow": "Help center",
+    "navLabel": "Help",
+    "title": "Quick guides to understand VecinoHub",
+    "subtitle": "Find answers by task, understand what each flow does, and open contextual help from key screens.",
+    "searchPlaceholder": "Search by topic, task, or flow",
+    "spanishOnlyNotice": "Help content is available only in Spanish for now.",
+    "featuredTitle": "Recommended reading",
+    "featuredSubtitle": "Prioritized based on the most common use of your account.",
+    "gettingStartedTitle": "How to use this help",
+    "gettingStarted": {
+      "one": "Start with the article that best matches the task you are trying to complete.",
+      "two": "If you came from a specific screen, use the contextual Help button for a more focused explanation.",
+      "three": "When you have an operational question, review what happens after each action to avoid access or follow-up mistakes."
+    },
+    "allArticlesTitle": "All articles",
+    "allArticlesSubtitle": "Short documentation organized around real product tasks.",
+    "emptyTitle": "No articles matched that search.",
+    "emptyBody": "Try another keyword or review the recommended guides.",
+    "contextButton": "Help",
+    "contextEyebrow": "Contextual help",
+    "contextTitle": "How this screen works",
+    "contextSubtitle": "A practical summary of what you can do here and what happens next.",
+    "sections": {
+      "whoUsesIt": "Who uses it",
+      "keyActions": "Key actions",
+      "whatHappensNext": "What happens next"
+    },
+    "fullGuide": "Open full guide",
+    "backToCenter": "Back to help center",
+    "articleScreenHints": "Related screens",
+    "relatedArticles": "Related articles",
+    "audiences": {
+      "resident": "Resident",
+      "admin": "Admin",
+      "shared": "General"
+    }
   },
   "admin": {
     "nav": {

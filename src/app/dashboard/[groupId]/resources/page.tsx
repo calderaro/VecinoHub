@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
+import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { getResourceStatusVariant } from "@/components/resources/utils";
+import { listContextHelpByScreen } from "@/lib/help-content";
 import { listResourcesForGroup } from "@/services/resources";
 import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
@@ -33,7 +35,8 @@ export default async function ResidentResourcesPage({
   };
 
   const resources = await listResourcesForGroup(serviceContext, { groupId }).catch(() => null);
-  const [t, tStatus] = await Promise.all([
+  const [locale, t, tStatus] = await Promise.all([
+    getLocale(),
     getTranslations("dashboard.resourcesPage"),
     getTranslations("status"),
   ]);
@@ -43,19 +46,22 @@ export default async function ResidentResourcesPage({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">{t("eyebrow")}</p>
           <h1 className="text-3xl font-semibold">{t("title")}</h1>
           <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
         </div>
-        <Link
-          href={`/dashboard/${groupId}/resources/reservations`}
-          className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-          data-testid="dashboard-resources-my-reservations-link"
-        >
-          {t("links.myReservations")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-resources")} />
+          <Link
+            href={`/dashboard/${groupId}/resources/reservations`}
+            className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            data-testid="dashboard-resources-my-reservations-link"
+          >
+            {t("links.myReservations")}
+          </Link>
+        </div>
       </header>
 
       {resources.length === 0 ? (

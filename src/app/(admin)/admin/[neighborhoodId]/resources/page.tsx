@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
+import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { getResourceStatusVariant } from "@/components/resources/utils";
+import { listContextHelpByScreen } from "@/lib/help-content";
 import { listNeighborhoodResources } from "@/services/resources";
 import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
@@ -30,7 +32,8 @@ export default async function AdminResourcesPage({
     getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     listNeighborhoodResources(serviceContext, { neighborhoodId }).catch(() => []),
   ]);
-  const [t, tStatus] = await Promise.all([
+  const [locale, t, tStatus] = await Promise.all([
+    getLocale(),
     getTranslations("admin.resources.list"),
     getTranslations("status"),
   ]);
@@ -41,13 +44,14 @@ export default async function AdminResourcesPage({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-teal-600">{neighborhood.name}</p>
           <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
+          <HelpContextPanel entries={listContextHelpByScreen(locale, "admin-resources")} />
           <Link
             href={`/admin/${neighborhoodId}/resources/blocks`}
             className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"

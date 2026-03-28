@@ -251,6 +251,40 @@ Steps:
 Expected:
 - `vh_active_neighborhood` cookie is cleared and global context is restored.
 
+### Test Run: Help Center Opens from User Menu
+Preconditions:
+- Logged in as any active user.
+
+Steps:
+1. Open `user-menu-trigger`.
+2. Click `user-menu-help`.
+3. Verify `/help` loads.
+4. Fill `help-center-search` with a keyword such as `acceso`.
+5. Open one result and verify the article detail page loads.
+
+Expected:
+- The help center opens from `UserMenu`.
+- Search filters the article list.
+- The user can navigate from the help center to `/help/{slug}`.
+
+### Test Run: Contextual Help Opens on Priority Screens
+Preconditions:
+- Logged in as a user who can open `/dashboard/request-access`.
+- Logged in as a user who can open `/dashboard/{groupId}/members`.
+
+Steps:
+1. Open `/dashboard/request-access`.
+2. Click `context-help-open`.
+3. Verify `context-help-entry-request-access-resident` or another contextual help card appears.
+4. Click one `context-help-article-{slug}` link and verify article detail opens.
+5. Open `/dashboard/{groupId}/members`.
+6. Click `context-help-open`.
+7. Verify contextual help entries for member management and request review render.
+
+Expected:
+- Priority screens expose contextual help without breaking the existing layout.
+- Contextual help opens as an overlay and links to full help articles.
+
 If seeding does not create users, create them via the UI in the Auth runs.
 
 ## Feature: Group Roles and Memberships

@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, getFundStatusVariant } from "@/components/funds/utils";
+import { listContextHelpByScreen } from "@/lib/help-content";
 import { listNeighborhoodFunds } from "@/services/funds";
 import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
@@ -41,9 +43,14 @@ export default async function ResidentFundsPage({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">{t("label")}</p>
-        <h1 className="text-3xl font-semibold">{t("title")}</h1>
-        <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">{t("label")}</p>
+            <h1 className="text-3xl font-semibold">{t("title")}</h1>
+            <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
+          </div>
+          <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-funds")} />
+        </div>
       </header>
 
       {funds.length === 0 ? (

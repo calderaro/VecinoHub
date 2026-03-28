@@ -16,6 +16,9 @@
 - Unverified users attempting password login receive a new verification OTP and can complete verification from `/login`.
 - Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
 - Invite deep links preserve destination through sign-in, sign-up, and email verification, and return the user to `/dashboard/invites`.
+- Authenticated users can open `/help` from `UserMenu` on dashboard, profile, admin, and platform pages.
+- `/help` supports article search, featured guides, and navigation to `/help/[slug]`.
+- English UI sessions still show help content in Spanish with a visible availability notice.
 - Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
 - Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
 - Sign in, refresh, and sign out still work with Redis-backed sessions after setting `REDIS_URL`.
@@ -71,8 +74,10 @@
 - Approving a request also creates or reactivates the synchronized `neighbor` neighborhood membership.
 - Rejecting a request closes it without creating resident access.
 - `/dashboard/request-access` shows pending requests separately from request history.
+- `/dashboard/request-access` exposes contextual help for resident access requests and neighborhood join links.
 - Group members remain read-only in `/dashboard/[groupId]/members`.
 - `/dashboard/[groupId]/members` renders separate tabs for members, invitations, and requests, and each tab shows only its own content panel.
+- `/dashboard/[groupId]/members` exposes contextual help for member administration and request review.
 - Group members can leave their own group from `/dashboard/[groupId]/members` and are redirected back to `/dashboard`.
 - Group admins can leave their own group only when another active group admin remains.
 - The last active group admin in a group cannot leave and sees a clear error message.
@@ -98,12 +103,16 @@
 - Resources: weekly availability windows use the shared time selector and save the intended neighborhood-local hours.
 - Resources: duplicate resource names are rejected within the same neighborhood.
 - Resources: resident can browse `/dashboard/[groupId]/resources`, open a detail page, and view an availability calendar.
+- `/dashboard/[groupId]/resources` exposes contextual help for resident reservation flows.
 - Resources: resident can create a reservation only inside configured availability windows, with timezone-aware advance notice and duration limits.
 - Resources: overlapping reservations and administrative blocks prevent booking the same slot.
 - Resources: reservations are limited per group, not per individual user.
 - Resources: resident can cancel an eligible approved reservation, and late cancellations are rejected once the configured cutoff is reached.
 - Resources: neighborhood admin can create and remove administrative blocks from `/admin/[neighborhoodId]/resources/blocks`.
+- `/admin/[neighborhoodId]/resources` exposes contextual help for admin resource operations.
 - Funds: neighborhood admin can create multiple named funds in an authorized neighborhood.
+- `/dashboard/[groupId]/fund` exposes contextual help for resident fund reading.
+- `/admin/[neighborhoodId]/fund` exposes contextual help for admin fund operations.
 - Funds: neighborhood admin can create due periods, record expenses/manual income/adjustments, and confirm/reject fund payments.
 - Fund balances are derived from confirmed movements only; rejected payments do not change balance.
 - Residents can view fund balance, confirmed movements, and group-level paid/unpaid status for their authorized neighborhood only.

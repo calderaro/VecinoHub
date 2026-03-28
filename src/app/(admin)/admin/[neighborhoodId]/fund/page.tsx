@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, getFundStatusVariant } from "@/components/funds/utils";
+import { listContextHelpByScreen } from "@/lib/help-content";
 import { listNeighborhoodFunds } from "@/services/funds";
 import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
@@ -41,19 +43,22 @@ export default async function AdminFundsPage({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-teal-600">{neighborhood.name}</p>
           <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
         </div>
-        <Link
-          href={`${adminBasePath}/fund/new`}
-          className="rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-          data-testid="admin-fund-add"
-        >
-          {t("newFund")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <HelpContextPanel entries={listContextHelpByScreen(locale, "admin-funds")} />
+          <Link
+            href={`${adminBasePath}/fund/new`}
+            className="rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+            data-testid="admin-fund-add"
+          >
+            {t("newFund")}
+          </Link>
+        </div>
       </header>
 
       <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
