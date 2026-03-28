@@ -14,6 +14,11 @@ Current seed creates multi-neighborhood baseline data:
 - 2 groups (one per neighborhood) with active memberships.
 - Poll/campaign/fund/events/posts coverage across neighborhoods.
 - Named neighborhood funds with seeded periods, charges, payments, and ledger movements.
+- Resource reservation coverage:
+  - 3 seeded resources across 2 neighborhoods
+  - weekly availability windows and rule presets
+  - future approved reservations
+  - future administrative maintenance block
 
 ## Local Setup
 1. `npm run db:up`
@@ -27,6 +32,7 @@ Current seed creates multi-neighborhood baseline data:
 
 ## Notes
 - Seed is idempotent for users/neighborhoods/memberships and skips bulk domain inserts when groups already exist.
+- Seeded neighborhoods default to `America/Mexico_City` timezone unless changed manually later from `/platform/[neighborhoodId]/edit`.
 - Role compatibility keeps legacy `admin` value valid, but seeded admin user is `platform_admin`.
 - Seed credentials are development-only and are no longer committed in the repository.
 - Auth sessions now use Redis-backed secondary storage, so local auth flows require `REDIS_URL` in addition to `DATABASE_URL`.

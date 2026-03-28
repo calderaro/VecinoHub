@@ -50,6 +50,7 @@ export const neighborhoodsRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         slug: z.string().min(3),
+        timeZone: z.string().min(1).default("America/Mexico_City"),
         adminUserId: z.string().uuid().optional(),
       })
     )
@@ -81,6 +82,7 @@ export const neighborhoodsRouter = createTRPCRouter({
         neighborhoodId: z.string().uuid(),
         name: z.string().min(1).optional(),
         slug: z.string().min(3).optional(),
+        timeZone: z.string().min(1).optional(),
         status: z.enum(["active", "inactive"]).optional(),
       })
     )

@@ -15,6 +15,11 @@ import {
   fundPaymentAllocations,
   fundPaymentSubmissions,
   posts,
+  resourceAvailabilityWindows,
+  resourceBlocks,
+  resourceReservations,
+  resourceRules,
+  resources,
   fundraisingContributions,
   fundraisingCampaigns,
   neighborhoodFunds,
@@ -125,6 +130,7 @@ async function ensureNeighborhood(name: string, slug: string, createdBy: string)
     .values({
       name,
       slug,
+      timeZone: "America/Mexico_City",
       createdBy,
       status: "active",
     })
@@ -481,6 +487,168 @@ async function main() {
       status: "published",
       publishedAt: new Date(),
       neighborhoodId: surNeighborhood.id,
+      createdBy: admin.id,
+    },
+  ]);
+
+  const [grill, clubhouse, meetingRoom] = await db
+    .insert(resources)
+    .values([
+      {
+        neighborhoodId: centroNeighborhood.id,
+        name: "Asador central",
+        description: "Shared grill area for family gatherings.",
+        type: "grill",
+        location: "Central garden",
+        capacity: 20,
+        requiresApproval: false,
+        requiresDeposit: false,
+        usageRules: "Leave the area clean and respect the reservation end time.",
+        termsText: "Noise must remain within neighborhood quiet hours.",
+        createdBy: admin.id,
+      },
+      {
+        neighborhoodId: centroNeighborhood.id,
+        name: "Casa club",
+        description: "Indoor common room for meetings and private events.",
+        type: "clubhouse",
+        location: "Community hall",
+        capacity: 40,
+        requiresApproval: false,
+        requiresDeposit: true,
+        depositAmount: "500.00",
+        reservationFeeAmount: "250.00",
+        usageRules: "No smoking. Furniture must be restored after use.",
+        termsText: "Late cancellation may count against monthly limits.",
+        createdBy: admin.id,
+      },
+      {
+        neighborhoodId: surNeighborhood.id,
+        name: "Sala de juntas",
+        description: "Small meeting room for committee and resident sessions.",
+        type: "meeting_room",
+        location: "Admin office",
+        capacity: 10,
+        requiresApproval: false,
+        requiresDeposit: false,
+        usageRules: "Food is not allowed inside the room.",
+        createdBy: luis.id,
+      },
+    ])
+    .returning();
+
+  await db.insert(resourceAvailabilityWindows).values([
+    ...[1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+      resourceId: grill.id,
+      dayOfWeek,
+      startMinute: 600,
+      endMinute: 1320,
+    })),
+    ...[5, 6, 0].map((dayOfWeek) => ({
+      resourceId: clubhouse.id,
+      dayOfWeek,
+      startMinute: 600,
+      endMinute: 1380,
+    })),
+    ...[1, 2, 3, 4, 5].map((dayOfWeek) => ({
+      resourceId: meetingRoom.id,
+      dayOfWeek,
+      startMinute: 540,
+      endMinute: 1080,
+    })),
+  ]);
+
+  await db.insert(resourceRules).values([
+    {
+      resourceId: grill.id,
+      minAdvanceHours: 24,
+      maxAdvanceDays: 14,
+      maxReservationsPerMonth: 2,
+      maxReservationsPerYear: 12,
+      maxActiveReservations: 1,
+      minDurationMinutes: 60,
+      maxDurationMinutes: 360,
+      bufferBeforeMinutes: 0,
+      bufferAfterMinutes: 60,
+      maxConcurrentReservations: 1,
+      requireNoDebt: false,
+      cancellationLimitHours: 12,
+      lateCancellationCountsAsUsage: false,
+      lateCancellationForfeitsDeposit: false,
+    },
+    {
+      resourceId: clubhouse.id,
+      minAdvanceHours: 72,
+      maxAdvanceDays: 60,
+      maxReservationsPerMonth: 1,
+      maxReservationsPerYear: 6,
+      maxActiveReservations: 1,
+      minDurationMinutes: 120,
+      maxDurationMinutes: 480,
+      bufferBeforeMinutes: 60,
+      bufferAfterMinutes: 60,
+      maxConcurrentReservations: 1,
+      requireNoDebt: false,
+      cancellationLimitHours: 48,
+      lateCancellationCountsAsUsage: true,
+      lateCancellationForfeitsDeposit: true,
+    },
+    {
+      resourceId: meetingRoom.id,
+      minAdvanceHours: 12,
+      maxAdvanceDays: 30,
+      maxReservationsPerMonth: 4,
+      maxReservationsPerYear: 24,
+      maxActiveReservations: 2,
+      minDurationMinutes: 30,
+      maxDurationMinutes: 180,
+      bufferBeforeMinutes: 0,
+      bufferAfterMinutes: 15,
+      maxConcurrentReservations: 1,
+      requireNoDebt: false,
+      cancellationLimitHours: 6,
+      lateCancellationCountsAsUsage: false,
+      lateCancellationForfeitsDeposit: false,
+    },
+  ]);
+
+  const nextSaturday = addDays(today, ((6 - today.getDay() + 7) % 7) || 7);
+  const nextSunday = addDays(today, ((7 - today.getDay()) % 7) || 7);
+
+  await db.insert(resourceReservations).values([
+    {
+      resourceId: grill.id,
+      neighborhoodId: centroNeighborhood.id,
+      groupId: casa101.id,
+      requestedBy: ana.id,
+      startAt: new Date(`${formatDate(nextSaturday)}T18:00:00.000Z`),
+      endAt: new Date(`${formatDate(nextSaturday)}T21:00:00.000Z`),
+      title: "Comida familiar",
+      notes: "Birthday lunch for family and close friends.",
+      attendeeCount: 14,
+      status: "approved",
+    },
+    {
+      resourceId: meetingRoom.id,
+      neighborhoodId: surNeighborhood.id,
+      groupId: casa202.id,
+      requestedBy: luis.id,
+      startAt: new Date(`${formatDate(addDays(today, 3))}T16:00:00.000Z`),
+      endAt: new Date(`${formatDate(addDays(today, 3))}T17:30:00.000Z`),
+      title: "Budget review",
+      attendeeCount: 6,
+      status: "approved",
+    },
+  ]);
+
+  await db.insert(resourceBlocks).values([
+    {
+      resourceId: clubhouse.id,
+      neighborhoodId: centroNeighborhood.id,
+      startAt: new Date(`${formatDate(nextSunday)}T18:00:00.000Z`),
+      endAt: new Date(`${formatDate(nextSunday)}T23:00:00.000Z`),
+      reason: "maintenance",
+      reasonText: "Air conditioning maintenance window.",
       createdBy: admin.id,
     },
   ]);

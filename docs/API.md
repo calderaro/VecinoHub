@@ -18,6 +18,7 @@
 - `neighborhoods.create` (mutation, `platform_admin`)
 - `neighborhoods.update` (mutation, `platform_admin`)
 - `neighborhoods.remove` (mutation, `platform_admin`)
+- neighborhood create/update accept `timeZone` and persist an IANA timezone selected from the shared timezone catalog.
 - `neighborhoods.listMembers` (query, neighborhood admin or platform admin)
 - `neighborhoods.addMemberByEmail` (mutation, neighborhood admin or platform admin)
 - `neighborhoods.setMemberRole` (mutation, neighborhood admin or platform admin)
@@ -85,6 +86,15 @@
 - `funds.waiveGroupCharge` / `funds.reverseMovement` (mutation, neighborhood admin or platform admin)
 - all fund reads and writes are scoped by `fundId` within the authorized neighborhood
 
+### resources
+- Reads are SSR-first through services for `/admin/[neighborhoodId]/resources*` and `/dashboard/[groupId]/resources*`.
+- `resources.getCalendar` (query, authenticated, scoped by resource membership/admin checks)
+- `resources.listReservations` / `resources.listBlocks` (query, neighborhood admin or platform admin)
+- `resources.create` / `resources.update` / `resources.setStatus` (mutation, neighborhood admin or platform admin)
+- `resources.createReservation` / `resources.cancelReservation` (mutation, active group member within the resource neighborhood)
+- `resources.createBlock` / `resources.updateBlock` / `resources.removeBlock` (mutation, neighborhood admin or platform admin)
+- The MVP intentionally rejects `requiresApproval = true`; approval workflows are reserved for a later phase.
+
 ### events
 - `events.list` / `events.get` (query, neighborhood scoped)
 - `events.create` / `events.update` / `events.remove` (mutation, neighborhood admin or platform admin)
@@ -94,6 +104,11 @@
 - `posts.create` / `posts.update` / `posts.publish` / `posts.unpublish` / `posts.remove` (mutation, neighborhood admin or platform admin)
 
 ## Input Notes (high level)
+- Neighborhood timezone is a first-class product setting. All neighborhood-scoped date/time inputs are interpreted in that timezone before persistence.
+- The UI no longer relies on native HTML `date`, `time`, or `datetime-local` inputs for product workflows.
+- Date-only fields are submitted as normalized calendar values and stored/validated as neighborhood-local dates.
+- Time-only fields are submitted as neighborhood-local wall-clock values.
+- Datetime flows convert neighborhood-local selections to UTC only after validation/service parsing.
 - Neighborhood-scoped creates accept optional `neighborhoodId`; if omitted, services resolve from active context/admin memberships.
 - `groups.create` accepts an optional initial group admin email and resolves it to an existing user server-side.
 - Group invite creation accepts an email for both existing and not-yet-registered people; membership is created only on acceptance.
@@ -107,3 +122,7 @@
 - `users.updateRole` accepts `user | admin | platform_admin` for compatibility during transition.
 - Fund mutations accept explicit `fundId` or `periodId` / `groupChargeId` as needed; services must validate that the referenced fund belongs to the authorized neighborhood.
 - Fund payment submissions must validate active group membership and ensure allocations target charges within the same fund and neighborhood.
+- Resource mutations accept explicit `resourceId` and validate that the acting user belongs to or administers the resource neighborhood.
+- Reservation creation validates resource status, timezone-aware advance notice, weekly availability windows, duration, overlap/buffer conflicts, administrative blocks, per-group quotas, and optional overdue-dues restrictions.
+- Reservation cancellation validates membership or admin scope and enforces `cancellationLimitHours` for resident-initiated cancellations.
+- Event, fund, fundraising, and resource scheduling/display flows render using neighborhood port time, not browser-local time.

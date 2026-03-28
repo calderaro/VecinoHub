@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ContributionForm } from "@/components/fundraising/contribution-form";
 import { listUserGroups } from "@/services/groups";
 import { getCampaignDetail } from "@/services/fundraising";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminContributionPage({
@@ -27,9 +28,17 @@ export default async function AdminContributionPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const campaign = await getCampaignDetail(serviceContext, {
-    campaignId: resolvedParams.campaignId,
-  });
+  const [campaign, neighborhood] = await Promise.all([
+    getCampaignDetail(serviceContext, {
+      campaignId: resolvedParams.campaignId,
+    }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(adminBasePath);
+  }
 
   if (campaign.status !== "open") {
     redirect(`${adminBasePath}/fundraising/${campaign.id}`);
@@ -71,6 +80,7 @@ export default async function AdminContributionPage({
         <ContributionForm
           campaignId={campaign.id}
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}
+          timeZone={neighborhood.timeZone}
         />
       </section>
     </div>

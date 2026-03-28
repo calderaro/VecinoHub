@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronDownIcon, UsersIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
 import { getGroupMemberCounts, listGroupsPaged } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -16,13 +18,13 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-function formatDate(value: Date | string | null | undefined) {
+function formatDate(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone: string
+) {
   if (!value) return "-";
-  return new Date(value).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatPortDate(value, timeZone, locale);
 }
 
 export default async function GroupsPage({
@@ -64,14 +66,20 @@ export default async function GroupsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: rawGroups, total } = await listGroupsPaged(
-    serviceContext,
-    {
-      query: query || undefined,
-      limit: PAGE_SIZE,
-      offset,
-    }
-  );
+  const [{ items: rawGroups, total }, neighborhood, locale] = await Promise.all([
+    listGroupsPaged(
+      serviceContext,
+      {
+        query: query || undefined,
+        limit: PAGE_SIZE,
+        offset,
+      }
+    ),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+    getLocale(),
+  ]);
 
   const groups = rawGroups;
 
@@ -188,7 +196,7 @@ export default async function GroupsPage({
                       </td>
                       <td className="hidden px-4 py-3.5 text-stone-600 md:table-cell">{memberCount}</td>
                       <td className="hidden px-4 py-3.5 text-stone-400 lg:table-cell">
-                        {formatDate(groupWithMeta.createdAt)}
+                        {formatDate(groupWithMeta.createdAt, locale, neighborhood.timeZone)}
                       </td>
                     </tr>
                   );

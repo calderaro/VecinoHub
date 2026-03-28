@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronDownIcon, ListChecksIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getPollVoteCounts, listPollsPaged } from "@/services/polls";
 import { getSession } from "@/server/auth";
 
@@ -16,13 +18,13 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-function formatDate(value: Date | string | null | undefined) {
+function formatDate(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone: string
+) {
   if (!value) return "-";
-  return new Date(value).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatPortDate(value, timeZone, locale);
 }
 
 export default async function PollsPage({
@@ -80,8 +82,14 @@ export default async function PollsPage({
   );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const t = await getTranslations("admin.polls");
-  const tStatus = await getTranslations("status");
+  const [neighborhood, locale, t, tStatus] = await Promise.all([
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+    getLocale(),
+    getTranslations("admin.polls"),
+    getTranslations("status"),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
@@ -187,7 +195,7 @@ export default async function PollsPage({
                         {voteCounts.get(poll.id) ?? 0}
                       </td>
                       <td className="hidden px-4 py-3.5 text-stone-400 lg:table-cell">
-                        {formatDate(pollWithMeta.createdAt)}
+                        {formatDate(pollWithMeta.createdAt, locale, neighborhood.timeZone)}
                       </td>
                     </tr>
                   );

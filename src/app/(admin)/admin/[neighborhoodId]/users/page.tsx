@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { UsersTable } from "@/components/admin/users-table";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { listNeighborhoodGroupUsersPaged } from "@/services/users";
 import { getSession } from "@/server/auth";
 
@@ -48,13 +49,18 @@ export default async function AdminUsersPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const usersPaged = await listNeighborhoodGroupUsersPaged(serviceContext, {
-    neighborhoodId: resolvedParams.neighborhoodId,
-    query: query || undefined,
-    status: status ? (status as "active" | "inactive") : undefined,
-    limit: PAGE_SIZE,
-    offset,
-  });
+  const [usersPaged, neighborhood] = await Promise.all([
+    listNeighborhoodGroupUsersPaged(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+      query: query || undefined,
+      status: status ? (status as "active" | "inactive") : undefined,
+      limit: PAGE_SIZE,
+      offset,
+    }),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(usersPaged.total / PAGE_SIZE));
   const t = await getTranslations("admin.users");
@@ -91,6 +97,7 @@ export default async function AdminUsersPage({
         query={query}
         status={status}
         adminBasePath={adminBasePath}
+        timeZone={neighborhood.timeZone}
       />
     </div>
   );

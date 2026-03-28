@@ -24,6 +24,9 @@
 - `fund_movement_type`: `opening_balance`, `payment`, `expense`, `manual_income`, `adjustment`, `reversal`
 - `fund_entry_side`: `credit`, `debit`
 - `post_status`: `draft`, `published`
+- `resource_status`: `active`, `inactive`
+- `resource_reservation_status`: `approved`, `cancelled`, `completed`, `expired`
+- `resource_block_reason`: `maintenance`, `cleaning`, `repair`, `neighborhood_event`, `unavailable`, `other`
 
 ## users
 - `id` (pk)
@@ -41,6 +44,7 @@
 - `id` (pk)
 - `name`
 - `slug` (unique, case-insensitive)
+- `time_zone` (IANA timezone, default `America/Mexico_City`)
 - `status`
 - `created_by` (fk -> users.id)
 - `created_at`
@@ -272,6 +276,97 @@
 - `source_id` (nullable)
 - `created_by` (fk -> users.id)
 - `created_at`
+
+## resources
+- `id` (pk)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `name`
+- `description` (nullable)
+- `type` (nullable)
+- `location` (nullable)
+- `capacity` (nullable)
+- `status`
+- `requires_approval` (stored for forward compatibility; MVP only supports `false`)
+- `requires_deposit`
+- `deposit_amount` (nullable)
+- `reservation_fee_amount` (nullable)
+- `usage_rules` (nullable)
+- `terms_text` (nullable)
+- `created_by` (fk -> users.id)
+- `created_at`
+- `updated_at`
+- Unique: (`neighborhood_id`, lower(`name`))
+
+## resource_availability_windows
+- `id` (pk)
+- `resource_id` (fk -> resources.id)
+- `day_of_week` (`0` Sunday through `6` Saturday)
+- `start_minute`
+- `end_minute`
+- `created_at`
+- `updated_at`
+- Semantics:
+  - Windows define recurring weekly availability in the parent neighborhood timezone.
+  - Reservations must fit entirely inside one configured window for the requested day.
+
+## resource_rules
+- `id` (pk)
+- `resource_id` (fk -> resources.id)
+- `min_advance_hours`
+- `max_advance_days`
+- `max_reservations_per_month` (nullable)
+- `max_reservations_per_year` (nullable)
+- `max_active_reservations` (nullable)
+- `min_duration_minutes`
+- `max_duration_minutes`
+- `buffer_before_minutes`
+- `buffer_after_minutes`
+- `max_concurrent_reservations`
+- `require_no_debt`
+- `cancellation_limit_hours` (nullable)
+- `late_cancellation_counts_as_usage`
+- `late_cancellation_forfeits_deposit`
+- `created_at`
+- `updated_at`
+- Unique: (`resource_id`)
+
+## resource_reservations
+- `id` (pk)
+- `resource_id` (fk -> resources.id)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `group_id` (fk -> groups.id)
+- `requested_by` (fk -> users.id)
+- `start_at`
+- `end_at`
+- `title`
+- `notes` (nullable)
+- `attendee_count` (nullable)
+- `status`
+- `cancelled_by` (fk -> users.id, nullable)
+- `cancelled_at` (nullable)
+- `cancellation_reason` (nullable)
+- `completed_at` (nullable)
+- `deposit_status` (nullable, reserved for later phases)
+- `deposit_reference` (nullable, reserved for later phases)
+- `created_at`
+- `updated_at`
+- Semantics:
+  - Reservation limits are enforced per `group_id` so usage is scoped to the house/unit, not the individual user.
+  - Only non-overlapping reservations that satisfy weekly availability, advance notice, duration, quota, block, and overdue-dues rules may be created.
+
+## resource_blocks
+- `id` (pk)
+- `resource_id` (fk -> resources.id)
+- `neighborhood_id` (fk -> neighborhoods.id)
+- `start_at`
+- `end_at`
+- `reason`
+- `reason_text` (nullable)
+- `created_by` (fk -> users.id)
+- `created_at`
+- `updated_at`
+- Semantics:
+  - Blocks represent maintenance, cleaning, repairs, neighborhood events, or other administrative blackout windows.
 
 ## events
 - `id` (pk)

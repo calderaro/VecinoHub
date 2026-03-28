@@ -2,21 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { formatPortDateTime } from "@/lib/port-time";
 import { getEventById } from "@/services/events";
 import { getGroupById } from "@/services/groups";
-import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
+import { getNeighborhoodById, hasNeighborhoodAdminRole } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "full",
-    timeStyle: "short",
-  }).format(value);
-}
 
 export default async function NeighborEventDetailPage({
   params,
@@ -38,10 +28,14 @@ export default async function NeighborEventDetailPage({
       activeNeighborhoodId: group.neighborhoodId,
     },
   };
-  const [event, canAccessAdmin] = await Promise.all([
+  const [event, neighborhood, canAccessAdmin] = await Promise.all([
     getEventById(serviceContext, { eventId: resolvedParams.eventId }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: group.neighborhoodId }).catch(() => null),
     hasNeighborhoodAdminRole(baseContext),
   ]);
+  if (!neighborhood) {
+    redirect(`/dashboard/${resolvedParams.groupId}/events`);
+  }
   const adminBasePath = `/admin/${group.neighborhoodId}`;
   const locale = await getLocale();
   const t = await getTranslations("dashboard.eventDetail");
@@ -52,8 +46,8 @@ export default async function NeighborEventDetailPage({
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">{event.title}</h1>
           <p className="text-sm text-[color:var(--muted)]">
-            {formatDate(event.startsAt, locale)}
-            {event.endsAt ? ` - ${formatDate(event.endsAt, locale)}` : ""}
+            {formatPortDateTime(event.startsAt, neighborhood.timeZone, locale)}
+            {event.endsAt ? ` - ${formatPortDateTime(event.endsAt, neighborhood.timeZone, locale)}` : ""}
           </p>
         </div>
         {canAccessAdmin ? (

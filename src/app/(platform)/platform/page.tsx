@@ -73,6 +73,7 @@ export default async function PlatformPage() {
                   <div>
                     <p className="text-sm font-semibold text-stone-900">{neighborhood.name}</p>
                     <p className="text-xs text-stone-500">/{neighborhood.slug}</p>
+                    <p className="text-xs text-stone-400">{neighborhood.timeZone}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span

@@ -2,20 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { formatPortDate } from "@/lib/port-time";
 import { getGroupById } from "@/services/groups";
 import { hasNeighborhoodAdminRole } from "@/services/neighborhoods";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getPostById } from "@/services/posts";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "full",
-  }).format(value);
-}
 
 export default async function NeighborPostDetailPage({
   params,
@@ -37,9 +29,12 @@ export default async function NeighborPostDetailPage({
       activeNeighborhoodId: group.neighborhoodId,
     },
   };
-  const [post, canAccessAdmin] = await Promise.all([
+  const [post, canAccessAdmin, neighborhood] = await Promise.all([
     getPostById(serviceContext, { postId: resolvedParams.postId }),
     hasNeighborhoodAdminRole(baseContext),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: group.neighborhoodId,
+    }),
   ]);
   const adminBasePath = `/admin/${group.neighborhoodId}`;
   const locale = await getLocale();
@@ -52,7 +47,11 @@ export default async function NeighborPostDetailPage({
           <h1 className="text-3xl font-semibold">{post.title}</h1>
           <p className="text-sm text-[color:var(--muted)]">
             {t("published", {
-              date: post.publishedAt ? formatDate(post.publishedAt, locale) : t("emptyDate"),
+              date: post.publishedAt
+                ? formatPortDate(post.publishedAt, neighborhood.timeZone, locale, {
+                    dateStyle: "full",
+                  })
+                : t("emptyDate"),
             })}
           </p>
         </div>

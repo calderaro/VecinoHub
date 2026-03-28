@@ -12,6 +12,8 @@ import {
   ZapIcon,
 } from "lucide-react";
 
+import { DateField } from "@/components/date-time";
+import { formatPortDateKey, toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { StatusBadge } from "@/components/ui-v3";
@@ -26,6 +28,8 @@ type CampaignFormProps = {
   initialDueDate?: string | null;
   initialStatus?: "open" | "closed";
   initialRaisedAmount?: number;
+  neighborhoodId: string;
+  timeZone: string;
 };
 
 const inputBase =
@@ -42,14 +46,6 @@ function formatCurrency(amount: number, locale: string) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-}
-
-function formatDate(value: string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
 }
 
 function toDateInput(value?: string | null) {
@@ -70,6 +66,8 @@ export function CampaignForm({
   initialDueDate = "",
   initialStatus = "open",
   initialRaisedAmount = 0,
+  neighborhoodId,
+  timeZone,
 }: CampaignFormProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -109,11 +107,12 @@ export function CampaignForm({
       return;
     }
 
-    const dueDateValue = dueDate ? new Date(`${dueDate}T00:00:00`) : undefined;
+    const dueDateValue = dueDate ? toStableUtcDateFromDateKey(dueDate) : undefined;
 
     try {
       if (mode === "create") {
         await createCampaign.mutateAsync({
+          neighborhoodId,
           title: title.trim(),
           description: description.trim() ? description.trim() : undefined,
           goalAmount: String(parsedGoalAmount),
@@ -257,15 +256,18 @@ export function CampaignForm({
                 </label>
                 <div className="relative">
                   <CalendarIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                  <input
-                    id="campaign-due"
-                    className={`${inputBase} border-stone-200 bg-white pl-10 hover:border-stone-300`}
-                    type="date"
-                    value={dueDate}
-                    onChange={(event) => setDueDate(event.target.value)}
-                    disabled={isDisabled}
-                    data-testid="campaign-form-due"
-                  />
+                  <div className="pl-10">
+                    <DateField
+                      id="campaign-due"
+                      value={dueDate}
+                      onChange={setDueDate}
+                      locale={locale}
+                      timeZone={timeZone}
+                      placeholder={t("placeholders.dueDate")}
+                      testId="campaign-form-due"
+                      disabled={isDisabled}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -362,7 +364,7 @@ export function CampaignForm({
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-stone-400">{t("fields.dueDate")}</span>
                   <span className="text-xs text-stone-600">
-                    {dueDate ? formatDate(dueDate, locale) : t("preview.noDueDate")}
+                    {dueDate ? formatPortDateKey(dueDate, timeZone, locale) : t("preview.noDueDate")}
                   </span>
                 </div>
                 {mode === "edit" ? (

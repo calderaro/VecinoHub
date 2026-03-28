@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { NeighborhoodDetailActions } from "@/components/platform/neighborhood-detail-actions";
 import { NeighborhoodMembersManager } from "@/components/platform/neighborhood-members-manager";
 import { StatusBadge } from "@/components/ui-v3";
@@ -10,14 +11,6 @@ import {
   listNeighborhoodMembersPaged,
 } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
-
-function formatDate(value: Date | string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default async function PlatformNeighborhoodDetailPage({
   params,
@@ -76,10 +69,10 @@ export default async function PlatformNeighborhoodDetailPage({
                   label={neighborhood.status === "active" ? "Active" : "Inactive"}
                 />
                 <span className="text-xs text-stone-400">
-                  Created {formatDate(neighborhood.createdAt)}
+                  Created {formatPortDate(neighborhood.createdAt, neighborhood.timeZone, "en")}
                 </span>
                 <span className="text-xs text-stone-400">
-                  Updated {formatDate(neighborhood.updatedAt)}
+                  Updated {formatPortDate(neighborhood.updatedAt, neighborhood.timeZone, "en")}
                 </span>
               </div>
             </div>
@@ -113,6 +106,10 @@ export default async function PlatformNeighborhoodDetailPage({
             <p className="mt-1 text-sm font-semibold text-stone-900">
               {neighborhood.creatorName ?? neighborhood.creatorEmail ?? "Unknown"}
             </p>
+          </div>
+          <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
+            <p className="text-xs text-stone-400">Time zone</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">{neighborhood.timeZone}</p>
           </div>
         </div>
 

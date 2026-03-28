@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { formatPortDateTime } from "@/lib/port-time";
 import { listEventsPaged } from "@/services/events";
 import { getGroupById } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -13,17 +15,6 @@ function buildQuery(params: Record<string, string | undefined>) {
   const query = new URLSearchParams(entries as [string, string][]);
   const qs = query.toString();
   return qs ? `?${qs}` : "";
-}
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(value);
 }
 
 export default async function NeighborEventsPage({
@@ -61,14 +52,20 @@ export default async function NeighborEventsPage({
     },
   };
 
-  const { items: events, total } = await listEventsPaged(
-    scopedContext,
-    {
-      query: query || undefined,
-      limit: PAGE_SIZE,
-      offset,
-    }
-  );
+  const [neighborhood, { items: events, total }] = await Promise.all([
+    getNeighborhoodById(scopedContext, { neighborhoodId: group.neighborhoodId }).catch(() => null),
+    listEventsPaged(
+      scopedContext,
+      {
+        query: query || undefined,
+        limit: PAGE_SIZE,
+        offset,
+      }
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(`/dashboard/${resolvedParams.groupId}`);
+  }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const locale = await getLocale();
@@ -126,7 +123,10 @@ export default async function NeighborEventsPage({
                   >
                     <td className="py-3 font-medium">{event.title}</td>
                     <td className="py-3 text-[color:var(--muted)]">
-                      {formatDate(event.startsAt, locale)}
+                      {formatPortDateTime(event.startsAt, neighborhood.timeZone, locale, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
                     </td>
                     <td className="py-3 text-[color:var(--muted)]">
                       {event.location ?? t("table.emptyLocation")}

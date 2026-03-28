@@ -12,6 +12,7 @@ import {
   ArrowRightIcon,
   Building2Icon,
   CalendarIcon,
+  CalendarRangeIcon,
   CoinsIcon,
   FileTextIcon,
   LandmarkIcon,
@@ -20,6 +21,7 @@ import {
   VoteIcon,
 } from "lucide-react";
 
+import { getPortParts } from "@/lib/port-time";
 import { StatusBadge } from "@/components/ui-v3";
 import { listUpcomingEvents, getEventsStats } from "@/services/events";
 import {
@@ -34,6 +36,7 @@ import {
   getPollsStats,
 } from "@/services/polls";
 import { listRecentPosts, getPostsStats } from "@/services/posts";
+import { getResourcesStats } from "@/services/resources";
 import { listNeighborhoodGroupUsersPaged } from "@/services/users";
 import { getSession } from "@/server/auth";
 
@@ -50,10 +53,11 @@ function formatCurrency(amount: number, locale: string) {
   }).format(amount);
 }
 
-function formatMonth(date: Date | string, locale: string) {
-  return new Date(date).toLocaleDateString(getDisplayLocale(locale), {
+function formatMonth(date: Date | string, locale: string, timeZone: string) {
+  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
     month: "short",
-  });
+    timeZone,
+  }).format(new Date(date));
 }
 
 type KpiStat = {
@@ -142,6 +146,7 @@ export default async function AdminNeighborhoodPage({
     activePolls,
     fundraisingStats,
     funds,
+    resourcesStats,
     openCampaigns,
     eventsStats,
     upcomingEvents,
@@ -157,6 +162,7 @@ export default async function AdminNeighborhoodPage({
     listActivePollsWithParticipation(serviceContext),
     getFundraisingStats(serviceContext),
     listNeighborhoodFunds(serviceContext, { neighborhoodId }),
+    getResourcesStats(serviceContext, { neighborhoodId }),
     listOpenCampaignsWithProgress(serviceContext),
     getEventsStats(serviceContext),
     listUpcomingEvents(serviceContext),
@@ -286,6 +292,19 @@ export default async function AdminNeighborhoodPage({
               value: funds.reduce((sum, fund) => sum + fund.overdueCharges, 0),
               color: "text-red-600",
             },
+          ]}
+        />
+
+        <KpiCard
+          href={`${adminBasePath}/resources`}
+          title={tNav("resources")}
+          icon={<CalendarRangeIcon className="h-4.5 w-4.5 text-cyan-600" />}
+          iconBg="bg-cyan-50"
+          testId="admin-overview-stats-resources"
+          stats={[
+            { label: t("kpi.resources.active"), value: resourcesStats.active, color: "text-teal-600" },
+            { label: t("kpi.resources.inactive"), value: resourcesStats.inactive, color: "text-amber-600" },
+            { label: t("kpi.resources.reserved"), value: resourcesStats.reserved },
           ]}
         />
 
@@ -492,10 +511,10 @@ export default async function AdminNeighborhoodPage({
                 >
                   <div className="w-7 text-center">
                     <p className="text-[9px] font-bold uppercase leading-none text-blue-500">
-                      {formatMonth(event.startsAt, locale)}
+                      {formatMonth(event.startsAt, locale, neighborhood.timeZone)}
                     </p>
                     <p className="text-base font-bold leading-tight text-stone-900">
-                      {new Date(event.startsAt).getDate()}
+                      {getPortParts(event.startsAt, neighborhood.timeZone).day}
                     </p>
                   </div>
                   <div className="min-w-0 flex-1">

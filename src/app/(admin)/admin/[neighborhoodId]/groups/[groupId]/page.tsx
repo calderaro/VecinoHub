@@ -6,26 +6,12 @@ import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { listGroupAccessRequests } from "@/services/group-access-requests";
 import { GroupDetailActions } from "@/components/groups/group-detail-actions";
 import { GroupMembers } from "@/components/groups/group-members";
+import { formatPortDate } from "@/lib/port-time";
 import { StatusBadge } from "@/components/ui-v3";
 import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string | null | undefined, locale: string) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default async function GroupDetailPage({
   params,
@@ -48,7 +34,7 @@ export default async function GroupDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const [group, members, invites, accessRequests] = await Promise.all([
+  const [group, members, invites, accessRequests, neighborhood] = await Promise.all([
     getGroupById(serviceContext, {
       groupId: resolvedParams.groupId,
     }),
@@ -60,6 +46,9 @@ export default async function GroupDetailPage({
     }),
     listGroupAccessRequests(serviceContext, {
       groupId: resolvedParams.groupId,
+    }),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
     }),
   ]);
 
@@ -93,7 +82,7 @@ export default async function GroupDetailPage({
                   label={statusVariant === "active" ? t("status.active") : t("status.inactive")}
                 />
                 <span className="text-xs text-stone-400">
-                  {t("createdLabel")} {formatDate(group.createdAt, locale)}
+                  {t("createdLabel")} {formatPortDate(group.createdAt, neighborhood.timeZone, locale)}
                 </span>
               </div>
             </div>
@@ -121,6 +110,7 @@ export default async function GroupDetailPage({
             canManage
             viewerUserId={session.user.id}
             viewerMembershipRole={group.viewerMembershipRole}
+            timeZone={neighborhood.timeZone}
           />
         </div>
       </section>

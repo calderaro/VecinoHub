@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { DateField } from "@/components/date-time";
+import { toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -16,14 +18,17 @@ export function FundPaymentForm({
   groupChargeId,
   redirectTo,
   initialAmount = "",
+  timeZone,
 }: {
   fundId: string;
   groupId: string;
   groupChargeId: string;
   redirectTo: string;
   initialAmount?: string;
+  timeZone: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const t = useTranslations("dashboard.funds.paymentForm");
   const [method, setMethod] = useState<"cash" | "wire_transfer">("cash");
@@ -64,7 +69,7 @@ export function FundPaymentForm({
       groupChargeId,
       method,
       amount,
-      paidAt: new Date(`${paidAt}T00:00:00`),
+      paidAt: toStableUtcDateFromDateKey(paidAt),
       reference: method === "wire_transfer" ? reference.trim() : undefined,
       notes: notes.trim() || undefined,
     });
@@ -104,12 +109,13 @@ export function FundPaymentForm({
 
           <label className="block space-y-2">
             <span className="text-sm font-medium text-stone-700">{t("fields.paidAt")}</span>
-            <input
-              className={inputBase}
-              type="date"
+            <DateField
               value={paidAt}
-              onChange={(event) => setPaidAt(event.target.value)}
-              data-testid="fund-payment-form-paid-at"
+              onChange={setPaidAt}
+              locale={locale}
+              timeZone={timeZone}
+              placeholder={t("placeholders.paidAt")}
+              testId="fund-payment-form-paid-at"
               disabled={isPending}
             />
           </label>

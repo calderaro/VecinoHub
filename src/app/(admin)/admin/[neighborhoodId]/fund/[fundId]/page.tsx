@@ -8,6 +8,7 @@ import {
   getNeighborhoodFundOverview,
   listFundChargeTemplates,
 } from "@/services/funds";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminFundDetailPage({
@@ -29,15 +30,16 @@ export default async function AdminFundDetailPage({
     },
   };
 
-  const [overview, templates, locale, t, tStatus] = await Promise.all([
+  const [overview, templates, neighborhood, locale, t, tStatus] = await Promise.all([
     getNeighborhoodFundOverview(serviceContext, { fundId }).catch(() => null),
     listFundChargeTemplates(serviceContext, { fundId }).catch(() => []),
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     getLocale(),
     getTranslations("admin.funds.detail"),
     getTranslations("status"),
   ]);
 
-  if (!overview) {
+  if (!overview || !neighborhood) {
     redirect(`${adminBasePath}/fund`);
   }
 
@@ -106,7 +108,9 @@ export default async function AdminFundDetailPage({
                 >
                   <div>
                     <p className="font-medium text-stone-900">{period.title}</p>
-                    <p className="text-xs text-stone-400">{formatDate(period.dueDate, locale)}</p>
+                    <p className="text-xs text-stone-400">
+                      {formatDate(period.dueDate, locale, neighborhood.timeZone)}
+                    </p>
                   </div>
                   <p className="text-sm font-semibold text-stone-700">
                     {formatCurrency(period.stats.totalCollected, locale, overview.currencyCode)}
@@ -129,7 +133,9 @@ export default async function AdminFundDetailPage({
                 <div key={movement.id} className="flex items-center justify-between px-5 py-3">
                   <div>
                     <p className="font-medium text-stone-900">{movement.description}</p>
-                    <p className="text-xs text-stone-400">{formatDate(movement.effectiveAt, locale)}</p>
+                    <p className="text-xs text-stone-400">
+                      {formatDate(movement.effectiveAt, locale, neighborhood.timeZone)}
+                    </p>
                   </div>
                   <p className={`text-sm font-semibold ${movement.entrySide === "credit" ? "text-teal-700" : "text-red-600"}`}>
                     {movement.entrySide === "credit" ? "+" : "-"}

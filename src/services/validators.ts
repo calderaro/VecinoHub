@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isValidTimezone } from "@/lib/timezones/catalog";
+
 export const idSchema = z.string().uuid();
 export const nameSchema = z.string().trim().min(1).max(120);
 export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
@@ -51,6 +53,26 @@ export const fundMovementTypeSchema = z.enum([
   "reversal",
 ]);
 export const fundEntrySideSchema = z.enum(["credit", "debit"]);
+export const resourceStatusSchema = z.enum(["active", "inactive"]);
+export const resourceReservationStatusSchema = z.enum([
+  "approved",
+  "cancelled",
+  "completed",
+  "expired",
+]);
+export const resourceBlockReasonSchema = z.enum([
+  "maintenance",
+  "cleaning",
+  "repair",
+  "neighborhood_event",
+  "unavailable",
+  "other",
+]);
+export const timeZoneSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((value) => isValidTimezone(value), "Invalid time zone");
 export const usernameSchema = z
   .string()
   .trim()

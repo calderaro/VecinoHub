@@ -452,41 +452,54 @@ export async function rejectContribution(
 }
 
 export async function listCampaigns(ctx: ServiceContext) {
-  if (isPlatformAdmin(ctx)) {
-    return db.select().from(fundraisingCampaigns);
-  }
+  const campaigns = isPlatformAdmin(ctx)
+    ? await db.select().from(fundraisingCampaigns)
+    : await (async () => {
+        const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+        if (!neighborhoodIds || neighborhoodIds.length === 0) {
+          return [];
+        }
 
-  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
-  if (!neighborhoodIds || neighborhoodIds.length === 0) {
+        return db
+          .select()
+          .from(fundraisingCampaigns)
+          .where(inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds));
+      })();
+
+  if (campaigns.length === 0) {
     return [];
   }
 
-  const memberships = await db
-    .select({ groupId: groupMemberships.groupId })
-    .from(groupMemberships)
-    .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
-    .where(
-      and(
-        eq(groupMemberships.userId, ctx.user.id),
-        eq(groupMemberships.status, "active"),
-        inArray(groups.neighborhoodId, neighborhoodIds)
-      )
-    );
+  const contributions = isPlatformAdmin(ctx)
+    ? await db.select().from(fundraisingContributions)
+    : await (async () => {
+        const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+        if (!neighborhoodIds || neighborhoodIds.length === 0) {
+          return [];
+        }
 
-  const groupIds = memberships.map((membership) => membership.groupId);
+        const memberships = await db
+          .select({ groupId: groupMemberships.groupId })
+          .from(groupMemberships)
+          .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+          .where(
+            and(
+              eq(groupMemberships.userId, ctx.user.id),
+              eq(groupMemberships.status, "active"),
+              inArray(groups.neighborhoodId, neighborhoodIds)
+            )
+          );
 
-  if (groupIds.length === 0) {
-    return [];
-  }
+        const groupIds = memberships.map((membership) => membership.groupId);
+        if (groupIds.length === 0) {
+          return [];
+        }
 
-  const campaigns = await db
-    .select()
-    .from(fundraisingCampaigns)
-    .where(inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds));
-  const contributions = await db
-    .select()
-    .from(fundraisingContributions)
-    .where(inArray(fundraisingContributions.groupId, groupIds));
+        return db
+          .select()
+          .from(fundraisingContributions)
+          .where(inArray(fundraisingContributions.groupId, groupIds));
+      })();
 
   return campaigns.map((campaign) => ({
     ...campaign,

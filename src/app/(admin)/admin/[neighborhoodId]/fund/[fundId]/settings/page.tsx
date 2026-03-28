@@ -6,6 +6,7 @@ import { FundTemplateForm } from "@/components/funds/fund-template-form";
 import { StatusBadge } from "@/components/ui-v3";
 import { getFundStatusVariant } from "@/components/funds/utils";
 import { getNeighborhoodFundOverview, listFundChargeTemplates } from "@/services/funds";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminFundSettingsPage({
@@ -25,14 +26,15 @@ export default async function AdminFundSettingsPage({
       activeNeighborhoodId: neighborhoodId,
     },
   };
-  const [overview, templates, t, tStatus] = await Promise.all([
+  const [overview, templates, neighborhood, t, tStatus] = await Promise.all([
     getNeighborhoodFundOverview(serviceContext, { fundId }).catch(() => null),
     listFundChargeTemplates(serviceContext, { fundId }).catch(() => []),
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     getTranslations("admin.funds.settings"),
     getTranslations("status"),
   ]);
 
-  if (!overview) {
+  if (!overview || !neighborhood) {
     redirect(`/admin/${neighborhoodId}/fund`);
   }
 
@@ -68,7 +70,7 @@ export default async function AdminFundSettingsPage({
             ))
           )}
         </div>
-        <FundTemplateForm fundId={fundId} />
+        <FundTemplateForm fundId={fundId} timeZone={neighborhood.timeZone} />
       </section>
 
       <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
@@ -77,6 +79,7 @@ export default async function AdminFundSettingsPage({
           fundId={fundId}
           kind="adjustment"
           redirectTo={`/admin/${neighborhoodId}/fund/${fundId}`}
+          timeZone={neighborhood.timeZone}
         />
       </section>
     </div>

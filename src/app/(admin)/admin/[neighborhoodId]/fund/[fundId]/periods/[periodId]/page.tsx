@@ -5,6 +5,7 @@ import { FundPaymentActions } from "@/components/funds/fund-payment-actions";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, formatDate, getFundStatusVariant } from "@/components/funds/utils";
 import { getFundPeriodDetail } from "@/services/funds";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminFundPeriodDetailPage({
@@ -26,14 +27,15 @@ export default async function AdminFundPeriodDetailPage({
       activeNeighborhoodId: neighborhoodId,
     },
   };
-  const [detail, locale, t, tStatus] = await Promise.all([
+  const [detail, neighborhood, locale, t, tStatus] = await Promise.all([
     getFundPeriodDetail(serviceContext, { periodId }).catch(() => null),
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     getLocale(),
     getTranslations("admin.funds.periodDetail"),
     getTranslations("status"),
   ]);
 
-  if (!detail || detail.fund.id !== fundId) {
+  if (!detail || !neighborhood || detail.fund.id !== fundId) {
     redirect(`/admin/${neighborhoodId}/fund/${fundId}/periods`);
   }
 
@@ -41,7 +43,9 @@ export default async function AdminFundPeriodDetailPage({
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-6">
       <header>
         <h1 className="text-xl font-bold text-stone-900">{detail.title}</h1>
-        <p className="mt-0.5 text-sm text-stone-500">{formatDate(detail.dueDate, locale)}</p>
+        <p className="mt-0.5 text-sm text-stone-500">
+          {formatDate(detail.dueDate, locale, neighborhood.timeZone)}
+        </p>
       </header>
 
       <section className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
@@ -104,7 +108,8 @@ export default async function AdminFundPeriodDetailPage({
                     />
                   </div>
                   <p className="mt-1 text-sm text-stone-600">
-                    {formatCurrency(Number(payment.amount), locale, detail.fund.currencyCode)} · {formatDate(payment.paidAt, locale)}
+                    {formatCurrency(Number(payment.amount), locale, detail.fund.currencyCode)} ·{" "}
+                    {formatDate(payment.paidAt, locale, neighborhood.timeZone)}
                   </p>
                   {"submittedByName" in payment ? (
                     <p className="mt-1 text-xs text-stone-400">

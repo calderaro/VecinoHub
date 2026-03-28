@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { listTimezoneOptions } from "@/lib/timezones/catalog";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -11,6 +12,7 @@ type NeighborhoodFormProps = {
   neighborhoodId?: string;
   initialName?: string;
   initialSlug?: string;
+  initialTimeZone?: string;
   initialStatus?: "active" | "inactive";
 };
 
@@ -19,12 +21,15 @@ export function NeighborhoodForm({
   neighborhoodId,
   initialName = "",
   initialSlug = "",
+  initialTimeZone = "America/Mexico_City",
   initialStatus = "active",
 }: NeighborhoodFormProps) {
+  const timezoneOptions = listTimezoneOptions();
   const router = useRouter();
   const { addToast } = useToast();
   const [name, setName] = useState(initialName);
   const [slug, setSlug] = useState(initialSlug);
+  const [timeZone, setTimeZone] = useState(initialTimeZone);
   const [status, setStatus] = useState<"active" | "inactive">(initialStatus);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +37,7 @@ export function NeighborhoodForm({
     onSuccess: () => {
       setName("");
       setSlug("");
+      setTimeZone("America/Mexico_City");
       setStatus("active");
       setError(null);
       addToast("Neighborhood created.", "success");
@@ -67,6 +73,9 @@ export function NeighborhoodForm({
   const slugTestId = isCreateMode
     ? "platform-neighborhood-slug"
     : "platform-neighborhood-edit-slug";
+  const timeZoneTestId = isCreateMode
+    ? "platform-neighborhood-timezone"
+    : "platform-neighborhood-edit-timezone";
   const statusTestId = "platform-neighborhood-edit-status";
   const submitTestId = isCreateMode
     ? "platform-neighborhood-submit"
@@ -83,6 +92,7 @@ export function NeighborhoodForm({
           createNeighborhood.mutate({
             name: name.trim(),
             slug: slug.trim().toLowerCase(),
+            timeZone: timeZone.trim(),
           });
           return;
         }
@@ -96,6 +106,7 @@ export function NeighborhoodForm({
           neighborhoodId,
           name: name.trim(),
           slug: slug.trim().toLowerCase(),
+          timeZone: timeZone.trim(),
           status,
         });
       }}
@@ -127,6 +138,25 @@ export function NeighborhoodForm({
             pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
             data-testid={slugTestId}
           />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-stone-500">Time zone</span>
+          <select
+            className="rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 outline-none ring-0 transition-colors focus:border-teal-400"
+            value={timeZone}
+            onChange={(event) => setTimeZone(event.target.value)}
+            required
+            data-testid={timeZoneTestId}
+          >
+            {timezoneOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <span className="text-[11px] text-stone-400">
+            This timezone controls neighborhood scheduling and all neighborhood-local date displays.
+          </span>
         </label>
         {!isCreateMode ? (
           <label className="flex flex-col gap-1">

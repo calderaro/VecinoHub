@@ -5,6 +5,8 @@ import { CalendarDaysIcon, ChevronDownIcon } from "lucide-react";
 
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
 import { listEventsPaged } from "@/services/events";
+import { getNeighborhoodById } from "@/services/neighborhoods";
+import { formatPortDateTime } from "@/lib/port-time";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -14,21 +16,6 @@ function buildQuery(params: Record<string, string | undefined>) {
   const query = new URLSearchParams(entries as [string, string][]);
   const qs = query.toString();
   return qs ? `?${qs}` : "";
-}
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }
 
 export default async function EventsPage({
@@ -70,14 +57,22 @@ export default async function EventsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: rawEvents, total } = await listEventsPaged(
-    serviceContext,
-    {
-      query: query || undefined,
-      limit: PAGE_SIZE,
-      offset,
-    }
-  );
+  const [neighborhood, { items: rawEvents, total }] = await Promise.all([
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+    listEventsPaged(
+      serviceContext,
+      {
+        query: query || undefined,
+        limit: PAGE_SIZE,
+        offset,
+      }
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect("/admin");
+  }
 
   const now = new Date();
   const events = rawEvents.filter((event) => {
@@ -190,7 +185,16 @@ export default async function EventsPage({
                           label={statusVariant === "upcoming" ? "Upcoming" : "Completed"}
                         />
                       </td>
-                      <td className="px-4 py-3.5 text-stone-600">{formatDate(event.startsAt, locale)}</td>
+                      <td className="px-4 py-3.5 text-stone-600">
+                        {formatPortDateTime(event.startsAt, neighborhood.timeZone, locale, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </td>
                       <td className="hidden px-4 py-3.5 text-stone-500 md:table-cell">
                         {event.location ?? "-"}
                       </td>

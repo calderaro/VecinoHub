@@ -7,6 +7,7 @@ export { MembersCard } from "./MembersCard";
 export { NoGroupState } from "./NoGroupState";
 export { PollsCard } from "./PollsCard";
 export { PostsCard } from "./PostsCard";
+export { ResourcesCard } from "./ResourcesCard";
 export { SectionCard } from "./SectionCard";
 export { SkeletonCard } from "./SkeletonCard";
 export { StatusChip } from "./StatusChip";

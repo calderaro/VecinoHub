@@ -4,24 +4,14 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeftIcon, UsersIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { StatusBadge } from "@/components/ui-v3";
 import {
   getNeighborhoodUserById,
   listNeighborhoodUserMemberships,
 } from "@/services/users";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default async function AdminUserDetailPage({
   params,
@@ -45,7 +35,7 @@ export default async function AdminUserDetailPage({
     },
   };
 
-  const [user, memberships, locale, t] = await Promise.all([
+  const [user, memberships, locale, t, neighborhood] = await Promise.all([
     getNeighborhoodUserById(serviceContext, {
       neighborhoodId: resolvedParams.neighborhoodId,
       userId: resolvedParams.userId,
@@ -57,6 +47,9 @@ export default async function AdminUserDetailPage({
     }),
     getLocale(),
     getTranslations("admin.userDetail"),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
   ]);
 
   const displayName = user.username ?? user.name;
@@ -102,10 +95,10 @@ export default async function AdminUserDetailPage({
               <div className="flex flex-wrap items-center gap-2.5">
                 <StatusBadge variant={user.status} label={t(`statuses.${user.status}`)} />
                 <span className="text-xs text-stone-400">
-                  {t("createdAt")} {formatDate(user.createdAt, locale)}
+                  {t("createdAt")} {formatPortDate(user.createdAt, neighborhood.timeZone, locale)}
                 </span>
                 <span className="text-xs text-stone-400">
-                  {t("updatedAt")} {formatDate(user.updatedAt, locale)}
+                  {t("updatedAt")} {formatPortDate(user.updatedAt, neighborhood.timeZone, locale)}
                 </span>
               </div>
             </div>

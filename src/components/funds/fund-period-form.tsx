@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { DateField } from "@/components/date-time";
+import { toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -19,12 +21,15 @@ export function FundPeriodForm({
   fundId,
   redirectTo,
   templates,
+  timeZone,
 }: {
   fundId: string;
   redirectTo: string;
   templates: TemplateOption[];
+  timeZone: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const t = useTranslations("admin.funds.periodForm");
   const [templateId, setTemplateId] = useState("");
@@ -66,7 +71,7 @@ export function FundPeriodForm({
     if (usingTemplate) {
       generatePeriod.mutate({
         templateId,
-        dueDate: new Date(`${dueDate}T00:00:00`),
+        dueDate: toStableUtcDateFromDateKey(dueDate),
         title: title.trim() || undefined,
         description: description.trim() || undefined,
       });
@@ -83,7 +88,7 @@ export function FundPeriodForm({
       title: title.trim(),
       description: description.trim() || undefined,
       amountPerGroup,
-      dueDate: new Date(`${dueDate}T00:00:00`),
+      dueDate: toStableUtcDateFromDateKey(dueDate),
     });
   }
 
@@ -151,12 +156,13 @@ export function FundPeriodForm({
 
           <label className="block space-y-2">
             <span className="text-sm font-medium text-stone-700">{t("fields.dueDate")}</span>
-            <input
-              className={inputBase}
-              type="date"
+            <DateField
               value={dueDate}
-              onChange={(event) => setDueDate(event.target.value)}
-              data-testid="fund-period-form-due-date"
+              onChange={setDueDate}
+              locale={locale}
+              timeZone={timeZone}
+              placeholder={t("placeholders.dueDate")}
+              testId="fund-period-form-due-date"
               disabled={isPending}
             />
           </label>

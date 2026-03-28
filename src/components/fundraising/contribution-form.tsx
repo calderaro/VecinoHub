@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { DateField } from "@/components/date-time";
+import { toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -17,15 +19,18 @@ export function ContributionForm({
   groups,
   initialGroupId,
   redirectTo,
+  timeZone,
   translationNamespace = "admin.contributionForm",
 }: {
   campaignId: string;
   groups: GroupOption[];
   initialGroupId?: string;
   redirectTo?: string;
+  timeZone: string;
   translationNamespace?: "admin.contributionForm" | "dashboard.contributionForm";
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const t = useTranslations(translationNamespace);
   const [method, setMethod] = useState<"cash" | "wire_transfer">("cash");
@@ -97,7 +102,7 @@ export function ContributionForm({
           wireReference: method === "wire_transfer" ? wireReference : undefined,
           wireDate:
             method === "wire_transfer" && wireDate
-              ? new Date(wireDate)
+              ? toStableUtcDateFromDateKey(wireDate)
               : undefined,
         });
       }}
@@ -169,17 +174,19 @@ export function ContributionForm({
           </label>
           <label className="space-y-2 text-xs uppercase tracking-[0.3em] text-stone-500">
             {t("fields.date")}
-            <input
-              className="mt-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none ring-teal-200 focus:border-teal-400 focus:ring-2"
-              type="date"
-              data-testid="contribution-form-date"
+            <div className="mt-2">
+              <DateField
               value={wireDate}
-              onChange={(event) => {
+              onChange={(value) => {
                 setError(null);
-                setWireDate(event.target.value);
+                setWireDate(value);
               }}
-              required={method === "wire_transfer"}
-            />
+              locale={locale}
+              timeZone={timeZone}
+              placeholder={t("placeholders.date")}
+              testId="contribution-form-date"
+              />
+            </div>
           </label>
         </div>
       ) : null}
