@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { DateField } from "@/components/date-time";
+import { toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -14,12 +16,15 @@ export function FundMovementForm({
   fundId,
   kind,
   redirectTo,
+  timeZone,
 }: {
   fundId: string;
   kind: "expense" | "income" | "adjustment";
   redirectTo: string;
+  timeZone: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const t = useTranslations("admin.funds.movementForm");
   const [amount, setAmount] = useState("");
@@ -68,7 +73,7 @@ export function FundMovementForm({
     const payload = {
       fundId,
       amount,
-      effectiveAt: effectiveAt ? new Date(`${effectiveAt}T00:00:00`) : undefined,
+      effectiveAt: effectiveAt ? toStableUtcDateFromDateKey(effectiveAt) : undefined,
       description: description.trim(),
     };
 
@@ -124,12 +129,13 @@ export function FundMovementForm({
 
           <label className="block space-y-2">
             <span className="text-sm font-medium text-stone-700">{t("fields.effectiveAt")}</span>
-            <input
-              className={inputBase}
-              type="date"
+            <DateField
               value={effectiveAt}
-              onChange={(event) => setEffectiveAt(event.target.value)}
-              data-testid="fund-movement-form-effective-at"
+              onChange={setEffectiveAt}
+              locale={locale}
+              timeZone={timeZone}
+              placeholder={t("placeholders.effectiveAt")}
+              testId="fund-movement-form-effective-at"
               disabled={isPending}
             />
           </label>

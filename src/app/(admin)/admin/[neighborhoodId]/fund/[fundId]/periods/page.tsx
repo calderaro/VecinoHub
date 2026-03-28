@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, formatDate, getFundStatusVariant } from "@/components/funds/utils";
 import { getNeighborhoodFundOverview, listFundChargePeriods } from "@/services/funds";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminFundPeriodsPage({
@@ -26,15 +27,16 @@ export default async function AdminFundPeriodsPage({
     },
   };
 
-  const [overview, periods, locale, t, tStatus] = await Promise.all([
+  const [overview, periods, neighborhood, locale, t, tStatus] = await Promise.all([
     getNeighborhoodFundOverview(serviceContext, { fundId }).catch(() => null),
     listFundChargePeriods(serviceContext, { fundId, limit: 100, offset: 0 }),
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     getLocale(),
     getTranslations("admin.funds.periods"),
     getTranslations("status"),
   ]);
 
-  if (!overview) {
+  if (!overview || !neighborhood) {
     redirect(`/admin/${neighborhoodId}/fund`);
   }
 
@@ -80,7 +82,9 @@ export default async function AdminFundPeriodsPage({
                     <td className="px-4 py-3.5">
                       <StatusBadge variant={getFundStatusVariant(period.status) as never} label={tStatus(period.status)} />
                     </td>
-                    <td className="px-4 py-3.5 text-stone-500">{formatDate(period.dueDate, locale)}</td>
+                    <td className="px-4 py-3.5 text-stone-500">
+                      {formatDate(period.dueDate, locale, neighborhood.timeZone)}
+                    </td>
                     <td className="px-4 py-3.5 font-semibold text-stone-700">
                       {formatCurrency(period.stats.totalExpected, locale, overview.currencyCode)}
                     </td>

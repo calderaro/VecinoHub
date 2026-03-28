@@ -5,6 +5,7 @@ import { listGroupAccessRequests } from "@/services/group-access-requests";
 import { GroupMembers } from "@/components/groups/group-members";
 import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function MembersPage({
@@ -28,6 +29,9 @@ export default async function MembersPage({
       groupId: resolvedParams.groupId,
     }),
   ]);
+  const neighborhood = await getNeighborhoodById(serviceContext, {
+    neighborhoodId: group.neighborhoodId,
+  });
   const invites = group.viewerCanManage
     ? await listGroupInvites(serviceContext, {
         groupId: resolvedParams.groupId,
@@ -62,6 +66,7 @@ export default async function MembersPage({
         canManage={group.viewerCanManage}
         viewerUserId={session.user.id}
         viewerMembershipRole={group.viewerMembershipRole}
+        timeZone={neighborhood.timeZone}
       />
     </div>
   );

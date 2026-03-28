@@ -2,16 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { DateField } from "@/components/date-time";
+import { toStableUtcDateFromDateKey } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
 const inputBase =
   "w-full rounded-lg border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-900 outline-none ring-teal-200 transition-colors hover:border-stone-300 focus:border-teal-400 focus:ring-2";
 
-export function FundTemplateForm({ fundId }: { fundId: string }) {
+export function FundTemplateForm({ fundId, timeZone }: { fundId: string; timeZone: string }) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const t = useTranslations("admin.funds.templateForm");
   const [title, setTitle] = useState("");
@@ -55,8 +58,8 @@ export function FundTemplateForm({ fundId }: { fundId: string }) {
       frequency,
       defaultAmount,
       dueDayOfMonth: requiresDueDay ? Number(dueDayOfMonth) : undefined,
-      startsOn: new Date(`${startsOn}T00:00:00`),
-      endsOn: endsOn ? new Date(`${endsOn}T00:00:00`) : undefined,
+      startsOn: toStableUtcDateFromDateKey(startsOn),
+      endsOn: endsOn ? toStableUtcDateFromDateKey(endsOn) : undefined,
     });
   }
 
@@ -118,23 +121,25 @@ export function FundTemplateForm({ fundId }: { fundId: string }) {
         ) : null}
         <label className="block space-y-2">
           <span className="text-sm font-medium text-stone-700">{t("fields.startsOn")}</span>
-          <input
-            className={inputBase}
-            type="date"
+          <DateField
             value={startsOn}
-            onChange={(event) => setStartsOn(event.target.value)}
-            data-testid="fund-template-form-starts-on"
+            onChange={setStartsOn}
+            locale={locale}
+            timeZone={timeZone}
+            placeholder={t("placeholders.startsOn")}
+            testId="fund-template-form-starts-on"
             disabled={isPending}
           />
         </label>
         <label className="block space-y-2">
           <span className="text-sm font-medium text-stone-700">{t("fields.endsOn")}</span>
-          <input
-            className={inputBase}
-            type="date"
+          <DateField
             value={endsOn}
-            onChange={(event) => setEndsOn(event.target.value)}
-            data-testid="fund-template-form-ends-on"
+            onChange={setEndsOn}
+            locale={locale}
+            timeZone={timeZone}
+            placeholder={t("placeholders.endsOn")}
+            testId="fund-template-form-ends-on"
             disabled={isPending}
           />
         </label>

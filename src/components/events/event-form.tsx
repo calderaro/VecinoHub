@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AlertCircleIcon,
   AlignLeftIcon,
@@ -12,6 +12,14 @@ import {
   SparklesIcon,
 } from "lucide-react";
 
+import { DateTimeField } from "@/components/date-time";
+import {
+  formatPortDateTimeValue,
+  getPortToday,
+  toPortDateTimeValue,
+  toUtcFromPortDateTime,
+  type PortDateTimeValue,
+} from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { StatusBadge } from "@/components/ui-v3";
@@ -25,31 +33,12 @@ type EventFormProps = {
   initialLocation?: string | null;
   initialStartsAt?: string;
   initialEndsAt?: string | null;
+  neighborhoodId: string;
+  timeZone: string;
 };
-
-function toDateInput(value?: string | null) {
-  if (!value) {
-    return "";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-  return date.toISOString().slice(0, 16);
-}
 
 const inputBase =
   "w-full rounded-lg border px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-400";
-
-function formatPreviewDate(value: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(value);
-}
 
 export function EventForm({
   mode,
@@ -60,17 +49,25 @@ export function EventForm({
   initialLocation = "",
   initialStartsAt,
   initialEndsAt,
+  neighborhoodId,
+  timeZone,
 }: EventFormProps) {
   const router = useRouter();
+  const locale = useLocale();
   const { addToast } = useToast();
   const tPage = useTranslations("admin.eventFormPage");
   const t = useTranslations("admin.eventForm");
+  const minDateKey = mode === "create" ? getPortToday(timeZone) : undefined;
 
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [location, setLocation] = useState(initialLocation ?? "");
-  const [startsAt, setStartsAt] = useState(toDateInput(initialStartsAt));
-  const [endsAt, setEndsAt] = useState(toDateInput(initialEndsAt ?? undefined));
+  const [startsAt, setStartsAt] = useState<PortDateTimeValue | null>(
+    initialStartsAt ? toPortDateTimeValue(initialStartsAt, timeZone) : null
+  );
+  const [endsAt, setEndsAt] = useState<PortDateTimeValue | null>(
+    initialEndsAt ? toPortDateTimeValue(initialEndsAt, timeZone) : null
+  );
   const [previewNow] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
 
@@ -78,20 +75,18 @@ export function EventForm({
   const updateEvent = trpc.events.update.useMutation();
 
   const parsedStartsAt = useMemo(() => {
-    if (!startsAt) {
+    if (!startsAt?.dateKey) {
       return null;
     }
-    const date = new Date(startsAt);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }, [startsAt]);
+    return toUtcFromPortDateTime({ ...startsAt, timeZone });
+  }, [startsAt, timeZone]);
 
   const parsedEndsAt = useMemo(() => {
-    if (!endsAt) {
+    if (!endsAt?.dateKey) {
       return null;
     }
-    const date = new Date(endsAt);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }, [endsAt]);
+    return toUtcFromPortDateTime({ ...endsAt, timeZone });
+  }, [endsAt, timeZone]);
 
   const isValid =
     title.trim().length > 0 &&
@@ -114,6 +109,7 @@ export function EventForm({
     try {
       if (mode === "create") {
         await createEvent.mutateAsync({
+          neighborhoodId,
           title,
           description: description || undefined,
           location: location || undefined,
@@ -214,15 +210,20 @@ export function EventForm({
                 </label>
                 <div className="relative">
                   <Clock3Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                  <input
+                  <div className="pl-10">
+                    <DateTimeField
                     id="event-start"
-                    className={`${inputBase} border-stone-200 bg-white pl-10 hover:border-stone-300`}
-                    type="datetime-local"
-                    data-testid="event-form-start"
                     value={startsAt}
-                    onChange={(event) => setStartsAt(event.target.value)}
+                    onChange={setStartsAt}
+                    locale={locale}
+                    timeZone={timeZone}
+                    minDateKey={minDateKey}
+                    minuteStep={5}
+                    placeholder={t("placeholders.startTime")}
+                    testId="event-form-start"
                     disabled={isDisabled}
-                  />
+                    />
+                  </div>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -231,20 +232,34 @@ export function EventForm({
                 </label>
                 <div className="relative">
                   <Clock3Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                  <input
+                  <div className="pl-10">
+                    <DateTimeField
                     id="event-end"
-                    className={`${inputBase} border-stone-200 bg-white pl-10 hover:border-stone-300`}
-                    type="datetime-local"
-                    data-testid="event-form-end"
                     value={endsAt}
-                    onChange={(event) => setEndsAt(event.target.value)}
+                    onChange={setEndsAt}
+                    locale={locale}
+                    timeZone={timeZone}
+                    minDateKey={minDateKey}
+                    minuteStep={5}
+                    placeholder={t("placeholders.endTime")}
+                    testId="event-form-end"
                     disabled={isDisabled}
-                  />
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-stone-400 sm:col-span-2">
-                End time is optional but must be after the start time.
-              </p>
+              <div className="flex items-center justify-between gap-3 text-xs text-stone-400 sm:col-span-2">
+                <p>{t("scheduleHint", { timeZone })}</p>
+                {endsAt ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-stone-500 transition hover:text-stone-700"
+                    onClick={() => setEndsAt(null)}
+                  >
+                    {t("clearEndTime")}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </section>
 
@@ -350,7 +365,16 @@ export function EventForm({
                   />
                 </div>
                 {parsedStartsAt ? (
-                  <p className="text-xs leading-relaxed text-stone-500">{formatPreviewDate(parsedStartsAt)}</p>
+                  <p className="text-xs leading-relaxed text-stone-500">
+                    {formatPortDateTimeValue(startsAt!, timeZone, locale, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hourCycle: "h23",
+                    })}
+                  </p>
                 ) : null}
                 {location.trim() ? (
                   <p className="text-xs leading-relaxed text-stone-500">{location.trim()}</p>

@@ -4,7 +4,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronDownIcon, TrendingUpIcon } from "lucide-react";
 
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
+import { formatPortDateKey } from "@/lib/port-time";
 import { getCampaignProgressByIds, listCampaignsPaged } from "@/services/fundraising";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 const PAGE_SIZE = 10;
@@ -20,15 +22,6 @@ function formatCurrency(amount: number, locale: string) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-}
-
-function formatDate(value: Date | string | null | undefined, locale: string) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
 }
 
 function buildQuery(params: Record<string, string | undefined>) {
@@ -77,15 +70,23 @@ export default async function FundraisingPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { items: campaigns, total } = await listCampaignsPaged(
-    serviceContext,
-    {
-      query: query || undefined,
-      status: status ? (status as "open" | "closed") : undefined,
-      limit: PAGE_SIZE,
-      offset,
-    }
-  );
+  const [neighborhood, { items: campaigns, total }] = await Promise.all([
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+    listCampaignsPaged(
+      serviceContext,
+      {
+        query: query || undefined,
+        status: status ? (status as "open" | "closed") : undefined,
+        limit: PAGE_SIZE,
+        offset,
+      }
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect("/admin");
+  }
 
   const progressByCampaign = await getCampaignProgressByIds(
     serviceContext,
@@ -210,7 +211,9 @@ export default async function FundraisingPage({
                         </div>
                       </td>
                       <td className="hidden px-4 py-3.5 text-stone-400 lg:table-cell">
-                        {formatDate(campaign.dueDate, locale)}
+                        {campaign.dueDate
+                          ? formatPortDateKey(campaign.dueDate, neighborhood.timeZone, locale)
+                          : "-"}
                       </td>
                     </tr>
                   );

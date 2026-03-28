@@ -10,6 +10,7 @@ import { fundsRouter } from "./routers/funds";
 import { eventsRouter } from "./routers/events";
 import { postsRouter } from "./routers/posts";
 import { neighborhoodsRouter } from "./routers/neighborhoods";
+import { resourcesRouter } from "./routers/resources";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   funds: fundsRouter,
   events: eventsRouter,
   posts: postsRouter,
+  resources: resourcesRouter,
   neighborhoods: neighborhoodsRouter,
 });
 

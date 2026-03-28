@@ -14,6 +14,12 @@
   - second step collects OTP, new password, and password confirmation.
 - `/register` -> redirects to `/login?tab=signup`
 
+## Global Date/Time UX Contract
+- Neighborhood timezone selection uses a controlled select backed by the shared timezone catalog; free-form timezone text entry is not allowed.
+- Neighborhood-scoped pages render date and time labels in neighborhood port time.
+- Product forms use the reusable dialog-based date/time selector family rather than native HTML date/time inputs.
+- The selector system supports date-only, time-only, and datetime modes with explicit Apply/Cancel actions.
+
 ## Resident Dashboard
 - `/dashboard`
   - redirects to first available group in active neighborhood context.
@@ -32,7 +38,7 @@
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.
 - `/dashboard/[groupId]`
-  - overview cards: posts, events, polls, fundraising, funds, members.
+  - overview cards: posts, events, polls, fundraising, funds, resources, members.
   - sticky header with `UserMenu`.
   - `UserMenu` supports:
     - profile link
@@ -55,6 +61,7 @@
   - `/dashboard/[groupId]/fundraising/[campaignId]`
     - shows campaign summary plus only the signed-in resident's own submissions for the selected group.
   - `/dashboard/[groupId]/fundraising/[campaignId]/contribute`
+    - uses the shared date selector for wire transfer date when required.
   - `/dashboard/[groupId]/fund`
     - lists the active neighborhood's named funds with summary cards.
   - `/dashboard/[groupId]/fund/[fundId]`
@@ -62,6 +69,16 @@
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]`
     - shows due-period detail, the resident's group obligation, and neighborhood payment-status board.
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]/pay`
+    - uses the shared date selector for payment date submission.
+  - `/dashboard/[groupId]/resources`
+    - resident resource catalog with status badges, basic capacity/type info, and a link to the group reservation history.
+  - `/dashboard/[groupId]/resources/[resourceId]`
+    - resident resource detail with timezone, rules summary, and availability calendar.
+  - `/dashboard/[groupId]/resources/[resourceId]/reserve`
+    - resident reservation form for date, time window, title, attendee count, and notes.
+    - date and time are selected with the shared dialog-based controls and interpreted in neighborhood time.
+  - `/dashboard/[groupId]/resources/reservations`
+    - resident reservation history for the current group with cancellation CTA when allowed.
   - `/dashboard/[groupId]/events`
   - `/dashboard/[groupId]/events/[eventId]`
   - `/dashboard/[groupId]/posts`
@@ -82,6 +99,7 @@
     - group creation accepts an optional existing user email for the initial group admin.
   - `/admin/[neighborhoodId]/polls`, `/admin/[neighborhoodId]/polls/new`, `/admin/[neighborhoodId]/polls/[pollId]`, `/admin/[neighborhoodId]/polls/[pollId]/edit`
   - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
+    - campaign due date and contribution dates use the shared date selector and render in neighborhood time.
   - `/admin/[neighborhoodId]/fund`
     - neighborhood fund list with balances, overdue counts, and create-fund CTA.
   - `/admin/[neighborhoodId]/fund/new`
@@ -92,7 +110,21 @@
   - `/admin/[neighborhoodId]/fund/[fundId]/movements/new-expense`
   - `/admin/[neighborhoodId]/fund/[fundId]/movements/new-income`
   - `/admin/[neighborhoodId]/fund/[fundId]/settings`
+    - due dates, movement dates, and template defaults use the shared date selector.
+  - `/admin/[neighborhoodId]/resources`
+    - neighborhood resource list with status, upcoming reservation count, and future block count.
+  - `/admin/[neighborhoodId]/resources/new`
+    - weekly availability windows use the shared time selector and neighborhood timezone-aware validation.
+  - `/admin/[neighborhoodId]/resources/[resourceId]`
+    - resource detail with rules summary, upcoming reservations, upcoming blocks, and availability calendar.
+  - `/admin/[neighborhoodId]/resources/[resourceId]/edit`
+    - uses shared time selectors for weekly availability and rule editing.
+  - `/admin/[neighborhoodId]/resources/reservations`
+    - neighborhood reservation queue/history across resources.
+  - `/admin/[neighborhoodId]/resources/blocks`
+    - block management page with shared date/time selectors and block removal actions.
   - `/admin/[neighborhoodId]/events`, `/admin/[neighborhoodId]/events/new`, `/admin/[neighborhoodId]/events/[eventId]`, `/admin/[neighborhoodId]/events/[eventId]/edit`
+    - event start/end scheduling uses the shared datetime dialog and port-time rendering on list/detail views.
   - `/admin/[neighborhoodId]/posts`, `/admin/[neighborhoodId]/posts/new`, `/admin/[neighborhoodId]/posts/[postId]`, `/admin/[neighborhoodId]/posts/[postId]/edit`
   - `/admin/[neighborhoodId]/users`
     - neighborhood-scoped list of users who hold at least one active group membership in that neighborhood.
@@ -125,7 +157,8 @@
   - shows neighborhood metadata, editable neighborhood member list, add-user form, edit entry, and delete confirmation flow.
 - `/platform/[neighborhoodId]/edit`
   - platform neighborhood edit screen.
-  - updates name, slug, and status.
+  - updates name, slug, timezone, and status.
+  - timezone is selected from the shared IANA timezone catalog, not entered as free text.
 
 ## Rendering Contract
 - SSR-first reads from services.

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { FundMovementForm } from "@/components/funds/fund-movement-form";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminFundExpensePage({
@@ -15,7 +16,19 @@ export default async function AdminFundExpensePage({
   }
 
   const { neighborhoodId, fundId } = await Promise.resolve(params);
-  const t = await getTranslations("admin.funds.movementFormPage");
+  const serviceContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: neighborhoodId,
+    },
+  };
+  const [neighborhood, t] = await Promise.all([
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
+    getTranslations("admin.funds.movementFormPage"),
+  ]);
+  if (!neighborhood) {
+    redirect(`/admin/${neighborhoodId}/fund/${fundId}`);
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-6 py-6">
@@ -27,6 +40,7 @@ export default async function AdminFundExpensePage({
         fundId={fundId}
         kind="expense"
         redirectTo={`/admin/${neighborhoodId}/fund/${fundId}`}
+        timeZone={neighborhood.timeZone}
       />
     </div>
   );

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { formatPortDate } from "@/lib/port-time";
 import { getGroupById } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { listPostsPaged } from "@/services/posts";
 import { getSession } from "@/server/auth";
 
@@ -13,16 +15,6 @@ function buildQuery(params: Record<string, string | undefined>) {
   const query = new URLSearchParams(entries as [string, string][]);
   const qs = query.toString();
   return qs ? `?${qs}` : "";
-}
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    dateStyle: "medium",
-  }).format(value);
 }
 
 export default async function NeighborPostsPage({
@@ -71,6 +63,9 @@ export default async function NeighborPostsPage({
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const locale = await getLocale();
+  const neighborhood = await getNeighborhoodById(scopedContext, {
+    neighborhoodId: group.neighborhoodId,
+  });
   const t = await getTranslations("dashboard.postsList");
 
   return (
@@ -125,7 +120,9 @@ export default async function NeighborPostsPage({
                     <td className="py-3 font-medium">{post.title}</td>
                     <td className="py-3 text-[color:var(--muted)]">
                       {post.publishedAt
-                        ? formatDate(post.publishedAt, locale)
+                        ? formatPortDate(post.publishedAt, neighborhood.timeZone, locale, {
+                            dateStyle: "medium",
+                          })
                         : t("table.emptyDate")}
                     </td>
                     <td className="py-3 text-right">

@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDownIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
 
 type AdminUser = {
@@ -32,6 +33,7 @@ export function UsersTable({
   showRoleFilter = false,
   showRoleColumn = false,
   adminBasePath = "/admin",
+  timeZone,
 }: {
   users: AdminUser[];
   totalUsers: number;
@@ -44,8 +46,10 @@ export function UsersTable({
   showRoleFilter?: boolean;
   showRoleColumn?: boolean;
   adminBasePath?: string;
+  timeZone?: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("admin.usersTable");
 
   const startIndex = users.length > 0 ? (currentPage - 1) * 10 + 1 : 0;
@@ -53,11 +57,14 @@ export function UsersTable({
 
   function formatDate(value: Date | string | null | undefined) {
     if (!value) return "-";
-    return new Date(value).toLocaleDateString(undefined, {
+    if (timeZone) {
+      return formatPortDate(value, timeZone, locale);
+    }
+    return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "es-MX", {
       month: "short",
       day: "numeric",
       year: "numeric",
-    });
+    }).format(new Date(value));
   }
 
   return (

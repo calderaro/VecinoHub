@@ -32,6 +32,7 @@ import {
   neighborhoodRoleSchema,
   neighborhoodStatusSchema,
   statusSchema,
+  timeZoneSchema,
 } from "./validators";
 
 const listNeighborhoodsSchema = z.object({
@@ -133,6 +134,7 @@ const createNeighborhoodSchema = z.object({
     .min(3)
     .max(100)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  timeZone: timeZoneSchema.default("America/Mexico_City"),
   adminUserId: idSchema.optional(),
 });
 
@@ -141,7 +143,7 @@ export async function createNeighborhood(
   input: z.input<typeof createNeighborhoodSchema>
 ) {
   requirePlatformAdmin(ctx);
-  const { name, slug, adminUserId } = createNeighborhoodSchema.parse(input);
+  const { name, slug, timeZone, adminUserId } = createNeighborhoodSchema.parse(input);
 
   return db.transaction(async (tx) => {
     const createdRows = await tx
@@ -149,6 +151,7 @@ export async function createNeighborhood(
       .values({
         name: name.trim(),
         slug: slug.trim().toLowerCase(),
+        timeZone,
         status: "active",
         createdBy: ctx.user.id,
       })
@@ -197,24 +200,33 @@ const updateNeighborhoodSchema = z
       .max(100)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
       .optional(),
+    timeZone: timeZoneSchema.optional(),
     status: neighborhoodStatusSchema.optional(),
   })
-  .refine((value) => value.name !== undefined || value.slug !== undefined || value.status !== undefined, {
-    message: "At least one field is required.",
-  });
+  .refine(
+    (value) =>
+      value.name !== undefined ||
+      value.slug !== undefined ||
+      value.timeZone !== undefined ||
+      value.status !== undefined,
+    {
+      message: "At least one field is required.",
+    }
+  );
 
 export async function updateNeighborhood(
   ctx: ServiceContext,
   input: z.input<typeof updateNeighborhoodSchema>
 ) {
   requirePlatformAdmin(ctx);
-  const { neighborhoodId, name, slug, status } = updateNeighborhoodSchema.parse(input);
+  const { neighborhoodId, name, slug, timeZone, status } = updateNeighborhoodSchema.parse(input);
 
   const updated = await db
     .update(neighborhoods)
     .set({
       name: name?.trim(),
       slug: slug?.trim().toLowerCase(),
+      timeZone,
       status,
     })
     .where(eq(neighborhoods.id, neighborhoodId))

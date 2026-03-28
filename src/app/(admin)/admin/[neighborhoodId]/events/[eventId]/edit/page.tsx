@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { EventForm } from "@/components/events/event-form";
 import { getEventById } from "@/services/events";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminEventEditPage({
@@ -25,12 +26,22 @@ export default async function AdminEventEditPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const event = await getEventById(serviceContext, { eventId: resolvedParams.eventId });
+  const [event, neighborhood] = await Promise.all([
+    getEventById(serviceContext, { eventId: resolvedParams.eventId }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(adminBasePath);
+  }
 
   return (
     <EventForm
       mode="edit"
       adminBasePath={adminBasePath}
+      neighborhoodId={resolvedParams.neighborhoodId}
+      timeZone={neighborhood.timeZone}
       eventId={event.id}
       initialTitle={event.title}
       initialDescription={event.description}

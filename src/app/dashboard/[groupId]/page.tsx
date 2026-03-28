@@ -10,6 +10,7 @@ import {
   MembersCard,
   PollsCard,
   PostsCard,
+  ResourcesCard,
 } from "@/components/dashboard-v2";
 import {
   formatDashboardDate,
@@ -24,8 +25,10 @@ import { listEventsPaged } from "@/services/events";
 import { listNeighborhoodFunds } from "@/services/funds";
 import { listCampaignsPaged } from "@/services/fundraising";
 import { getGroupById, listGroupMembers } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { listPollsPaged } from "@/services/polls";
 import { listPostsPaged } from "@/services/posts";
+import { listResourcesForGroup } from "@/services/resources";
 import { getSession } from "@/server/auth";
 
 export default async function DashboardPage({
@@ -53,6 +56,9 @@ export default async function DashboardPage({
   const members = await listGroupMembers(scopedContext, {
     groupId: resolvedParams.groupId,
   });
+  const neighborhood = await getNeighborhoodById(scopedContext, {
+    neighborhoodId: group.neighborhoodId,
+  });
   const polls = await listPollsPaged(scopedContext, {
     limit: 5,
     offset: 0,
@@ -69,6 +75,9 @@ export default async function DashboardPage({
     status: "open",
     limit: 5,
     offset: 0,
+  });
+  const resourceList = await listResourcesForGroup(scopedContext, {
+    groupId: resolvedParams.groupId,
   });
   const funds = await listNeighborhoodFunds(scopedContext, {
     neighborhoodId: group.neighborhoodId,
@@ -95,7 +104,7 @@ export default async function DashboardPage({
   });
 
   const eventItems = events.items.map((event) => {
-    const badge = getEventBadgeDate(event.startsAt, locale);
+    const badge = getEventBadgeDate(event.startsAt, locale, neighborhood.timeZone);
 
     return {
       id: event.id,
@@ -103,7 +112,7 @@ export default async function DashboardPage({
       title: event.title,
       month: badge.month,
       day: badge.day,
-      dateTimeLabel: formatDashboardDateTime(event.startsAt, locale),
+      dateTimeLabel: formatDashboardDateTime(event.startsAt, locale, neighborhood.timeZone),
       location: event.location,
     };
   });
@@ -119,7 +128,7 @@ export default async function DashboardPage({
   }));
 
   const fundraisingItems = campaigns.items.map((campaign) => {
-    const daysUntil = campaign.dueDate ? getDaysUntil(campaign.dueDate) : null;
+    const daysUntil = campaign.dueDate ? getDaysUntil(campaign.dueDate, neighborhood.timeZone) : null;
     const urgencyLabel =
       daysUntil !== null && daysUntil <= 14 && daysUntil > 0
         ? t("fundraising.daysLeft", { count: daysUntil })
@@ -137,7 +146,7 @@ export default async function DashboardPage({
       }),
       dueLabel: campaign.dueDate
         ? t("fundraising.due", {
-            date: formatDashboardDate(new Date(campaign.dueDate), locale),
+            date: formatDashboardDate(campaign.dueDate, locale, neighborhood.timeZone),
           })
         : null,
       urgencyLabel,
@@ -153,6 +162,14 @@ export default async function DashboardPage({
     }),
     periodsLabel: t("funds.periods", { count: fund.openPeriods }),
     statusLabel: t("funds.pending", { count: fund.pendingPayments }),
+  }));
+
+  const resourceItems = resourceList.slice(0, 5).map((resource) => ({
+    id: resource.id,
+    href: `/dashboard/${resolvedParams.groupId}/resources/${resource.id}`,
+    title: resource.name,
+    subtitle: resource.location || resource.type || t("resources.noDescription"),
+    statusLabel: t("resources.upcoming", { count: resource.groupUpcomingReservations }),
   }));
 
   const memberItems = members.slice(0, 5).map((member) => {
@@ -239,6 +256,17 @@ export default async function DashboardPage({
           totalCount={funds.length}
           items={fundItems}
           testId="dashboard-overview-funds"
+        />
+
+        <ResourcesCard
+          title={t("resources.title")}
+          viewAllLabel={t("resources.viewAll")}
+          viewAllHref={`/dashboard/${resolvedParams.groupId}/resources`}
+          emptyTitle={t("resources.empty")}
+          emptyBody={t("resources.emptyHint")}
+          totalCount={resourceList.length}
+          items={resourceItems}
+          testId="dashboard-overview-resources"
         />
 
         <div className="lg:col-span-2">

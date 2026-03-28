@@ -1,3 +1,5 @@
+import { formatPortDate, formatPortDateKey } from "@/lib/port-time";
+
 export function getDisplayLocale(locale: string) {
   return locale === "en" ? "en-US" : "es-MX";
 }
@@ -11,9 +13,21 @@ export function formatCurrency(amount: number, locale: string, currencyCode = "M
   }).format(amount);
 }
 
-export function formatDate(value: Date | string | null | undefined, locale: string) {
+export function formatDate(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone?: string
+) {
   if (!value) {
     return "-";
+  }
+
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return formatPortDateKey(value, timeZone ?? "UTC", locale);
+  }
+
+  if (timeZone) {
+    return formatPortDate(value, timeZone, locale);
   }
 
   return new Intl.DateTimeFormat(getDisplayLocale(locale), {

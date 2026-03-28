@@ -3,22 +3,12 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { PostDetailActions } from "@/components/posts/post-detail-actions";
 import { StatusBadge } from "@/components/ui-v3";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getPostById } from "@/services/posts";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default async function AdminPostDetailPage({
   params,
@@ -41,10 +31,15 @@ export default async function AdminPostDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const post = await getPostById(serviceContext, { postId: resolvedParams.postId });
-  const locale = await getLocale();
-  const t = await getTranslations("admin.postDetail");
-  const tStatus = await getTranslations("status");
+  const [post, locale, t, tStatus, neighborhood] = await Promise.all([
+    getPostById(serviceContext, { postId: resolvedParams.postId }),
+    getLocale(),
+    getTranslations("admin.postDetail"),
+    getTranslations("status"),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+  ]);
 
   const postWithMeta = post as typeof post & { creatorName?: string };
 
@@ -70,11 +65,11 @@ export default async function AdminPostDetailPage({
                 <StatusBadge variant={post.status} label={tStatus(post.status)} />
                 <span className="text-xs text-stone-400">by {postWithMeta.creatorName ?? "-"}</span>
                 <span className="text-xs text-stone-400">
-                  Created {formatDate(post.createdAt, locale)}
+                  Created {formatPortDate(post.createdAt, neighborhood.timeZone, locale)}
                 </span>
                 {post.publishedAt ? (
                   <span className="text-xs text-stone-400">
-                    {t("publishedLabel")} {formatDate(post.publishedAt, locale)}
+                    {t("publishedLabel")} {formatPortDate(post.publishedAt, neighborhood.timeZone, locale)}
                   </span>
                 ) : null}
               </div>

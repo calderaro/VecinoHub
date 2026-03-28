@@ -6,7 +6,9 @@ import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { CampaignDetailActions } from "@/components/fundraising/campaign-detail-actions";
 import { ContributionStatusDialog } from "@/components/fundraising/contribution-status-dialog";
 import { StatusBadge } from "@/components/ui-v3";
+import { formatPortDateKey } from "@/lib/port-time";
 import { getCampaignParticipation, getCampaignDetail } from "@/services/fundraising";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 type AdminContribution = {
@@ -52,17 +54,6 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-function formatDate(value: string | null | undefined, locale: string) {
-  if (!value) {
-    return "-";
-  }
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
-}
-
 export default async function CampaignDetailPage({
   params,
   searchParams,
@@ -96,9 +87,17 @@ export default async function CampaignDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const campaign = await getCampaignDetail(serviceContext, {
-    campaignId: resolvedParams.campaignId,
-  });
+  const [campaign, neighborhood] = await Promise.all([
+    getCampaignDetail(serviceContext, {
+      campaignId: resolvedParams.campaignId,
+    }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(adminBasePath);
+  }
   const allContributions = campaign.contributions as AdminContribution[];
   const contributionStats = allContributions.reduce(
     (acc, contribution) => {
@@ -158,7 +157,10 @@ export default async function CampaignDetailPage({
                   {t("createdBy")} {campaignWithMeta.creatorName ?? "-"}
                 </span>
                 <span className="text-xs text-stone-400">
-                  {t("dueLabel")} {formatDate(campaign.dueDate, locale)}
+                  {t("dueLabel")}{" "}
+                  {campaign.dueDate
+                    ? formatPortDateKey(campaign.dueDate, neighborhood.timeZone, locale)
+                    : "-"}
                 </span>
               </div>
             </div>

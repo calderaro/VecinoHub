@@ -41,6 +41,7 @@ export default async function PlatformNeighborhoodEditPage({
         neighborhoodId={neighborhood.id}
         initialName={neighborhood.name}
         initialSlug={neighborhood.slug}
+        initialTimeZone={neighborhood.timeZone}
         initialStatus={neighborhood.status}
       />
     </div>

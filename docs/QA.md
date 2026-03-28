@@ -5,6 +5,8 @@
 - `npm run build` passes.
 - `npm test` passes.
 - Single test runs with `npm test -- tests/services/fundraising.test.ts`.
+- Single test runs with `npm test -- tests/services/port-time.test.ts`.
+- Single test runs with `npm test -- tests/services/resources.test.ts`.
 - `npm run db:migrate` applies successfully on a clean DB.
 
 ## Auth and Base Navigation
@@ -29,6 +31,7 @@
 ## Multi-Neighborhood Isolation
 - Platform admin can create a new neighborhood in `/platform`.
 - Platform admin can open `/platform/[neighborhoodId]`, edit the neighborhood, and delete it from the detail screen.
+- Platform admin can open `/platform/[neighborhoodId]/edit`, choose a timezone from the catalog-backed selector, save, and see the same IANA timezone persisted on the detail page.
 - Platform admin can add an existing user to a neighborhood and change neighborhood membership role/status from `/platform/[neighborhoodId]`.
 - Platform admin can open `/platform/users`, search/filter all accounts, and navigate to `/platform/users/[userId]`.
 - Platform admin can update platform user role/status from `/platform/users/[userId]`, and deactivation ends active sessions immediately.
@@ -36,8 +39,10 @@
 - Neighborhood admin cannot create neighborhoods.
 - Neighborhood admin of Neighborhood A cannot read/update Neighborhood B data.
 - Polls/events/posts/campaigns lists are scoped to active neighborhood context for non-platform users.
+- Resource lists, detail pages, reservation calendars, and block management are scoped to the active neighborhood for non-platform users.
 - Residents cannot open `/dashboard/[groupId]/fundraising/[campaignId]` for a campaign outside an active neighborhood/group relationship.
 - Residents cannot open `/dashboard/[groupId]/fund/[fundId]` or fund period/payment routes for a fund outside an active neighborhood/group relationship.
+- Residents cannot open `/dashboard/[groupId]/resources/[resourceId]` for a resource outside the group neighborhood.
 - Group member operations reject cross-neighborhood group/user combinations.
 - Removing or inactivating a neighborhood membership immediately revokes stale group-admin manage access in that neighborhood.
 - Removing or inactivating a neighborhood membership also revokes stale read access to group detail and member lists.
@@ -87,6 +92,15 @@
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
 - Resident campaign detail only shows contributions submitted by the signed-in user for the selected group.
 - Former or inactive group memberships do not expose contributions in fundraising detail pages.
+- Resources: neighborhood admin can create, edit, and deactivate a resource with weekly availability and reservation rules.
+- Resources: weekly availability windows use the shared time selector and save the intended neighborhood-local hours.
+- Resources: duplicate resource names are rejected within the same neighborhood.
+- Resources: resident can browse `/dashboard/[groupId]/resources`, open a detail page, and view an availability calendar.
+- Resources: resident can create a reservation only inside configured availability windows, with timezone-aware advance notice and duration limits.
+- Resources: overlapping reservations and administrative blocks prevent booking the same slot.
+- Resources: reservations are limited per group, not per individual user.
+- Resources: resident can cancel an eligible approved reservation, and late cancellations are rejected once the configured cutoff is reached.
+- Resources: neighborhood admin can create and remove administrative blocks from `/admin/[neighborhoodId]/resources/blocks`.
 - Funds: neighborhood admin can create multiple named funds in an authorized neighborhood.
 - Funds: neighborhood admin can create due periods, record expenses/manual income/adjustments, and confirm/reject fund payments.
 - Fund balances are derived from confirmed movements only; rejected payments do not change balance.
@@ -96,6 +110,9 @@
 - Residents cannot see payer identity on fund status boards; admins can see submitter and confirmer details.
 - Re-adding a neighborhood membership does not automatically restore prior group memberships or group-admin access.
 - Events: create/edit/delete and list/detail render correctly.
+- Events: event start/end use the shared datetime dialog and render the same clock time regardless of browser timezone.
+- Funds: due dates, payment dates, and movement dates use the shared date selector and do not shift across browser timezones.
+- Fundraising: campaign due date and wire transfer date use the shared date selector and render in neighborhood time on list/detail screens.
 - Posts: create/edit/publish/unpublish/delete flows work.
 - Profile update (full name/username/language) still works.
 - Neighbor dashboard pages and shared resident components render correctly in both Spanish and English after switching language from `/profile`.
@@ -115,6 +132,10 @@
   - neighborhood admin members management
   - neighborhood fund list/detail/periods/movements
   - resident fund list/detail/payment flow
+  - resident resource catalog/detail/reservation flow
+  - admin resource list/detail/editor
+  - admin resource reservations and blocks pages
+  - shared date/time dialog trigger, calendar, hour/minute columns, and apply/cancel actions
   - neighborhood switcher entries in `UserMenu`
 - Keyboard close (`Esc`) still closes `UserMenu`.
 - Responsive checks on:
@@ -123,4 +144,7 @@
   - `/profile`
   - `/admin`
   - `/admin/[neighborhoodId]/fund`
+  - `/dashboard/[groupId]/resources`
+  - `/dashboard/[groupId]/resources/[resourceId]`
+  - `/admin/[neighborhoodId]/resources`
   - `/platform`

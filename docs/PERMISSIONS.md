@@ -16,13 +16,15 @@
 - Create/update/delete neighborhoods.
 - Manage global users (profile, role, status).
 - Full CRUD across groups, polls, fundraising, funds, events, posts.
+- Full CRUD across resources, reservations, and administrative blocks.
 - Full invite management across groups.
 - Assign/revoke neighborhood admin memberships.
 
 ## Neighborhood Admin
-- CRUD for groups, polls, fundraising campaigns, funds, events, and posts only in authorized neighborhoods.
+- CRUD for groups, polls, fundraising campaigns, funds, resources, events, and posts only in authorized neighborhoods.
 - Create and manage multiple named funds in their neighborhoods.
 - Create charge templates and charge periods, confirm/reject fund payments, and record fund movements.
+- Create and manage resource definitions, weekly availability, rules, and blackout windows in their neighborhoods.
 - Manage group memberships and group roles in neighborhood groups.
 - Manage group invites in neighborhood groups.
 - Manage neighborhood membership role/status in their neighborhood.
@@ -38,6 +40,7 @@
 - Submit/delete own group contributions while campaign is open.
 - Read neighborhood fund balances, confirmed movements, and group-level paid/unpaid status in authorized neighborhoods.
 - Submit fund payments only for their own active groups.
+- Browse resources and create/cancel reservations only for their own active groups in authorized neighborhoods.
 - Update own profile.
 - Cannot access `/admin/*` or `/platform/*`.
 - A synchronized `neighbor` neighborhood membership may exist in storage, but it does not independently grant resident access.
@@ -64,6 +67,8 @@
   - contribution: campaign neighborhood must match group neighborhood
   - fund charge template/period/movement: fund neighborhood must match the authorized neighborhood
   - fund payment: fund, group, charge period, and allocation rows must belong to the same neighborhood and fund
+  - resource reservation: resource neighborhood must match group neighborhood, the actor must be an active group member, and the reservation must pass availability/quota/block validation
+  - resource block: resource block neighborhood must match the resource neighborhood and only admins within scope may create, update, or remove it
   - invite: group invite neighborhood must match the target group neighborhood, and invite acceptance must require an email match with the signed-in user
   - access request create: target group must belong to an active neighborhood, requester must be authenticated, and request creation must not create access directly
   - access request review: only group/neighborhood/platform managers within scope may approve or reject, and approval must activate group membership plus synchronized resident neighborhood membership

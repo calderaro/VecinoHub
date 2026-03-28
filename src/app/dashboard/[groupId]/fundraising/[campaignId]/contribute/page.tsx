@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContributionForm } from "@/components/fundraising/contribution-form";
-import { listUserGroups } from "@/services/groups";
+import { getGroupById, listUserGroups } from "@/services/groups";
 import { getResidentCampaignDetail } from "@/services/fundraising";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function NeighborContributionPage({
@@ -21,10 +22,25 @@ export default async function NeighborContributionPage({
 
   const resolvedParams = await Promise.resolve(params);
   const serviceContext = { user: session.user };
-  const campaign = await getResidentCampaignDetail(serviceContext, {
-    campaignId: resolvedParams.campaignId,
-    groupId: resolvedParams.groupId,
-  });
+  const group = await getGroupById(serviceContext, { groupId: resolvedParams.groupId });
+  const neighborhoodContext = {
+    user: {
+      ...session.user,
+      activeNeighborhoodId: group.neighborhoodId,
+    },
+  };
+  const [campaign, neighborhood] = await Promise.all([
+    getResidentCampaignDetail(serviceContext, {
+      campaignId: resolvedParams.campaignId,
+      groupId: resolvedParams.groupId,
+    }),
+    getNeighborhoodById(neighborhoodContext, { neighborhoodId: group.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(`/dashboard/${resolvedParams.groupId}/fundraising`);
+  }
 
   if (campaign.status !== "open") {
     redirect(`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`);
@@ -57,6 +73,7 @@ export default async function NeighborContributionPage({
           groups={groups.map((group) => ({ id: group.id, name: group.name }))}
           initialGroupId={resolvedParams.groupId}
           redirectTo={`/dashboard/${resolvedParams.groupId}/fundraising/${campaign.id}`}
+          timeZone={neighborhood.timeZone}
           translationNamespace="dashboard.contributionForm"
         />
       </section>

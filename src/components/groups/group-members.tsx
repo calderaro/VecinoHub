@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDownIcon } from "lucide-react";
 
+import { formatPortDateTime } from "@/lib/port-time";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog, StatusBadge } from "@/components/ui-v3";
@@ -48,13 +49,6 @@ type GroupAccessRequest = {
 
 type GroupMembersTab = "members" | "invites" | "requests";
 
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(value);
-}
-
 export function GroupMembers({
   groupId,
   canManage,
@@ -63,6 +57,7 @@ export function GroupMembers({
   accessRequests,
   viewerUserId,
   viewerMembershipRole,
+  timeZone,
 }: {
   groupId: string;
   canManage: boolean;
@@ -71,9 +66,11 @@ export function GroupMembers({
   accessRequests: GroupAccessRequest[];
   viewerUserId: string;
   viewerMembershipRole: "group_member" | "group_admin" | null;
+  timeZone: string;
 }) {
   const router = useRouter();
   const { addToast } = useToast();
+  const locale = useLocale();
   const t = useTranslations("dashboard.groupMembers");
   const [email, setEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState<"group_member" | "group_admin">(
@@ -87,6 +84,13 @@ export function GroupMembers({
   const [activeAccessRequestId, setActiveAccessRequestId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<GroupMembersTab>("members");
   const canSubmit = email.trim().length > 0;
+
+  function formatDate(value: Date) {
+    return formatPortDateTime(value, timeZone, locale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
 
   const createInvite = trpc.groupInvites.create.useMutation({
     onSuccess: () => {

@@ -3,26 +3,13 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { PollAdminActions } from "@/components/polls/poll-admin-actions";
 import { PollOptionsManager } from "@/components/polls/poll-options-manager";
 import { StatusBadge } from "@/components/ui-v3";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getPollParticipation, getPollResults, getPollWithOptions } from "@/services/polls";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string | null | undefined, locale: string) {
-  if (!value) {
-    return "-";
-  }
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default async function PollDetailPage({
   params,
@@ -45,13 +32,18 @@ export default async function PollDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const poll = await getPollWithOptions(serviceContext, {
-    pollId: resolvedParams.pollId,
-  });
-  const results = await getPollResults(serviceContext, { pollId: resolvedParams.pollId });
-  const participation = await getPollParticipation(serviceContext, {
-    pollId: resolvedParams.pollId,
-  });
+  const [poll, results, participation, neighborhood] = await Promise.all([
+    getPollWithOptions(serviceContext, {
+      pollId: resolvedParams.pollId,
+    }),
+    getPollResults(serviceContext, { pollId: resolvedParams.pollId }),
+    getPollParticipation(serviceContext, {
+      pollId: resolvedParams.pollId,
+    }),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+  ]);
   const participationPercent =
     participation.activeGroups > 0
       ? Math.round((participation.votedGroups / participation.activeGroups) * 100)
@@ -88,7 +80,7 @@ export default async function PollDetailPage({
                   {t("createdBy")} {pollWithMeta.creatorName ?? "-"}
                 </span>
                 <span className="text-xs text-stone-400">
-                  {t("startedLabel")} {formatDate(poll.createdAt, locale)}
+                  {t("startedLabel")} {formatPortDate(poll.createdAt, neighborhood.timeZone, locale)}
                 </span>
               </div>
             </div>

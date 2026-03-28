@@ -97,6 +97,21 @@ export const fundMovementTypeEnum = pgEnum("fund_movement_type", [
 ]);
 export const fundEntrySideEnum = pgEnum("fund_entry_side", ["credit", "debit"]);
 export const postStatusEnum = pgEnum("post_status", ["draft", "published"]);
+export const resourceStatusEnum = pgEnum("resource_status", ["active", "inactive"]);
+export const resourceReservationStatusEnum = pgEnum("resource_reservation_status", [
+  "approved",
+  "cancelled",
+  "completed",
+  "expired",
+]);
+export const resourceBlockReasonEnum = pgEnum("resource_block_reason", [
+  "maintenance",
+  "cleaning",
+  "repair",
+  "neighborhood_event",
+  "unavailable",
+  "other",
+]);
 
 
 export const users = pgTable(
@@ -193,6 +208,7 @@ export const neighborhoods = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name").notNull(),
     slug: text("slug").notNull(),
+    timeZone: text("time_zone").notNull().default("America/Mexico_City"),
     status: neighborhoodStatusEnum("status").notNull().default("active"),
     createdBy: uuid("created_by").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -701,4 +717,154 @@ export const posts = pgTable(
     index("posts_status_idx").on(table.status),
     index("posts_published_at_idx").on(table.publishedAt),
   ]
+);
+
+export const resources = pgTable(
+  "resources",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    type: text("type"),
+    location: text("location"),
+    capacity: integer("capacity"),
+    status: resourceStatusEnum("status").notNull().default("active"),
+    requiresApproval: boolean("requires_approval").notNull().default(false),
+    requiresDeposit: boolean("requires_deposit").notNull().default(false),
+    depositAmount: numeric("deposit_amount", { precision: 12, scale: 2 }),
+    reservationFeeAmount: numeric("reservation_fee_amount", { precision: 12, scale: 2 }),
+    usageRules: text("usage_rules"),
+    termsText: text("terms_text"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("resources_neighborhood_id_idx").on(table.neighborhoodId),
+    uniqueIndex("resources_neighborhood_name_unique").on(
+      table.neighborhoodId,
+      sql`lower(${table.name})`
+    ),
+  ]
+);
+
+export const resourceAvailabilityWindows = pgTable(
+  "resource_availability_windows",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    resourceId: uuid("resource_id").notNull(),
+    dayOfWeek: integer("day_of_week").notNull(),
+    startMinute: integer("start_minute").notNull(),
+    endMinute: integer("end_minute").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("resource_availability_windows_resource_day_idx").on(
+      table.resourceId,
+      table.dayOfWeek
+    ),
+  ]
+);
+
+export const resourceRules = pgTable(
+  "resource_rules",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    resourceId: uuid("resource_id").notNull(),
+    minAdvanceHours: integer("min_advance_hours").notNull().default(0),
+    maxAdvanceDays: integer("max_advance_days").notNull().default(30),
+    maxReservationsPerMonth: integer("max_reservations_per_month"),
+    maxReservationsPerYear: integer("max_reservations_per_year"),
+    maxActiveReservations: integer("max_active_reservations"),
+    minDurationMinutes: integer("min_duration_minutes").notNull().default(60),
+    maxDurationMinutes: integer("max_duration_minutes").notNull().default(360),
+    bufferBeforeMinutes: integer("buffer_before_minutes").notNull().default(0),
+    bufferAfterMinutes: integer("buffer_after_minutes").notNull().default(0),
+    maxConcurrentReservations: integer("max_concurrent_reservations")
+      .notNull()
+      .default(1),
+    requireNoDebt: boolean("require_no_debt").notNull().default(false),
+    cancellationLimitHours: integer("cancellation_limit_hours"),
+    lateCancellationCountsAsUsage: boolean("late_cancellation_counts_as_usage")
+      .notNull()
+      .default(false),
+    lateCancellationForfeitsDeposit: boolean("late_cancellation_forfeits_deposit")
+      .notNull()
+      .default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("resource_rules_resource_unique").on(table.resourceId)]
+);
+
+export const resourceReservations = pgTable(
+  "resource_reservations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    resourceId: uuid("resource_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    groupId: uuid("group_id").notNull(),
+    requestedBy: uuid("requested_by").notNull(),
+    startAt: timestamp("start_at", { withTimezone: true }).notNull(),
+    endAt: timestamp("end_at", { withTimezone: true }).notNull(),
+    title: text("title").notNull(),
+    notes: text("notes"),
+    attendeeCount: integer("attendee_count"),
+    status: resourceReservationStatusEnum("status").notNull().default("approved"),
+    cancelledBy: uuid("cancelled_by"),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    cancellationReason: text("cancellation_reason"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    depositStatus: text("deposit_status"),
+    depositReference: text("deposit_reference"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("resource_reservations_resource_start_idx").on(table.resourceId, table.startAt),
+    index("resource_reservations_group_start_idx").on(table.groupId, table.startAt),
+    index("resource_reservations_neighborhood_status_idx").on(
+      table.neighborhoodId,
+      table.status
+    ),
+  ]
+);
+
+export const resourceBlocks = pgTable(
+  "resource_blocks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    resourceId: uuid("resource_id").notNull(),
+    neighborhoodId: uuid("neighborhood_id").notNull(),
+    startAt: timestamp("start_at", { withTimezone: true }).notNull(),
+    endAt: timestamp("end_at", { withTimezone: true }).notNull(),
+    reason: resourceBlockReasonEnum("reason").notNull(),
+    reasonText: text("reason_text"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("resource_blocks_resource_start_idx").on(table.resourceId, table.startAt)]
 );

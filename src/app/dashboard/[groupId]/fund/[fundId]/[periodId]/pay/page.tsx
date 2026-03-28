@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { FundPaymentForm } from "@/components/funds/fund-payment-form";
 import { getFundPeriodDetail } from "@/services/funds";
 import { getGroupById } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function ResidentFundPaymentPage({
@@ -30,12 +31,13 @@ export default async function ResidentFundPaymentPage({
       activeNeighborhoodId: group.neighborhoodId,
     },
   };
-  const [detail, t] = await Promise.all([
+  const [detail, neighborhood, t] = await Promise.all([
     getFundPeriodDetail(serviceContext, { periodId }).catch(() => null),
+    getNeighborhoodById(serviceContext, { neighborhoodId: group.neighborhoodId }).catch(() => null),
     getTranslations("dashboard.funds.paymentPage"),
   ]);
 
-  if (!detail || detail.fund.id !== fundId) {
+  if (!detail || !neighborhood || detail.fund.id !== fundId) {
     redirect(`/dashboard/${groupId}/fund/${fundId}`);
   }
 
@@ -56,6 +58,7 @@ export default async function ResidentFundPaymentPage({
         groupChargeId={myCharge.id}
         initialAmount={String(myCharge.remainingAmount)}
         redirectTo={`/dashboard/${groupId}/fund/${fundId}/${periodId}`}
+        timeZone={neighborhood.timeZone}
       />
     </div>
   );

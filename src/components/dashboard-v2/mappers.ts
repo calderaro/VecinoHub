@@ -1,3 +1,5 @@
+import { formatPortDate, formatPortDateTime, getPortToday } from "@/lib/port-time";
+
 const avatarColorClasses = [
   "bg-teal-600",
   "bg-blue-600",
@@ -21,22 +23,36 @@ export function toPostSnippet(content: string, maxLength = 120) {
   return `${normalized.slice(0, maxLength - 1)}…`;
 }
 
-export function formatDashboardDate(value: Date, locale: string) {
+export function formatDashboardDate(value: Date | string, locale: string, timeZone?: string) {
+  if (timeZone) {
+    return formatPortDate(value, timeZone, locale);
+  }
+
   return new Intl.DateTimeFormat(getDisplayLocale(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(value);
+  }).format(value instanceof Date ? value : new Date(value));
 }
 
-export function formatDashboardDateTime(value: Date, locale: string) {
+export function formatDashboardDateTime(value: Date | string, locale: string, timeZone?: string) {
+  if (timeZone) {
+    return formatPortDateTime(value, timeZone, locale, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
   return new Intl.DateTimeFormat(getDisplayLocale(locale), {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(value);
+  }).format(value instanceof Date ? value : new Date(value));
 }
 
 export function formatDashboardNumber(value: string | number, locale: string) {
@@ -46,7 +62,17 @@ export function formatDashboardNumber(value: string | number, locale: string) {
   }).format(Number(value));
 }
 
-export function getEventBadgeDate(value: Date, locale: string) {
+export function getEventBadgeDate(value: Date, locale: string, timeZone?: string) {
+  if (timeZone) {
+    const monthLabel = formatPortDate(value, timeZone, locale, { month: "short" });
+    const dayLabel = formatPortDate(value, timeZone, locale, { day: "numeric" });
+
+    return {
+      month: monthLabel.toUpperCase().slice(0, 3),
+      day: dayLabel,
+    };
+  }
+
   const formatter = new Intl.DateTimeFormat(getDisplayLocale(locale), {
     month: "short",
     day: "numeric",
@@ -60,7 +86,15 @@ export function getEventBadgeDate(value: Date, locale: string) {
   };
 }
 
-export function getDaysUntil(isoDate: string) {
+export function getDaysUntil(isoDate: string, timeZone?: string) {
+  if (timeZone) {
+    const today = getPortToday(timeZone);
+    return Math.ceil(
+      (new Date(`${isoDate}T12:00:00Z`).getTime() - new Date(`${today}T12:00:00Z`).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+  }
+
   const now = new Date();
   const due = new Date(`${isoDate}T00:00:00`);
   return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));

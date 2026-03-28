@@ -6,36 +6,9 @@ import { ArrowLeftIcon, CalendarDaysIcon, MapPinIcon, PencilIcon } from "lucide-
 import { EventAdminActions } from "@/components/events/event-admin-actions";
 import { StatusBadge } from "@/components/ui-v3";
 import { getEventById } from "@/services/events";
+import { getNeighborhoodById } from "@/services/neighborhoods";
+import { formatPortDate, formatPortDateTime, formatPortTime } from "@/lib/port-time";
 import { getSession } from "@/server/auth";
-
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDateTime(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatDate(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatTime(value: Date | string, locale: string) {
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
 
 export default async function AdminEventDetailPage({
   params,
@@ -58,7 +31,15 @@ export default async function AdminEventDetailPage({
       activeNeighborhoodId: resolvedParams.neighborhoodId,
     },
   };
-  const event = await getEventById(serviceContext, { eventId: resolvedParams.eventId });
+  const [event, neighborhood] = await Promise.all([
+    getEventById(serviceContext, { eventId: resolvedParams.eventId }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(adminBasePath);
+  }
   const locale = await getLocale();
   const t = await getTranslations("admin.eventDetail");
   const now = new Date();
@@ -90,12 +71,12 @@ export default async function AdminEventDetailPage({
                   label={statusVariant === "upcoming" ? "Upcoming" : "Completed"}
                 />
                 <span className="text-xs text-stone-400">by {eventWithMeta.creatorName ?? "-"}</span>
-                <span className="text-xs text-stone-400">
-                  {formatDateTime(event.startsAt, locale)}
+                  <span className="text-xs text-stone-400">
+                  {formatPortDateTime(event.startsAt, neighborhood.timeZone, locale)}
                 </span>
                 {event.endsAt ? (
                   <span className="text-xs text-stone-400">
-                    Ends {formatDateTime(event.endsAt, locale)}
+                    Ends {formatPortDateTime(event.endsAt, neighborhood.timeZone, locale)}
                   </span>
                 ) : null}
               </div>
@@ -116,13 +97,15 @@ export default async function AdminEventDetailPage({
         <div className="grid gap-3 border-b border-stone-100 px-6 py-5 sm:grid-cols-3">
           <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
             <p className="text-xs text-stone-400">Date</p>
-            <p className="mt-1 text-sm font-semibold text-stone-900">{formatDate(event.startsAt, locale)}</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">
+              {formatPortDate(event.startsAt, neighborhood.timeZone, locale)}
+            </p>
           </div>
           <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">
             <p className="text-xs text-stone-400">Time</p>
             <p className="mt-1 text-sm font-semibold text-stone-900">
-              {formatTime(event.startsAt, locale)}
-              {event.endsAt ? ` - ${formatTime(event.endsAt, locale)}` : ""}
+              {formatPortTime(event.startsAt, neighborhood.timeZone, locale)}
+              {event.endsAt ? ` - ${formatPortTime(event.endsAt, neighborhood.timeZone, locale)}` : ""}
             </p>
           </div>
           <div className="rounded-lg border border-stone-100 bg-stone-50 px-4 py-3">

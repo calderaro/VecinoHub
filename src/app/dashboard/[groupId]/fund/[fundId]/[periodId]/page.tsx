@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, formatDate, getFundStatusVariant } from "@/components/funds/utils";
 import { getFundPeriodDetail } from "@/services/funds";
 import { getGroupById } from "@/services/groups";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function ResidentFundPeriodPage({
@@ -32,14 +33,15 @@ export default async function ResidentFundPeriodPage({
       activeNeighborhoodId: group.neighborhoodId,
     },
   };
-  const [detail, locale, t, tStatus] = await Promise.all([
+  const [detail, neighborhood, locale, t, tStatus] = await Promise.all([
     getFundPeriodDetail(serviceContext, { periodId }).catch(() => null),
+    getNeighborhoodById(serviceContext, { neighborhoodId: group.neighborhoodId }).catch(() => null),
     getLocale(),
     getTranslations("dashboard.funds.periodDetail"),
     getTranslations("status"),
   ]);
 
-  if (!detail || detail.fund.id !== fundId) {
+  if (!detail || !neighborhood || detail.fund.id !== fundId) {
     redirect(`/dashboard/${groupId}/fund/${fundId}`);
   }
 
@@ -51,7 +53,9 @@ export default async function ResidentFundPeriodPage({
         <div>
           <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">{t("label")}</p>
           <h1 className="text-3xl font-semibold">{detail.title}</h1>
-          <p className="mt-2 text-sm text-[color:var(--muted)]">{formatDate(detail.dueDate, locale)}</p>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">
+            {formatDate(detail.dueDate, locale, neighborhood.timeZone)}
+          </p>
         </div>
         {myCharge && myCharge.status !== "paid" && myCharge.status !== "waived" ? (
           <Link

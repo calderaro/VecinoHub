@@ -110,6 +110,14 @@ This plan is ordered to minimize conflicts and keep dependencies clear. Each tas
 - [ ] Implement multi-fund neighborhood fund management MVP.
 - [ ] Follow the detailed execution plan in `docs/FUND_MANAGEMENT_IMPLEMENTATION_PLAN.md`.
 
+## 8.2) Neighborhood Resource Reservations
+- [x] Implement neighborhood resource reservations MVP.
+- [x] Follow the detailed execution plan in `docs/RESOURCE_RESERVATIONS_IMPLEMENTATION_PLAN.md`.
+
+## 8.3) Neighborhood Port-Time and DateTime UX
+- [x] Implement neighborhood port-time rendering and custom date-time selector migration.
+- [x] Follow the detailed execution plan in `docs/PORT_TIME_AND_DATETIME_IMPLEMENTATION_PLAN.md`.
+
 ## 9) UI/UX Pages
 - [x] Auth pages (login, register).
 - [x] Dashboard with role-based widgets.

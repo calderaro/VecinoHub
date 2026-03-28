@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { CampaignForm } from "@/components/fundraising/campaign-form";
 import { getCampaignDetail } from "@/services/fundraising";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function CampaignEditPage({
@@ -26,9 +27,17 @@ export default async function CampaignEditPage({
     },
   };
 
-  const campaign = await getCampaignDetail(serviceContext, {
-    campaignId: resolvedParams.campaignId,
-  });
+  const [campaign, neighborhood] = await Promise.all([
+    getCampaignDetail(serviceContext, {
+      campaignId: resolvedParams.campaignId,
+    }),
+    getNeighborhoodById(serviceContext, { neighborhoodId: resolvedParams.neighborhoodId }).catch(
+      () => null
+    ),
+  ]);
+  if (!neighborhood) {
+    redirect(adminBasePath);
+  }
   const campaignWithContributions = campaign as typeof campaign & {
     contributions?: Array<{ amount: string; status: "submitted" | "confirmed" | "rejected" }>;
   };
@@ -44,6 +53,8 @@ export default async function CampaignEditPage({
       mode="edit"
       adminBasePath={adminBasePath}
       campaignId={campaign.id}
+      neighborhoodId={resolvedParams.neighborhoodId}
+      timeZone={neighborhood.timeZone}
       initialTitle={campaign.title}
       initialDescription={campaign.description}
       initialGoalAmount={campaign.goalAmount}

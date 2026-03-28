@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { FundPeriodForm } from "@/components/funds/fund-period-form";
 import { listFundChargeTemplates } from "@/services/funds";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
 export default async function AdminNewFundPeriodPage({
@@ -22,10 +23,14 @@ export default async function AdminNewFundPeriodPage({
       activeNeighborhoodId: neighborhoodId,
     },
   };
-  const [templates, t] = await Promise.all([
+  const [templates, neighborhood, t] = await Promise.all([
     listFundChargeTemplates(serviceContext, { fundId }).catch(() => []),
+    getNeighborhoodById(serviceContext, { neighborhoodId }).catch(() => null),
     getTranslations("admin.funds.periodFormPage"),
   ]);
+  if (!neighborhood) {
+    redirect(`/admin/${neighborhoodId}/fund/${fundId}`);
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-6 py-6">
@@ -37,6 +42,7 @@ export default async function AdminNewFundPeriodPage({
         fundId={fundId}
         redirectTo={`/admin/${neighborhoodId}/fund/${fundId}/periods`}
         templates={templates.map((template) => ({ id: template.id, title: template.title }))}
+        timeZone={neighborhood.timeZone}
       />
     </div>
   );

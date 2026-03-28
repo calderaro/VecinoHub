@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronDownIcon, FileTextIcon } from "lucide-react";
 
+import { formatPortDate } from "@/lib/port-time";
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
+import { getNeighborhoodById } from "@/services/neighborhoods";
 import { listPostsPaged } from "@/services/posts";
 import { getSession } from "@/server/auth";
 
@@ -16,17 +18,13 @@ function buildQuery(params: Record<string, string | undefined>) {
   return qs ? `?${qs}` : "";
 }
 
-function getDisplayLocale(locale: string) {
-  return locale === "en" ? "en-US" : "es-MX";
-}
-
-function formatDate(value: Date | string | null | undefined, locale: string) {
+function formatDate(
+  value: Date | string | null | undefined,
+  locale: string,
+  timeZone: string
+) {
   if (!value) return "-";
-  return new Intl.DateTimeFormat(getDisplayLocale(locale), {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatPortDate(value, timeZone, locale);
 }
 
 export default async function AdminPostsPage({
@@ -79,9 +77,14 @@ export default async function AdminPostsPage({
   );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const locale = await getLocale();
-  const t = await getTranslations("admin.postsList");
-  const tStatus = await getTranslations("status");
+  const [locale, t, tStatus, neighborhood] = await Promise.all([
+    getLocale(),
+    getTranslations("admin.postsList"),
+    getTranslations("status"),
+    getNeighborhoodById(serviceContext, {
+      neighborhoodId: resolvedParams.neighborhoodId,
+    }),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
@@ -176,7 +179,7 @@ export default async function AdminPostsPage({
                         {postWithMeta.creatorName ?? "-"}
                       </td>
                       <td className="hidden px-4 py-3.5 text-stone-400 md:table-cell">
-                        {formatDate(post.createdAt, locale)}
+                        {formatDate(post.createdAt, locale, neighborhood.timeZone)}
                       </td>
                     </tr>
                   );
