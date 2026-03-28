@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { getResourceStatusVariant } from "@/components/resources/utils";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { listContextHelpByScreen, resolveHelpRole } from "@/lib/help-content";
 import { listNeighborhoodResources } from "@/services/resources";
 import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
@@ -41,6 +41,10 @@ export default async function AdminResourcesPage({
   if (!neighborhood) {
     redirect("/admin");
   }
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: true,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
@@ -51,7 +55,14 @@ export default async function AdminResourcesPage({
           <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <HelpContextPanel entries={listContextHelpByScreen(locale, "admin-resources")} />
+          <HelpContextPanel
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "admin-resources",
+              role: helpRole,
+            })}
+            screenKey="admin-resources"
+          />
           <Link
             href={`/admin/${neighborhoodId}/resources/blocks`}
             className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"

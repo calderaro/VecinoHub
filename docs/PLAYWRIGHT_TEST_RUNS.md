@@ -259,13 +259,17 @@ Steps:
 1. Open `user-menu-trigger`.
 2. Click `user-menu-help`.
 3. Verify `/help` loads.
-4. Fill `help-center-search` with a keyword such as `acceso`.
-5. Open one result and verify the article detail page loads.
+4. Verify at least one `help-recommended-{slug}` card and one `help-start-here-{slug}` card render.
+5. Fill `help-center-search` with a keyword such as `acceso`.
+6. Open one result and verify the article detail page loads.
+7. On the article detail page, verify `help-article-feedback` renders.
+8. Go back to `/help`, search for a nonsense keyword, and verify `help-center-empty` plus `help-fallback-{slug}` render.
 
 Expected:
 - The help center opens from `UserMenu`.
-- Search filters the article list.
+- Search filters the article list and zero-result states still offer next-step guidance.
 - The user can navigate from the help center to `/help/{slug}`.
+- Article detail exposes feedback controls.
 
 ### Test Run: Contextual Help Opens on Priority Screens
 Preconditions:
@@ -274,15 +278,20 @@ Preconditions:
 
 Steps:
 1. Open `/dashboard/request-access`.
+2. Verify `help-quick-answers` renders on the page.
+3. Open one `help-quick-answer-link-{id}` link and verify the target help article loads.
+4. Return to `/dashboard/request-access`.
 2. Click `context-help-open`.
 3. Verify `context-help-entry-request-access-resident` or another contextual help card appears.
 4. Click one `context-help-article-{slug}` link and verify article detail opens.
 5. Open `/dashboard/{groupId}/members`.
+6. Verify `help-quick-answers` renders on the page.
 6. Click `context-help-open`.
 7. Verify contextual help entries for member management and request review render.
 
 Expected:
 - Priority screens expose contextual help without breaking the existing layout.
+- Request-access and members pages expose inline quick answers for common questions.
 - Contextual help opens as an overlay and links to full help articles.
 
 If seeding does not create users, create them via the UI in the Auth runs.

@@ -4,7 +4,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { HelpCenterClient } from "@/components/help/HelpCenterClient";
-import { listHelpArticles } from "@/lib/help-content";
+import { HelpViewTracker } from "@/components/help/HelpViewTracker";
+import { listHelpArticles, resolveHelpRole } from "@/lib/help-content";
 import { listUserGroups } from "@/services/groups";
 import {
   hasNeighborhoodAdminRole,
@@ -19,13 +20,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HelpPage() {
+export default async function HelpPage({
+  searchParams,
+}: {
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await getSession();
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const source =
+    typeof resolvedSearchParams.source === "string" && resolvedSearchParams.source.trim()
+      ? resolvedSearchParams.source.trim()
+      : "direct";
 
   if (!session) {
     const params = new URLSearchParams({
       tab: "signup",
-      next: "/help",
+      next: `/help?source=${encodeURIComponent(source)}`,
     });
     redirect(`/login?${params.toString()}`);
   }
@@ -46,11 +58,15 @@ export default async function HelpPage() {
     getTranslations("help"),
   ]);
 
-  const preferredAudience = session.user.role === "user" ? "resident" : "admin";
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: canAccessAdmin,
+  });
   const articles = listHelpArticles(locale);
 
   return (
     <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
+      <HelpViewTracker eventName="help_center_opened" source={source} />
       <DashboardHeader
         user={{
           username: session.user.username,
@@ -66,7 +82,7 @@ export default async function HelpPage() {
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <HelpCenterClient
           articles={articles}
-          preferredAudience={preferredAudience}
+          helpRole={helpRole}
           showSpanishOnlyNotice={locale !== "es"}
         />
       </main>

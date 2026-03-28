@@ -159,12 +159,18 @@
     "spanishOnlyNotice": "El contenido de ayuda está disponible solo en español por ahora.",
     "featuredTitle": "Lecturas recomendadas",
     "featuredSubtitle": "Priorizadas según el tipo de uso más frecuente de tu cuenta.",
+    "recommendedTitle": "Recomendado para ti",
+    "recommendedSubtitle": "Artículos priorizados según tu rol y las tareas que más suelen generar dudas.",
+    "startHereTitle": "Empieza por aquí",
+    "startHereSubtitle": "Entradas rápidas por objetivo para no perder tiempo navegando toda la ayuda.",
     "gettingStartedTitle": "Cómo aprovechar esta ayuda",
     "gettingStarted": {
       "one": "Empieza por el artículo que más se parezca a la tarea que estás intentando resolver.",
       "two": "Si vienes desde una pantalla específica, usa el botón de Ayuda contextual para obtener una explicación más dirigida.",
       "three": "Cuando tengas una duda operativa, revisa primero qué pasa después de cada acción para evitar errores de acceso o seguimiento."
     },
+    "searchResultsTitle": "Resultados de búsqueda",
+    "searchResultsSubtitle": "Coincidencias priorizadas por intención, tarea y términos operativos.",
     "allArticlesTitle": "Todos los artículos",
     "allArticlesSubtitle": "Documentación breve y orientada a tareas reales dentro del producto.",
     "emptyTitle": "No encontramos artículos con esa búsqueda.",
@@ -173,8 +179,11 @@
     "contextEyebrow": "Ayuda contextual",
     "contextTitle": "Cómo funciona esta pantalla",
     "contextSubtitle": "Resumen práctico para entender qué puedes hacer aquí y qué sucede después.",
+    "contextPurposeEyebrow": "Resumen operativo",
+    "close": "Cerrar",
     "sections": {
       "whoUsesIt": "Quién la usa",
+      "beforeYouStart": "Qué revisar antes",
       "keyActions": "Acciones principales",
       "whatHappensNext": "Qué pasa después"
     },
@@ -186,6 +195,19 @@
       "resident": "Residente",
       "admin": "Admin",
       "shared": "General"
+    },
+    "feedback": {
+      "title": "¿Te ayudó este artículo?",
+      "subtitle": "Tu respuesta ayuda a mejorar la guía y detectar dudas que siguen abiertas.",
+      "yes": "Sí",
+      "no": "No",
+      "commentLabel": "Cuéntanos qué faltó o qué estuvo confuso",
+      "commentPlaceholder": "Ejemplo: no encontré el paso exacto para aprobar la solicitud o no quedó claro qué pasa después.",
+      "hint": "Puedes responder con un toque rápido o dejar más contexto si algo no te ayudó.",
+      "updated": "Tu última respuesta ya quedó guardada. Puedes actualizarla si cambias de opinión.",
+      "submit": "Guardar respuesta",
+      "saving": "Guardando...",
+      "saved": "Gracias. Tu comentario quedó guardado."
     }
   },
   "admin": {
@@ -1589,7 +1611,9 @@
     "membersPage": {
       "label": "Padrón de casa",
       "title": "Miembros de {name}",
-      "subtitle": "Administra residentes del grupo."
+      "subtitle": "Administra residentes del grupo.",
+      "helpQuickAnswersEyebrow": "Respuestas rápidas",
+      "helpQuickAnswersLink": "Abrir guía relacionada"
     },
     "invites": {
       "label": "Acceso a grupos",
@@ -1629,6 +1653,8 @@
   "label": "Ingreso de residentes",
   "title": "Solicitar acceso",
   "subtitle": "Pide unirte a un grupo del vecindario. Tu solicitud quedará pendiente hasta que un manager la revise.",
+  "helpQuickAnswersEyebrow": "Respuestas rápidas",
+  "helpQuickAnswersLink": "Abrir guía relacionada",
   "cta": {
     "eyebrow": "Nueva solicitud de acceso",
     "title": "Inicia una solicitud cuando estés listo para unirte a un grupo",

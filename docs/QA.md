@@ -17,7 +17,10 @@
 - Password reset completes from `/forgot-password` with email OTP, new password, and password confirmation, then signs the user in and redirects to `/dashboard`.
 - Invite deep links preserve destination through sign-in, sign-up, and email verification, and return the user to `/dashboard/invites`.
 - Authenticated users can open `/help` from `UserMenu` on dashboard, profile, admin, and platform pages.
-- `/help` supports article search, featured guides, and navigation to `/help/[slug]`.
+- `/help` supports role-aware recommendations, start-here guides, weighted article search, and navigation to `/help/[slug]`.
+- `/help` shows fallback recommendations when a search returns zero matches.
+- `/help/[slug]` shows related articles, tracked product CTAs, and article feedback controls.
+- Help article feedback supports yes/no responses and optional comments on negative feedback.
 - English UI sessions still show help content in Spanish with a visible availability notice.
 - Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
 - Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
@@ -75,9 +78,11 @@
 - Rejecting a request closes it without creating resident access.
 - `/dashboard/request-access` shows pending requests separately from request history.
 - `/dashboard/request-access` exposes contextual help for resident access requests and neighborhood join links.
+- `/dashboard/request-access` shows quick-answer cards for the top onboarding questions.
 - Group members remain read-only in `/dashboard/[groupId]/members`.
 - `/dashboard/[groupId]/members` renders separate tabs for members, invitations, and requests, and each tab shows only its own content panel.
 - `/dashboard/[groupId]/members` exposes contextual help for member administration and request review.
+- `/dashboard/[groupId]/members` shows quick-answer cards for invite-vs-request and role-impact questions.
 - Group members can leave their own group from `/dashboard/[groupId]/members` and are redirected back to `/dashboard`.
 - Group admins can leave their own group only when another active group admin remains.
 - The last active group admin in a group cannot leave and sees a clear error message.
@@ -104,6 +109,7 @@
 - Resources: duplicate resource names are rejected within the same neighborhood.
 - Resources: resident can browse `/dashboard/[groupId]/resources`, open a detail page, and view an availability calendar.
 - `/dashboard/[groupId]/resources` exposes contextual help for resident reservation flows.
+- Contextual help content changes according to screen role where resident and admin guidance differ.
 - Resources: resident can create a reservation only inside configured availability windows, with timezone-aware advance notice and duration limits.
 - Resources: overlapping reservations and administrative blocks prevent booking the same slot.
 - Resources: reservations are limited per group, not per individual user.

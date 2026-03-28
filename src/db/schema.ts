@@ -112,6 +112,7 @@ export const resourceBlockReasonEnum = pgEnum("resource_block_reason", [
   "unavailable",
   "other",
 ]);
+export const helpFeedbackResponseEnum = pgEnum("help_feedback_response", ["yes", "no"]);
 
 
 export const users = pgTable(
@@ -867,4 +868,50 @@ export const resourceBlocks = pgTable(
       .defaultNow(),
   },
   (table) => [index("resource_blocks_resource_start_idx").on(table.resourceId, table.startAt)]
+);
+
+export const helpFeedback = pgTable(
+  "help_feedback",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    articleSlug: text("article_slug").notNull(),
+    response: helpFeedbackResponseEnum("response").notNull(),
+    comment: text("comment"),
+    locale: text("locale").notNull().default("es"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("help_feedback_user_article_unique").on(table.userId, table.articleSlug),
+    index("help_feedback_article_slug_idx").on(table.articleSlug),
+  ]
+);
+
+export const helpEvents = pgTable(
+  "help_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    eventName: text("event_name").notNull(),
+    locale: text("locale").notNull().default("es"),
+    screenKey: text("screen_key"),
+    articleSlug: text("article_slug"),
+    source: text("source"),
+    query: text("query"),
+    resultCount: integer("result_count"),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("help_events_user_created_at_idx").on(table.userId, table.createdAt),
+    index("help_events_event_name_idx").on(table.eventName),
+    index("help_events_article_slug_idx").on(table.articleSlug),
+  ]
 );

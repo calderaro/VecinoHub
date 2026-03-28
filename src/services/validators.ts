@@ -68,6 +68,32 @@ export const resourceBlockReasonSchema = z.enum([
   "unavailable",
   "other",
 ]);
+export const helpFeedbackResponseSchema = z.enum(["yes", "no"]);
+export const helpRoleSchema = z.enum([
+  "resident",
+  "group_admin",
+  "neighborhood_admin",
+  "shared",
+]);
+export const helpScreenKeySchema = z.enum([
+  "dashboard-request-access",
+  "dashboard-invites",
+  "dashboard-members",
+  "dashboard-funds",
+  "dashboard-resources",
+  "admin-funds",
+  "admin-resources",
+]);
+export const helpEventNameSchema = z.enum([
+  "help_center_opened",
+  "help_search_used",
+  "help_search_zero_results",
+  "help_article_opened",
+  "help_article_cta_clicked",
+  "help_context_opened",
+  "help_context_article_clicked",
+  "help_feedback_submitted",
+]);
 export const timeZoneSchema = z
   .string()
   .trim()

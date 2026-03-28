@@ -120,6 +120,13 @@
       "when": 1774141101445,
       "tag": "0016_nappy_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1774733872670,
+      "tag": "0017_overrated_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

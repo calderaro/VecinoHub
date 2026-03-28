@@ -5,7 +5,12 @@ import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { DashboardRequestAccess } from "@/components/access-requests/dashboard-request-access";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { HelpQuickAnswers } from "@/components/help/HelpQuickAnswers";
+import {
+  listContextHelpByScreen,
+  listContextQuickAnswers,
+  resolveHelpRole,
+} from "@/lib/help-content";
 import { listMyGroupAccessRequests } from "@/services/group-access-requests";
 import { listUserGroups } from "@/services/groups";
 import {
@@ -61,6 +66,10 @@ export default async function DashboardRequestAccessPage({
       listNeighborhoodAdminOptions(baseContext),
       listMyGroupAccessRequests(baseContext),
     ]);
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: canAccessAdmin,
+  });
 
   return (
     <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
@@ -86,9 +95,24 @@ export default async function DashboardRequestAccessPage({
             <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
           </div>
           <HelpContextPanel
-            entries={listContextHelpByScreen(locale, "dashboard-request-access")}
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "dashboard-request-access",
+              role: helpRole,
+            })}
+            screenKey="dashboard-request-access"
           />
         </header>
+
+        <HelpQuickAnswers
+          answers={listContextQuickAnswers({
+            locale,
+            screenKey: "dashboard-request-access",
+            role: helpRole,
+          })}
+          title={t("helpQuickAnswersEyebrow")}
+          articleLabel={t("helpQuickAnswersLink")}
+        />
 
         <DashboardRequestAccess
           pending={requests.pending}

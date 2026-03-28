@@ -17,10 +17,11 @@
 ## In-App Help
 - `/help`
   - authenticated help center with task-based articles for residents and admins.
-  - provides article search by title/summary plus featured content by primary audience.
+  - provides role-aware recommendations, start-here task entry points, and weighted article search across title, summary, body, and curated keywords.
+  - tracks help-center opens, search usage, and zero-result searches through internal help events.
   - if the UI locale is English, help content still renders in Spanish with a visible availability notice.
 - `/help/[slug]`
-  - article detail view with links back to product routes and related help articles.
+  - article detail view with links back to product routes, ranked related help articles, and article helpfulness feedback.
 
 ## Global Date/Time UX Contract
 - Neighborhood timezone selection uses a controlled select backed by the shared timezone catalog; free-form timezone text entry is not allowed.
@@ -49,6 +50,7 @@
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.
   - exposes contextual help for resident access requests and shared join links.
+  - shows inline quick answers for the highest-friction onboarding questions.
 - `/dashboard/[groupId]`
   - overview cards: posts, events, polls, fundraising, funds, resources, members.
   - sticky header with `UserMenu`.
@@ -65,6 +67,7 @@
   - read-only for `group_member`.
   - uses tabs for members, invitations, and requests.
   - exposes contextual help for member management and access-request review.
+  - shows inline quick answers for invite-vs-request and role-impact questions.
   - signed-in members can leave their own group from this page.
   - the leave action must be blocked for the last active `group_admin` until another admin is assigned.
   - `group_admin`, `neighborhood_admin`, and `platform_admin` can invite members, cancel/resend pending invites, review access requests, add/remove existing accepted members, and change group roles.
@@ -78,7 +81,7 @@
     - uses the shared date selector for wire transfer date when required.
   - `/dashboard/[groupId]/fund`
     - lists the active neighborhood's named funds with summary cards.
-    - exposes contextual help that explains resident fund reading and next steps.
+    - exposes role-aware contextual help that explains resident fund reading and next steps.
   - `/dashboard/[groupId]/fund/[fundId]`
     - shows fund balance, recent confirmed movements, current due summary for the signed-in resident's group, and neighborhood group payment status.
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]`
@@ -87,7 +90,7 @@
     - uses the shared date selector for payment date submission.
   - `/dashboard/[groupId]/resources`
     - resident resource catalog with status badges, basic capacity/type info, and a link to the group reservation history.
-    - exposes contextual help for reservation discovery and resource usage.
+    - exposes role-aware contextual help for reservation discovery and resource usage.
   - `/dashboard/[groupId]/resources/[resourceId]`
     - resident resource detail with timezone, rules summary, and availability calendar.
   - `/dashboard/[groupId]/resources/[resourceId]/reserve`
@@ -118,6 +121,7 @@
   - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
     - campaign due date and contribution dates use the shared date selector and render in neighborhood time.
   - `/admin/[neighborhoodId]/fund`
+    - exposes role-aware contextual help for admin fund operations.
     - neighborhood fund list with balances, overdue counts, and create-fund CTA.
     - exposes contextual help for admin fund operations.
   - `/admin/[neighborhoodId]/fund/new`
@@ -130,6 +134,7 @@
   - `/admin/[neighborhoodId]/fund/[fundId]/settings`
     - due dates, movement dates, and template defaults use the shared date selector.
   - `/admin/[neighborhoodId]/resources`
+    - exposes role-aware contextual help for admin resource operations.
     - neighborhood resource list with status, upcoming reservation count, and future block count.
     - exposes contextual help for admin resource operations.
   - `/admin/[neighborhoodId]/resources/new`

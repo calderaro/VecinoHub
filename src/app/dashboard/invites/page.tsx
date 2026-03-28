@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { DashboardInvitesInbox } from "@/components/invites/dashboard-invites-inbox";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { listContextHelpByScreen, resolveHelpRole } from "@/lib/help-content";
 import { listMyInvites, getInviteByTokenForSession } from "@/services/group-invites";
 import { listUserGroups } from "@/services/groups";
 import {
@@ -54,6 +54,10 @@ export default async function DashboardInvitesPage({
       listMyInvites(baseContext),
       inviteToken ? getInviteByTokenForSession(baseContext, { token: inviteToken }) : null,
     ]);
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: canAccessAdmin,
+  });
 
   return (
     <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
@@ -78,7 +82,14 @@ export default async function DashboardInvitesPage({
             <h1 className="text-3xl font-semibold text-stone-900">{t("title")}</h1>
             <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
           </div>
-          <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-invites")} />
+          <HelpContextPanel
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "dashboard-invites",
+              role: helpRole,
+            })}
+            screenKey="dashboard-invites"
+          />
         </header>
 
         <section className="rounded-xl border border-[color:var(--stroke)] bg-[color:var(--surface)] p-6 shadow-sm">

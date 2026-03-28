@@ -159,12 +159,18 @@
     "spanishOnlyNotice": "Help content is available only in Spanish for now.",
     "featuredTitle": "Recommended reading",
     "featuredSubtitle": "Prioritized based on the most common use of your account.",
+    "recommendedTitle": "Recommended for you",
+    "recommendedSubtitle": "Articles prioritized around your role and the tasks that usually create the most friction.",
+    "startHereTitle": "Start here",
+    "startHereSubtitle": "Quick entry points by goal so you do not need to browse the whole library first.",
     "gettingStartedTitle": "How to use this help",
     "gettingStarted": {
       "one": "Start with the article that best matches the task you are trying to complete.",
       "two": "If you came from a specific screen, use the contextual Help button for a more focused explanation.",
       "three": "When you have an operational question, review what happens after each action to avoid access or follow-up mistakes."
     },
+    "searchResultsTitle": "Search results",
+    "searchResultsSubtitle": "Matches prioritized by intent, task, and operational wording.",
     "allArticlesTitle": "All articles",
     "allArticlesSubtitle": "Short documentation organized around real product tasks.",
     "emptyTitle": "No articles matched that search.",
@@ -173,8 +179,11 @@
     "contextEyebrow": "Contextual help",
     "contextTitle": "How this screen works",
     "contextSubtitle": "A practical summary of what you can do here and what happens next.",
+    "contextPurposeEyebrow": "Operational summary",
+    "close": "Close",
     "sections": {
       "whoUsesIt": "Who uses it",
+      "beforeYouStart": "What to verify first",
       "keyActions": "Key actions",
       "whatHappensNext": "What happens next"
     },
@@ -186,6 +195,19 @@
       "resident": "Resident",
       "admin": "Admin",
       "shared": "General"
+    },
+    "feedback": {
+      "title": "Did this article help?",
+      "subtitle": "Your answer helps improve the guide and identify where users still get stuck.",
+      "yes": "Yes",
+      "no": "No",
+      "commentLabel": "Tell us what was missing or unclear",
+      "commentPlaceholder": "Example: I could not find the exact approval step, or it was not clear what happens after submitting.",
+      "hint": "You can answer quickly or add more detail if the article did not resolve your question.",
+      "updated": "Your latest answer is already saved. You can update it if needed.",
+      "submit": "Save response",
+      "saving": "Saving...",
+      "saved": "Thanks. Your feedback has been saved."
     }
   },
   "admin": {
@@ -1589,7 +1611,9 @@
     "membersPage": {
       "label": "House roster",
       "title": "{name} members",
-      "subtitle": "Manage residents in this house group."
+      "subtitle": "Manage residents in this house group.",
+      "helpQuickAnswersEyebrow": "Quick answers",
+      "helpQuickAnswersLink": "Open related guide"
     },
     "invites": {
       "label": "Group onboarding",
@@ -1629,6 +1653,8 @@
   "label": "Resident onboarding",
   "title": "Request access",
   "subtitle": "Ask to join a neighborhood group. Your request stays pending until a manager reviews it.",
+  "helpQuickAnswersEyebrow": "Quick answers",
+  "helpQuickAnswersLink": "Open related guide",
   "cta": {
     "eyebrow": "New access request",
     "title": "Start a request when you're ready to join a group",

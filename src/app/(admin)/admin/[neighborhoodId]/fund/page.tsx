@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, getFundStatusVariant } from "@/components/funds/utils";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { listContextHelpByScreen, resolveHelpRole } from "@/lib/help-content";
 import { listNeighborhoodFunds } from "@/services/funds";
 import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
@@ -40,6 +40,10 @@ export default async function AdminFundsPage({
   if (!neighborhood) {
     redirect("/admin");
   }
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: true,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-6">
@@ -50,7 +54,14 @@ export default async function AdminFundsPage({
           <p className="mt-0.5 text-sm text-stone-500">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <HelpContextPanel entries={listContextHelpByScreen(locale, "admin-funds")} />
+          <HelpContextPanel
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "admin-funds",
+              role: helpRole,
+            })}
+            screenKey="admin-funds"
+          />
           <Link
             href={`${adminBasePath}/fund/new`}
             className="rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"

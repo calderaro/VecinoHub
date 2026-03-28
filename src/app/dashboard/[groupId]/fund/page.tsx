@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { formatCurrency, getFundStatusVariant } from "@/components/funds/utils";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { listContextHelpByScreen, resolveHelpRole } from "@/lib/help-content";
 import { listNeighborhoodFunds } from "@/services/funds";
 import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
@@ -39,6 +39,11 @@ export default async function ResidentFundsPage({
     getTranslations("dashboard.funds.list"),
     getTranslations("status"),
   ]);
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    viewerCanManage: group.viewerCanManage,
+    viewerMembershipRole: group.viewerMembershipRole,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
@@ -49,7 +54,14 @@ export default async function ResidentFundsPage({
             <h1 className="text-3xl font-semibold">{t("title")}</h1>
             <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
           </div>
-          <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-funds")} />
+          <HelpContextPanel
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "dashboard-funds",
+              role: helpRole,
+            })}
+            screenKey="dashboard-funds"
+          />
         </div>
       </header>
 

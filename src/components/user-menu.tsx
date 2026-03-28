@@ -265,7 +265,7 @@ export function UserMenu({
             </Link>
 
             <Link
-              href="/help"
+              href="/help?source=menu"
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className={styles.item}

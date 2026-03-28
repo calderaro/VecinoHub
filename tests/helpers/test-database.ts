@@ -37,6 +37,7 @@ mem.public.none(`
   CREATE TYPE resource_status AS ENUM ('active', 'inactive');
   CREATE TYPE resource_reservation_status AS ENUM ('approved', 'cancelled', 'completed', 'expired');
   CREATE TYPE resource_block_reason AS ENUM ('maintenance', 'cleaning', 'repair', 'neighborhood_event', 'unavailable', 'other');
+  CREATE TYPE help_feedback_response AS ENUM ('yes', 'no');
 
   CREATE TABLE users (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -423,6 +424,43 @@ mem.public.none(`
 
   CREATE INDEX resource_blocks_resource_start_idx
     ON resource_blocks (resource_id, start_at);
+
+  CREATE TABLE help_feedback (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL,
+    article_slug text NOT NULL,
+    response help_feedback_response NOT NULL,
+    comment text,
+    locale text NOT NULL DEFAULT 'es',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE UNIQUE INDEX help_feedback_user_article_unique
+    ON help_feedback (user_id, article_slug);
+  CREATE INDEX help_feedback_article_slug_idx
+    ON help_feedback (article_slug);
+
+  CREATE TABLE help_events (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL,
+    event_name text NOT NULL,
+    locale text NOT NULL DEFAULT 'es',
+    screen_key text,
+    article_slug text,
+    source text,
+    query text,
+    result_count integer,
+    metadata text,
+    created_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE INDEX help_events_user_created_at_idx
+    ON help_events (user_id, created_at);
+  CREATE INDEX help_events_event_name_idx
+    ON help_events (event_name);
+  CREATE INDEX help_events_article_slug_idx
+    ON help_events (article_slug);
 `);
 
 const adapter = mem.adapters.createPg();
@@ -455,6 +493,8 @@ export async function ensureTestDatabase() {
 }
 
 export async function resetTestDatabase() {
+  await testDb.delete(schema.helpEvents);
+  await testDb.delete(schema.helpFeedback);
   await testDb.delete(schema.resourceBlocks);
   await testDb.delete(schema.resourceReservations);
   await testDb.delete(schema.resourceRules);

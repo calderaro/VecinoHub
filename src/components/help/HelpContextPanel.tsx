@@ -1,23 +1,28 @@
 "use client";
 
-import Link from "next/link";
-import { BookOpenIcon, LifeBuoyIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BookOpenIcon, ExternalLinkIcon, LifeBuoyIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import type { HelpContextEntry } from "@/lib/help-content";
+import type { HelpContextEntry, HelpScreenKey } from "@/lib/help-content";
+import { trpc } from "@/lib/trpc";
+
+import { HelpTrackedLink } from "./HelpTrackedLink";
 
 type HelpContextPanelProps = {
   entries: HelpContextEntry[];
+  screenKey: HelpScreenKey;
   buttonLabel?: string;
 };
 
 export function HelpContextPanel({
   entries,
+  screenKey,
   buttonLabel,
 }: HelpContextPanelProps) {
   const t = useTranslations("help");
   const locale = useLocale();
+  const recordEvent = trpc.help.recordEvent.useMutation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +51,15 @@ export function HelpContextPanel({
       <button
         type="button"
         className="dashboard-v2-focus inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          recordEvent.mutate({
+            eventName: "help_context_opened",
+            locale: locale === "en" ? "en" : "es",
+            screenKey,
+            source: "context_button",
+          });
+        }}
         data-testid="context-help-open"
       >
         <LifeBuoyIcon className="h-4 w-4" />
@@ -88,29 +101,27 @@ export function HelpContextPanel({
                     data-testid="context-help-close"
                   >
                     <XIcon className="h-4 w-4" />
+                    <span className="sr-only">{t("close")}</span>
                   </button>
                 </div>
-
-                {locale !== "es" ? (
-                  <div
-                    className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-                    data-testid="context-help-spanish-notice"
-                  >
-                    {t("spanishOnlyNotice")}
-                  </div>
-                ) : null}
               </div>
 
-              <div className="space-y-4 px-6 py-5">
+              <div className="space-y-5 px-6 py-6">
                 {entries.map((entry) => (
                   <section
                     key={entry.id}
-                    className="rounded-3xl border border-stone-200 bg-stone-50/70 p-5"
+                    className="rounded-[28px] border border-stone-200 bg-stone-50/70 p-5"
                     data-testid={`context-help-entry-${entry.id}`}
                   >
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-stone-900">{entry.title}</h3>
-                      <p className="text-sm leading-6 text-stone-600">{entry.summary}</p>
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-teal-600">
+                        {t("contextPurposeEyebrow")}
+                      </p>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-stone-900">{entry.title}</h3>
+                        <p className="text-sm leading-6 text-stone-600">{entry.summary}</p>
+                        <p className="text-sm leading-6 text-stone-600">{entry.purpose}</p>
+                      </div>
                     </div>
 
                     <div className="mt-5 space-y-5">
@@ -120,6 +131,20 @@ export function HelpContextPanel({
                         </p>
                         <ul className="mt-2 space-y-2 text-sm leading-6 text-stone-600">
                           {entry.whoUsesIt.map((item) => (
+                            <li key={item} className="flex gap-3">
+                              <span className="mt-2 h-1.5 w-1.5 rounded-full bg-teal-500" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-stone-500">
+                          {t("sections.beforeYouStart")}
+                        </p>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-stone-600">
+                          {entry.beforeYouStart.map((item) => (
                             <li key={item} className="flex gap-3">
                               <span className="mt-2 h-1.5 w-1.5 rounded-full bg-teal-500" />
                               <span>{item}</span>
@@ -157,16 +182,41 @@ export function HelpContextPanel({
                       </div>
                     </div>
 
+                    {entry.productLinks.length > 0 ? (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {entry.productLinks.map((link) => (
+                          <HelpTrackedLink
+                            key={`${entry.id}-${link.href}`}
+                            href={link.href}
+                            articleSlug={entry.articleSlug}
+                            screenKey={screenKey}
+                            source={`context_product_${link.intent}`}
+                            eventName="help_article_cta_clicked"
+                            className="dashboard-v2-focus inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                            dataTestId={`context-help-product-link-${entry.id}-${link.intent}`}
+                          >
+                            <ExternalLinkIcon className="h-4 w-4" />
+                            {link.label}
+                          </HelpTrackedLink>
+                        ))}
+                      </div>
+                    ) : null}
+
                     <div className="mt-5">
-                      <Link
+                      <HelpTrackedLink
                         href={`/help/${entry.articleSlug}`}
+                        appendHelpSource="context_panel"
+                        articleSlug={entry.articleSlug}
+                        screenKey={screenKey}
+                        source="context_panel"
+                        eventName="help_context_article_clicked"
                         className="dashboard-v2-focus inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                        dataTestId={`context-help-article-${entry.articleSlug}`}
                         onClick={() => setOpen(false)}
-                        data-testid={`context-help-article-${entry.articleSlug}`}
                       >
                         <BookOpenIcon className="h-4 w-4" />
                         {t("fullGuide")}
-                      </Link>
+                      </HelpTrackedLink>
                     </div>
                   </section>
                 ))}

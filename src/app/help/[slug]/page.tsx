@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
@@ -6,10 +5,14 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { DashboardHeader } from "@/components/dashboard-v2";
 import { HelpArticleBody } from "@/components/help/HelpArticleBody";
+import { HelpArticleFeedback } from "@/components/help/HelpArticleFeedback";
+import { HelpTrackedLink } from "@/components/help/HelpTrackedLink";
+import { HelpViewTracker } from "@/components/help/HelpViewTracker";
 import {
   getHelpArticleBySlug,
   getHelpScreenLabel,
-  listHelpArticles,
+  listRelatedHelpArticles,
+  resolveHelpRole,
 } from "@/lib/help-content";
 import { listUserGroups } from "@/services/groups";
 import {
@@ -27,16 +30,25 @@ export const metadata: Metadata = {
 
 export default async function HelpArticlePage({
   params,
+  searchParams,
 }: {
   params: { slug: string } | Promise<{ slug: string }>;
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await getSession();
   const { slug } = await Promise.resolve(params);
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const source =
+    typeof resolvedSearchParams.source === "string" && resolvedSearchParams.source.trim()
+      ? resolvedSearchParams.source.trim()
+      : "direct";
 
   if (!session) {
     const params = new URLSearchParams({
       tab: "signup",
-      next: `/help/${slug}`,
+      next: `/help/${slug}?source=${encodeURIComponent(source)}`,
     });
     redirect(`/login?${params.toString()}`);
   }
@@ -61,13 +73,20 @@ export default async function HelpArticlePage({
     listNeighborhoodAdminOptions(baseContext),
     getTranslations("help"),
   ]);
-
-  const relatedArticles = listHelpArticles(locale)
-    .filter((candidate) => candidate.slug !== article.slug && candidate.category === article.category)
-    .slice(0, 3);
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    hasNeighborhoodAdminAccess: canAccessAdmin,
+  });
+  const relatedArticles = listRelatedHelpArticles({
+    locale,
+    slug: article.slug,
+    role: helpRole,
+    limit: 3,
+  });
 
   return (
     <div className="dashboard-v2 dashboard-v2-font min-h-screen bg-stone-50 text-stone-900">
+      <HelpViewTracker eventName="help_article_opened" articleSlug={article.slug} source={source} />
       <DashboardHeader
         user={{
           username: session.user.username,
@@ -82,14 +101,15 @@ export default async function HelpArticlePage({
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10">
         <div className="space-y-4">
-          <Link
+          <HelpTrackedLink
             href="/help"
+            appendHelpSource="article_back"
             className="dashboard-v2-focus inline-flex items-center gap-2 text-sm text-stone-500 transition-colors hover:text-stone-700"
-            data-testid="help-article-back"
+            dataTestId="help-article-back"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             {t("backToCenter")}
-          </Link>
+          </HelpTrackedLink>
 
           <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -115,8 +135,9 @@ export default async function HelpArticlePage({
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="space-y-6 rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
             <HelpArticleBody article={article} />
+            <HelpArticleFeedback articleSlug={article.slug} />
           </section>
 
           <aside className="space-y-5">
@@ -145,16 +166,18 @@ export default async function HelpArticlePage({
                 </p>
                 <div className="mt-4 space-y-3">
                   {relatedArticles.map((relatedArticle) => (
-                    <Link
+                    <HelpTrackedLink
                       key={relatedArticle.slug}
                       href={`/help/${relatedArticle.slug}`}
+                      appendHelpSource="related_article"
                       className="block rounded-2xl border border-stone-200 bg-stone-50/70 p-4 transition-colors hover:border-teal-300 hover:bg-white"
+                      dataTestId={`help-related-${relatedArticle.slug}`}
                     >
                       <p className="text-sm font-semibold text-stone-900">{relatedArticle.title}</p>
                       <p className="mt-1 text-xs leading-5 text-stone-500">
                         {relatedArticle.summary}
                       </p>
-                    </Link>
+                    </HelpTrackedLink>
                   ))}
                 </div>
               </section>

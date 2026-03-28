@@ -2,9 +2,14 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
+import { HelpQuickAnswers } from "@/components/help/HelpQuickAnswers";
 import { listGroupAccessRequests } from "@/services/group-access-requests";
 import { GroupMembers } from "@/components/groups/group-members";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import {
+  listContextHelpByScreen,
+  listContextQuickAnswers,
+  resolveHelpRole,
+} from "@/lib/help-content";
 import { listGroupInvites } from "@/services/group-invites";
 import { getGroupById, listGroupMembers } from "@/services/groups";
 import { getNeighborhoodById } from "@/services/neighborhoods";
@@ -48,6 +53,11 @@ export default async function MembersPage({
     getLocale(),
     getTranslations("dashboard.membersPage"),
   ]);
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    viewerCanManage: group.viewerCanManage,
+    viewerMembershipRole: group.viewerMembershipRole,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12">
@@ -63,8 +73,25 @@ export default async function MembersPage({
             {t("subtitle")}
           </p>
         </div>
-        <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-members")} />
+        <HelpContextPanel
+          entries={listContextHelpByScreen({
+            locale,
+            screenKey: "dashboard-members",
+            role: helpRole,
+          })}
+          screenKey="dashboard-members"
+        />
       </header>
+
+      <HelpQuickAnswers
+        answers={listContextQuickAnswers({
+          locale,
+          screenKey: "dashboard-members",
+          role: helpRole,
+        })}
+        title={t("helpQuickAnswersEyebrow")}
+        articleLabel={t("helpQuickAnswersLink")}
+      />
 
       <GroupMembers
         groupId={group.id}

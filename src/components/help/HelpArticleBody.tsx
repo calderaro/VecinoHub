@@ -1,6 +1,6 @@
-import Link from "next/link";
-
 import type { HelpArticle } from "@/lib/help-content";
+
+import { HelpTrackedLink } from "./HelpTrackedLink";
 
 type HelpArticleBodyProps = {
   article: HelpArticle;
@@ -33,14 +33,18 @@ export function HelpArticleBody({ article }: HelpArticleBodyProps) {
       <section className="rounded-2xl border border-stone-200 bg-stone-50/80 p-5">
         <h2 className="text-lg font-semibold text-stone-900">Enlaces útiles</h2>
         <div className="mt-4 flex flex-wrap gap-2">
-          {article.relatedLinks.map((link) => (
-            <Link
+          {article.ctaLinks.map((link) => (
+            <HelpTrackedLink
               key={`${article.slug}-${link.href}`}
               href={link.href}
+              articleSlug={article.slug}
+              source={link.intent}
+              eventName="help_article_cta_clicked"
               className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
+              dataTestId={`help-article-cta-${link.intent}`}
             >
               {link.label}
-            </Link>
+            </HelpTrackedLink>
           ))}
         </div>
       </section>

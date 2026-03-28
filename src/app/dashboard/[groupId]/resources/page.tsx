@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { HelpContextPanel } from "@/components/help/HelpContextPanel";
 import { StatusBadge } from "@/components/ui-v3";
 import { getResourceStatusVariant } from "@/components/resources/utils";
-import { listContextHelpByScreen } from "@/lib/help-content";
+import { listContextHelpByScreen, resolveHelpRole } from "@/lib/help-content";
 import { listResourcesForGroup } from "@/services/resources";
 import { getGroupById } from "@/services/groups";
 import { getSession } from "@/server/auth";
@@ -43,6 +43,11 @@ export default async function ResidentResourcesPage({
   if (!resources) {
     redirect(`/dashboard/${groupId}`);
   }
+  const helpRole = resolveHelpRole({
+    accountRole: session.user.role,
+    viewerCanManage: group.viewerCanManage,
+    viewerMembershipRole: group.viewerMembershipRole,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
@@ -53,7 +58,14 @@ export default async function ResidentResourcesPage({
           <p className="text-sm text-[color:var(--muted)]">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <HelpContextPanel entries={listContextHelpByScreen(locale, "dashboard-resources")} />
+          <HelpContextPanel
+            entries={listContextHelpByScreen({
+              locale,
+              screenKey: "dashboard-resources",
+              role: helpRole,
+            })}
+            screenKey="dashboard-resources"
+          />
           <Link
             href={`/dashboard/${groupId}/resources/reservations`}
             className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
