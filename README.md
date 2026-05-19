@@ -74,6 +74,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Tech Stack
+
+Next.js 16 (App Router) · TypeScript · tRPC · Better Auth · Drizzle ORM · PostgreSQL · Tailwind CSS v4 · next-intl · Vitest · Playwright.
+
 ## Documentation
 
 - `docs/PRD.md`
@@ -86,3 +90,15 @@ Open [http://localhost:3000](http://localhost:3000).
 - `docs/PERMISSIONS.md`
 - `docs/SEEDING.md`
 - `docs/QA.md`
+
+## Contributing
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup, conventions, and the PR workflow.
+
+## Security
+
+Found a vulnerability? Please do **not** open a public issue — see [`SECURITY.md`](./SECURITY.md) for the private disclosure process.
+
+## License
+
+[MIT](./LICENSE) — see the license file for full text.
