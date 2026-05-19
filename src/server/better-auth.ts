@@ -130,14 +130,16 @@ async function sendEmailOtp({
 }: {
   email: string;
   otp: string;
-  type: "sign-in" | "email-verification" | "forget-password";
+  type: "sign-in" | "email-verification" | "forget-password" | "change-email";
 }) {
   const purpose =
     type === "forget-password"
       ? "password reset"
       : type === "email-verification"
         ? "email verification"
-        : "sign in";
+        : type === "change-email"
+          ? "email change"
+          : "sign in";
 
   await sendMail({
     to: email,

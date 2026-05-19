@@ -199,6 +199,7 @@ export const neighborhoodsRouter = createTRPCRouter({
           cookieStore.set("vh_active_neighborhood", result.activeNeighborhoodId, {
             path: "/",
             sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24 * 365,
           });
         } else {
