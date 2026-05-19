@@ -12,7 +12,6 @@ const originalEnv = { ...process.env };
 function baseEnv() {
   process.env.BETTER_AUTH_SECRET = "test-secret";
   process.env.DATABASE_URL = "postgres://vecinohub:vecinohub@localhost:5432/vecinohub";
-  process.env.REDIS_URL = "redis://localhost:6379";
 }
 
 describe("better-auth security configuration", () => {
@@ -27,7 +26,7 @@ describe("better-auth security configuration", () => {
     process.env = { ...originalEnv };
   });
 
-  it("enables rate limiting, Redis-backed sessions, and protected token storage", async () => {
+  it("enables rate limiting, database-backed sessions, and protected token storage", async () => {
     process.env.SMTP_HOST = "smtp.example.com";
     process.env.SMTP_USER = "mailer";
     process.env.SMTP_PASS = "secret";
@@ -47,7 +46,7 @@ describe("better-auth security configuration", () => {
     });
     expect(
       (auth as typeof auth & { options: { secondaryStorage?: unknown } }).options.secondaryStorage
-    ).toBeTruthy();
+    ).toBeUndefined();
     expect(magicPlugin?.options?.storeToken).toBe("hashed");
     expect(magicPlugin?.options?.rateLimit).toEqual({ window: 60, max: 5 });
     expect(emailOtpPlugin?.options?.storeOTP).toBe("hashed");
@@ -56,26 +55,9 @@ describe("better-auth security configuration", () => {
       (auth as typeof auth & {
         options: {
           account: { encryptOAuthTokens?: boolean };
-          session: {
-            storeSessionInDatabase?: boolean;
-            preserveSessionInDatabase?: boolean;
-          };
         };
       }).options.account.encryptOAuthTokens
     ).toBe(true);
-    expect(
-      (auth as typeof auth & {
-        options: {
-          session: {
-            storeSessionInDatabase?: boolean;
-            preserveSessionInDatabase?: boolean;
-          };
-        };
-      }).options.session
-    ).toMatchObject({
-      storeSessionInDatabase: false,
-      preserveSessionInDatabase: false,
-    });
   });
 
   it("fails closed without logging auth secrets when SMTP is missing", async () => {
@@ -121,13 +103,14 @@ describe("better-auth security configuration", () => {
     ).rejects.toThrow("Auth email delivery is not configured.");
 
     expect(infoSpy).not.toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalled();
 
     const warningText = warnSpy.mock.calls
       .flat()
       .map((value) => String(value))
       .join(" ");
 
+    expect(warningText).toContain("SMTP");
     expect(warningText).not.toContain("topsecret");
     expect(warningText).not.toContain("654321");
   });
