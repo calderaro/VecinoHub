@@ -8,7 +8,6 @@ import { db } from "@/db";
 import * as schema from "@/db/schema";
 
 import { sendMail } from "./mail";
-import { secondaryStorage } from "./secondary-storage";
 
 const authSecret = process.env.BETTER_AUTH_SECRET;
 if (!authSecret) {
@@ -211,7 +210,6 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
-  secondaryStorage,
   user: {
     modelName: "users",
     fields: {
@@ -259,8 +257,6 @@ export const auth = betterAuth({
   },
   session: {
     modelName: "sessions",
-    storeSessionInDatabase: false,
-    preserveSessionInDatabase: false,
     fields: {
       userId: "userId",
       expiresAt: "expiresAt",

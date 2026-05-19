@@ -24,7 +24,7 @@
 - English UI sessions still show help content in Spanish with a visible availability notice.
 - Auth flows fail without leaking OTPs or sign-in/reset links when SMTP is not configured.
 - Repeated password and magic-link attempts hit rate limiting instead of succeeding indefinitely.
-- Sign in, refresh, and sign out still work with Redis-backed sessions after setting `REDIS_URL`.
+- Sign in, refresh, and sign out persist sessions in the primary PostgreSQL database.
 - Inactive users are denied access after deactivation, even if they had an existing session before the status change.
 - Inactive users cannot create new sessions through password, magic-link, OTP, or social sign-in flows.
 
