@@ -17,7 +17,8 @@ BEGIN
     LIMIT 1;
 
     IF default_creator_id IS NULL THEN
-      RAISE EXCEPTION 'Cannot create default neighborhood without users';
+      -- Fresh database with no users yet; nothing to backfill, exit early.
+      RETURN;
     END IF;
 
     INSERT INTO neighborhoods (name, slug, status, created_by)
