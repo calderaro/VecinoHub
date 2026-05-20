@@ -1,0 +1,68 @@
+name: Deploy to box-1
+
+on:
+  push:
+    branches: [main, chore/oss-readiness]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, box-1, vecinohub]
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load deploy config
+        run: |
+          set -a
+          source .env.deploy
+          set +a
+          echo "APP_NAME=$APP_NAME"           >> $GITHUB_ENV
+          echo "APP_PORT=$APP_PORT"           >> $GITHUB_ENV
+          echo "APP_HOSTNAME=$APP_HOSTNAME"   >> $GITHUB_ENV
+          echo "APP_CONTAINER_PORT=$APP_CONTAINER_PORT" >> $GITHUB_ENV
+
+      - name: Sync source to /opt/dev-stack/apps/$APP_NAME (preserve .env)
+        run: |
+          mkdir -p /opt/dev-stack/apps/$APP_NAME
+          rsync -a --delete \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude=.env \
+            ./ /opt/dev-stack/apps/$APP_NAME/
+
+      - name: Build & up
+        working-directory: /opt/dev-stack/apps/${{ env.APP_NAME }}
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.deploy.yml build
+          docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --remove-orphans
+
+      - name: Publish Caddy route
+        run: |
+          cat > /opt/dev-stack/caddy/sites/$APP_NAME.caddy <<EOF
+          $APP_HOSTNAME:80 {
+            reverse_proxy 127.0.0.1:$APP_PORT
+          }
+          EOF
+          docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://$APP_HOSTNAME/" || echo "000")
+            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "307" ]; then
+              echo "OK: https://$APP_HOSTNAME/ returned $code"
+              exit 0
+            fi
+            echo "Attempt $i: got $code, sleeping 3s"
+            sleep 3
+          done
+          echo "FAIL: $APP_HOSTNAME never returned a 2xx/3xx" >&2
+          docker compose -f /opt/dev-stack/apps/$APP_NAME/docker-compose.yml -f /opt/dev-stack/apps/$APP_NAME/docker-compose.deploy.yml logs --tail=80 app
+          exit 1

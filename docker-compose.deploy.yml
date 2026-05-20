@@ -1,0 +1,32 @@
+# Overlay applied on top of docker-compose.yml during box-1 deploys.
+# Adds the `app` service and tightens the db port binding to loopback only.
+# Used by .github/workflows/deploy.yml via:
+#   docker compose -f docker-compose.yml -f docker-compose.deploy.yml ...
+
+services:
+  db:
+    # Bind only to loopback on box-1; full :5432 exposure stays a local-only thing
+    # via the base docker-compose.yml.
+    ports: !override
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vecinohub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: ${APP_NAME:-vecinohub}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${APP_PORT:-3001}:${APP_CONTAINER_PORT:-3000}"
+    env_file:
+      - .env.deploy
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://vecinohub:vecinohub@db:5432/vecinohub

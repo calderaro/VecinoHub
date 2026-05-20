@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.vercel
+output
+playwright/.cache
+tests
+playwright
+docs
+drizzle/meta
+*.log
+.DS_Store
