@@ -69,5 +69,14 @@
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^9.0.7"
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
