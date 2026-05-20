@@ -21,4 +21,4 @@ ENV NODE_ENV=production
 EXPOSE 3000
 
 # Run pending migrations, then start Next.js
-CMD ["sh", "-c", "pnpm exec drizzle-kit migrate && pnpm exec next start -p 3000"]
+CMD ["sh", "-c", "pnpm exec tsx scripts/migrate.ts && pnpm exec next start -p 3000"]
