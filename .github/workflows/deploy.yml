@@ -41,7 +41,11 @@ jobs:
         working-directory: /opt/dev-stack/apps/${{ env.APP_NAME }}
         run: |
           docker compose -f docker-compose.yml -f docker-compose.deploy.yml build
-          docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --remove-orphans
+          # --force-recreate ensures the app container picks up the new image
+          # even when Docker's image hash is reused; the db container is left
+          # untouched since its image didn't change.
+          docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --remove-orphans --force-recreate app
+          docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d db
 
       - name: Publish Caddy route
         run: |
