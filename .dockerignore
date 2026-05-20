@@ -7,6 +7,5 @@ playwright/.cache
 tests
 playwright
 docs
-drizzle/meta
 *.log
 .DS_Store
