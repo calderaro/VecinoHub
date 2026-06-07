@@ -17,6 +17,7 @@ import {
   FileTextIcon,
   LandmarkIcon,
   PlusIcon,
+  UserPlusIcon,
   UsersIcon,
   VoteIcon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import {
   getFundraisingStats,
 } from "@/services/fundraising";
 import { listNeighborhoodFunds } from "@/services/funds";
+import { getNeighborhoodAccessRequestStats } from "@/services/group-access-requests";
 import { getGroupsStats } from "@/services/groups";
 import { listNeighborhoodMembersPaged, getNeighborhoodById } from "@/services/neighborhoods";
 import {
@@ -157,6 +159,7 @@ export default async function AdminNeighborhoodPage({
     groupUsersInactive,
     groupUsersTotal,
     neighborhoodMembers,
+    accessRequestStats,
   ] = await Promise.all([
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
@@ -192,6 +195,7 @@ export default async function AdminNeighborhoodPage({
       limit: 5,
       offset: 0,
     }),
+    getNeighborhoodAccessRequestStats(serviceContext, { neighborhoodId }),
   ]);
 
   const neighborhoodMemberItems = [...neighborhoodMembers.items]
@@ -362,6 +366,31 @@ export default async function AdminNeighborhoodPage({
               label: t("kpi.users.total"),
               value: groupUsersTotal.total,
               color: "text-stone-900",
+            },
+          ]}
+        />
+
+        <KpiCard
+          href={`${adminBasePath}/requests`}
+          title={tNav("requests")}
+          icon={<UserPlusIcon className="h-4.5 w-4.5 text-emerald-600" />}
+          iconBg="bg-emerald-50"
+          testId="admin-overview-stats-requests"
+          stats={[
+            {
+              label: t("kpi.requests.pending"),
+              value: accessRequestStats.pending,
+              color: "text-amber-600",
+            },
+            {
+              label: t("kpi.requests.approved"),
+              value: accessRequestStats.approved,
+              color: "text-teal-600",
+            },
+            {
+              label: t("kpi.requests.rejected"),
+              value: accessRequestStats.rejected,
+              color: "text-red-500",
             },
           ]}
         />

@@ -222,7 +222,8 @@
       "funds": "Funds",
       "resources": "Resources",
       "events": "Events",
-      "posts": "Posts"
+      "posts": "Posts",
+      "requests": "Access requests"
     },
     "overview": {
       "label": "Administration",
@@ -275,6 +276,11 @@
           "active": "Active",
           "inactive": "Inactive",
           "total": "Total"
+        },
+        "requests": {
+          "pending": "Pending",
+          "approved": "Approved",
+          "rejected": "Rejected"
         }
       },
       "polls": {
@@ -303,6 +309,37 @@
         "viewAll": "Manage neighborhood roles",
         "empty": "No neighborhood admins yet.",
         "emptyHint": "Assign the neighborhood admin role to an existing user to show them here."
+      }
+    },
+    "accessRequests": {
+      "back": "Back to overview",
+      "title": "Access requests",
+      "subtitle": "Review access requests submitted to any group in this neighborhood.",
+      "tabs": {
+        "pending": "Pending",
+        "history": "History"
+      },
+      "pendingEmpty": "No pending access requests for this neighborhood.",
+      "historyEmpty": "No reviewed access requests yet.",
+      "createdOn": "Submitted on {date}",
+      "expiresOn": "Expires on {date}",
+      "reviewedOn": "Reviewed on {date}",
+      "updatedOn": "Updated on {date}",
+      "note": "Note",
+      "approve": "Approve",
+      "approving": "Approving...",
+      "reject": "Reject",
+      "rejecting": "Rejecting...",
+      "statuses": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "toasts": {
+        "approved": "Access request approved.",
+        "rejected": "Access request rejected."
       }
     },
     "resources": {

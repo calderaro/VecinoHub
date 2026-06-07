@@ -22,6 +22,9 @@ async function loginWithCredentials(page: Page, accountKey: SeededAccountKey) {
   await page.getByTestId(authSelectors.loginEmail).fill(account.email);
   await page.getByTestId(authSelectors.loginPassword).fill(account.password);
   await page.getByTestId(authSelectors.loginSubmit).click();
+  // Wait for the post-login redirect to complete before returning so callers
+  // that immediately navigate don't race the still-unauthenticated session.
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 }
 
 async function signOutFromPage(page: Page) {

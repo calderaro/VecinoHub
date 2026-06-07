@@ -27,6 +27,7 @@
 - Create and manage resource definitions, weekly availability, rules, and blackout windows in their neighborhoods.
 - Manage group memberships and group roles in neighborhood groups.
 - Manage group invites in neighborhood groups.
+- Review (read, approve, reject) group access requests across all groups in their neighborhood, including the neighborhood-wide requests screen and its aggregate counts.
 - Manage neighborhood membership role/status in their neighborhood.
 - Cannot create neighborhoods.
 - Cannot assign `platform_admin` role.
@@ -72,5 +73,6 @@
   - invite: group invite neighborhood must match the target group neighborhood, and invite acceptance must require an email match with the signed-in user
   - access request create: target group must belong to an active neighborhood, requester must be authenticated, and request creation must not create access directly
   - access request review: only group/neighborhood/platform managers within scope may approve or reject, and approval must activate group membership plus synchronized resident neighborhood membership
+  - access request neighborhood read: the neighborhood-wide request listing and its aggregate counts require an active `neighborhood_admin` membership for that specific neighborhood (or platform admin)
   - leave group: the actor may only leave their own active membership, and the final active `group_admin` in a group cannot leave
 - tRPC routers must map `ServiceError` only; never leak raw errors.
