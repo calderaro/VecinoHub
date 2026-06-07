@@ -13,7 +13,7 @@ import {
 } from "@/db/schema";
 
 import { ServiceError } from "./errors";
-import { requireGroupAdminOrAdmin } from "./guards";
+import { requireGroupAdminOrAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
 import { ensureResidentNeighborhoodMembership } from "./resident-neighborhoods";
 import type { ServiceContext } from "./types";
 import { idSchema } from "./validators";
@@ -40,6 +40,10 @@ const requestIdSchema = z.object({
 
 const groupAccessRequestListSchema = z.object({
   groupId: idSchema,
+});
+
+const neighborhoodAccessRequestListSchema = z.object({
+  neighborhoodId: idSchema,
 });
 
 type GroupAccessRequestRecord = typeof groupAccessRequests.$inferSelect;
@@ -346,6 +350,49 @@ export async function listGroupAccessRequests(
     .from(groupAccessRequests)
     .innerJoin(users, eq(users.id, groupAccessRequests.requestedBy))
     .where(eq(groupAccessRequests.groupId, groupId))
+    .orderBy(desc(groupAccessRequests.updatedAt), desc(groupAccessRequests.createdAt));
+
+  const resolvedRows = rows.map((request) => mapEffectiveGroupAccessRequestStatus(request, now));
+  const pending = resolvedRows
+    .filter((request) => request.status === "pending")
+    .sort((left, right) => left.expiresAt.getTime() - right.expiresAt.getTime());
+  const history = resolvedRows
+    .filter((request) => request.status !== "pending")
+    .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime());
+
+  return {
+    pending,
+    history,
+  };
+}
+
+export async function listNeighborhoodAccessRequests(
+  ctx: ServiceContext,
+  input: z.input<typeof neighborhoodAccessRequestListSchema>
+) {
+  const { neighborhoodId } = neighborhoodAccessRequestListSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+  const now = new Date();
+
+  const rows = await db
+    .select({
+      id: groupAccessRequests.id,
+      groupId: groupAccessRequests.groupId,
+      groupName: groups.name,
+      requestedBy: groupAccessRequests.requestedBy,
+      requesterName: users.name,
+      requesterEmail: users.email,
+      status: groupAccessRequests.status,
+      note: groupAccessRequests.note,
+      expiresAt: groupAccessRequests.expiresAt,
+      createdAt: groupAccessRequests.createdAt,
+      updatedAt: groupAccessRequests.updatedAt,
+      reviewedAt: groupAccessRequests.reviewedAt,
+    })
+    .from(groupAccessRequests)
+    .innerJoin(groups, eq(groups.id, groupAccessRequests.groupId))
+    .innerJoin(users, eq(users.id, groupAccessRequests.requestedBy))
+    .where(eq(groupAccessRequests.neighborhoodId, neighborhoodId))
     .orderBy(desc(groupAccessRequests.updatedAt), desc(groupAccessRequests.createdAt));
 
   const resolvedRows = rows.map((request) => mapEffectiveGroupAccessRequestStatus(request, now));

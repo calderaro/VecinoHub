@@ -6,6 +6,8 @@ type StatusBadgeVariant =
   | "ongoing"
   | "confirmed"
   | "completed"
+  | "approved"
+  | "expired"
   | "draft"
   | "scheduled"
   | "submitted"
@@ -40,6 +42,8 @@ const statusStyles: Record<StatusBadgeVariant, string> = {
   ongoing: "bg-blue-50 text-blue-700 ring-blue-200",
   confirmed: "bg-teal-50 text-teal-700 ring-teal-200",
   completed: "bg-stone-100 text-stone-600 ring-stone-200",
+  approved: "bg-teal-50 text-teal-700 ring-teal-200",
+  expired: "bg-stone-100 text-stone-500 ring-stone-200",
   draft: "bg-amber-50 text-amber-700 ring-amber-200",
   scheduled: "bg-amber-50 text-amber-700 ring-amber-200",
   submitted: "bg-amber-50 text-amber-700 ring-amber-200",

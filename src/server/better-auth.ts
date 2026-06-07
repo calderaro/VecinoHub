@@ -173,7 +173,9 @@ export const auth = betterAuth({
   socialProviders:
     Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   rateLimit: {
-    enabled: true,
+    // Enabled by default; opt out (e.g. for end-to-end test runs that perform
+    // many sign-in/session calls) by setting AUTH_RATE_LIMIT_DISABLED=true.
+    enabled: process.env.AUTH_RATE_LIMIT_DISABLED !== "true",
     window: 60,
     max: 10,
   },

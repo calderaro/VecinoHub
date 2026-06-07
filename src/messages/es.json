@@ -222,7 +222,8 @@
       "funds": "Fondos",
       "resources": "Recursos",
       "events": "Eventos",
-      "posts": "Publicaciones"
+      "posts": "Publicaciones",
+      "requests": "Solicitudes de acceso"
     },
     "overview": {
       "label": "Administración",
@@ -275,6 +276,11 @@
           "active": "Activo",
           "inactive": "Inactivo",
           "total": "Total"
+        },
+        "requests": {
+          "pending": "Pendientes",
+          "approved": "Aprobadas",
+          "rejected": "Rechazadas"
         }
       },
       "polls": {
@@ -303,6 +309,37 @@
         "viewAll": "Administrar roles de colonia",
         "empty": "Todavía no hay administradores de colonia.",
         "emptyHint": "Asigna el rol de admin de colonia a un usuario existente para mostrarlo aquí."
+      }
+    },
+    "accessRequests": {
+      "back": "Volver al resumen",
+      "title": "Solicitudes de acceso",
+      "subtitle": "Revisa las solicitudes de acceso enviadas a cualquier grupo de esta colonia.",
+      "tabs": {
+        "pending": "Pendientes",
+        "history": "Historial"
+      },
+      "pendingEmpty": "No hay solicitudes de acceso pendientes para esta colonia.",
+      "historyEmpty": "Todavía no hay solicitudes revisadas.",
+      "createdOn": "Enviada el {date}",
+      "expiresOn": "Vence el {date}",
+      "reviewedOn": "Revisada el {date}",
+      "updatedOn": "Actualizada el {date}",
+      "note": "Nota",
+      "approve": "Aprobar",
+      "approving": "Aprobando...",
+      "reject": "Rechazar",
+      "rejecting": "Rechazando...",
+      "statuses": {
+        "pending": "Pendiente",
+        "approved": "Aprobada",
+        "rejected": "Rechazada",
+        "cancelled": "Cancelada",
+        "expired": "Vencida"
+      },
+      "toasts": {
+        "approved": "Solicitud de acceso aprobada.",
+        "rejected": "Solicitud de acceso rechazada."
       }
     },
     "resources": {

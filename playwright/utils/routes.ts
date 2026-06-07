@@ -38,6 +38,7 @@ export const appRoutes = {
   adminUsers: (neighborhoodId: string) => `/admin/${neighborhoodId}/users`,
   adminUser: (neighborhoodId: string, userId: string) => `/admin/${neighborhoodId}/users/${userId}`,
   adminMembers: (neighborhoodId: string) => `/admin/${neighborhoodId}/members`,
+  adminRequests: (neighborhoodId: string) => `/admin/${neighborhoodId}/requests`,
   platform: () => "/platform",
   platformNeighborhood: (neighborhoodId: string) => `/platform/${neighborhoodId}`,
   platformUsers: () => "/platform/users",

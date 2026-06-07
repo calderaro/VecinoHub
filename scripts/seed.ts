@@ -77,10 +77,13 @@ async function ensureUser(user: SeedUser) {
     .limit(1);
 
   if (existing.length > 0) {
-    if (!existing[0].username) {
+    if (!existing[0].username || !existing[0].emailVerified) {
       await db
         .update(users)
-        .set({ username: user.username })
+        .set({
+          username: existing[0].username ?? user.username,
+          emailVerified: true,
+        })
         .where(eq(users.id, existing[0].id));
     }
     return existing[0];
@@ -104,12 +107,13 @@ async function ensureUser(user: SeedUser) {
     throw new Error(`Failed to create user ${user.email}`);
   }
 
-  if (!created[0].username) {
-    await db
-      .update(users)
-      .set({ username: user.username })
-      .where(eq(users.id, created[0].id));
-  }
+  await db
+    .update(users)
+    .set({
+      username: created[0].username ?? user.username,
+      emailVerified: true,
+    })
+    .where(eq(users.id, created[0].id));
 
   return created[0];
 }
