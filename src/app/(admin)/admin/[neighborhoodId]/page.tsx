@@ -30,7 +30,7 @@ import {
   getFundraisingStats,
 } from "@/services/fundraising";
 import { listNeighborhoodFunds } from "@/services/funds";
-import { listNeighborhoodAccessRequests } from "@/services/group-access-requests";
+import { getNeighborhoodAccessRequestStats } from "@/services/group-access-requests";
 import { getGroupsStats } from "@/services/groups";
 import { listNeighborhoodMembersPaged, getNeighborhoodById } from "@/services/neighborhoods";
 import {
@@ -159,7 +159,7 @@ export default async function AdminNeighborhoodPage({
     groupUsersInactive,
     groupUsersTotal,
     neighborhoodMembers,
-    accessRequests,
+    accessRequestStats,
   ] = await Promise.all([
     getPollsStats(serviceContext),
     listActivePollsWithParticipation(serviceContext),
@@ -195,15 +195,8 @@ export default async function AdminNeighborhoodPage({
       limit: 5,
       offset: 0,
     }),
-    listNeighborhoodAccessRequests(serviceContext, { neighborhoodId }),
+    getNeighborhoodAccessRequestStats(serviceContext, { neighborhoodId }),
   ]);
-
-  const approvedRequestsCount = accessRequests.history.filter(
-    (request) => request.status === "approved"
-  ).length;
-  const rejectedRequestsCount = accessRequests.history.filter(
-    (request) => request.status === "rejected"
-  ).length;
 
   const neighborhoodMemberItems = [...neighborhoodMembers.items]
     .sort((left, right) => left.name.localeCompare(right.name))
@@ -386,17 +379,17 @@ export default async function AdminNeighborhoodPage({
           stats={[
             {
               label: t("kpi.requests.pending"),
-              value: accessRequests.pending.length,
+              value: accessRequestStats.pending,
               color: "text-amber-600",
             },
             {
               label: t("kpi.requests.approved"),
-              value: approvedRequestsCount,
+              value: accessRequestStats.approved,
               color: "text-teal-600",
             },
             {
               label: t("kpi.requests.rejected"),
-              value: rejectedRequestsCount,
+              value: accessRequestStats.rejected,
               color: "text-red-500",
             },
           ]}

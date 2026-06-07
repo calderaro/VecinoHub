@@ -160,6 +160,11 @@
     - neighborhood role management for neighbors and neighborhood admins.
     - only users with a neighborhood membership appear in the list.
     - assigning a neighborhood role is done through a dialog that asks for an existing user email plus the target role.
+  - `/admin/[neighborhoodId]/requests`
+    - neighborhood-wide review of group access requests across every group in the neighborhood, so admins do not have to open each group separately.
+    - pending and history tabs; each row shows the requester, the target group, the note, and submission/expiry dates.
+    - neighborhood admins and platform admins can approve or reject pending requests inline (reusing the per-group review actions).
+    - reachable from the "Access requests" KPI card on `/admin/[neighborhoodId]`, which surfaces pending/approved/rejected counts.
 
 ## Platform Admin Shell
 - `/platform`

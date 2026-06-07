@@ -76,6 +76,10 @@
 - Approving a request creates or reactivates the requester’s `group_membership` as `group_member`.
 - Approving a request also creates or reactivates the synchronized `neighbor` neighborhood membership.
 - Rejecting a request closes it without creating resident access.
+- `/admin/[neighborhoodId]/requests` lists pending and historical access requests for every group in the neighborhood, each row showing requester, target group, note, and dates.
+- `/admin/[neighborhoodId]/requests` lets neighborhood/platform admins approve or reject pending requests, moving them to the history tab.
+- A neighborhood admin cannot open `/admin/[neighborhoodId]/requests` for a neighborhood they do not manage.
+- The "Access requests" KPI card on `/admin/[neighborhoodId]` links to the requests screen and shows pending/approved/rejected counts derived from a bounded aggregate query (no request rows loaded on the overview).
 - `/dashboard/request-access` shows pending requests separately from request history.
 - `/dashboard/request-access` exposes contextual help for resident access requests and neighborhood join links.
 - `/dashboard/request-access` shows quick-answer cards for the top onboarding questions.

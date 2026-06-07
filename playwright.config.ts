@@ -38,5 +38,10 @@ export default defineConfig({
     stdout: "pipe",
     stderr: "pipe",
     timeout: 120000,
+    // Serial sign-in/sign-out across specs otherwise trips Better Auth's
+    // rate limiter (10 req/60s). Merged onto process.env by Playwright.
+    env: {
+      AUTH_RATE_LIMIT_DISABLED: "true",
+    },
   },
 });

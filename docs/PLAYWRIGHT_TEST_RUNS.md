@@ -479,6 +479,26 @@ Expected:
 - The resident only needs to choose a group and optional note before submitting.
 - The request is created under the correct neighborhood scope.
 
+### Test Run: Neighborhood Admin Reviews Requests From the Neighborhood Screen
+Preconditions:
+- Logged in as a `neighborhood_admin` for the target neighborhood (for local seed data, `ana@vecinohub.local` / Colonia Centro).
+- A second signed-in user account that can submit a request (for local seed data, `luis@vecinohub.local`).
+
+Steps:
+1. As the neighborhood admin, open `/admin/{neighborhoodId}` and click the "Access requests" KPI card.
+2. Verify the `/admin/{neighborhoodId}/requests` screen renders with pending and history tabs.
+3. As the second user, submit a group access request in that neighborhood via `/dashboard/request-access`.
+4. As the neighborhood admin, reopen `/admin/{neighborhoodId}/requests` and find the pending request (listed regardless of which group it targets).
+5. Approve the pending request and verify it leaves the pending tab and appears under history.
+
+Expected:
+- The screen aggregates access requests across every group in the neighborhood, not just one group.
+- Approve/reject act through the same scoped review path as the per-group tab.
+- The overview KPI card reflects pending/approved/rejected counts.
+
+Run note:
+- This flow's e2e (`tests/e2e/admin-access-requests.spec.ts`) requires a local production server (`npm run build` then `npm run start`), not `npm run dev`, and a local database — never the production database. The Playwright `webServer` config sets `AUTH_RATE_LIMIT_DISABLED=true` so the serial sign-in/sign-out cycles do not trip the auth rate limiter.
+
 ## Feature: Dashboard Localization
 
 ### Test Run: Neighbor Dashboard Switches Between Spanish and English

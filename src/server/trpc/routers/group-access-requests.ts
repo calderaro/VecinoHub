@@ -6,7 +6,6 @@ import {
   createGroupAccessRequest,
   listGroupAccessRequests,
   listMyGroupAccessRequests,
-  listNeighborhoodAccessRequests,
   listRequestableGroupsForNeighborhood,
   lookupNeighborhoodForAccessRequest,
   rejectGroupAccessRequest,
@@ -69,15 +68,6 @@ export const groupAccessRequestsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         return await listGroupAccessRequests(getServiceContext(ctx), input);
-      } catch (error) {
-        handleServiceError(error);
-      }
-    }),
-  listForNeighborhood: protectedProcedure
-    .input(z.object({ neighborhoodId: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        return await listNeighborhoodAccessRequests(getServiceContext(ctx), input);
       } catch (error) {
         handleServiceError(error);
       }

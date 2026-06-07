@@ -12,7 +12,6 @@ test.describe("neighborhood access requests screen", () => {
   }) => {
     test.setTimeout(60_000);
     await loginAs("centroAdmin");
-    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 
     await page.goto(appRoutes.admin());
     await page
@@ -45,7 +44,6 @@ test.describe("neighborhood access requests screen", () => {
     const groupName = disposableLabel("Neighborhood Request Group");
 
     await loginAs("centroAdmin");
-    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
     await page.goto(appRoutes.admin());
     const neighborhoodCard = page
       .locator('[data-testid^="admin-neighborhood-card-"]')
@@ -63,7 +61,6 @@ test.describe("neighborhood access requests screen", () => {
     await signOut();
 
     await loginAs("surAdmin");
-    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
     await page.goto(appRoutes.dashboardRequestAccess());
 
     await page.getByTestId("request-access-open-dialog").click();
@@ -86,7 +83,6 @@ test.describe("neighborhood access requests screen", () => {
     await signOut();
 
     await loginAs("centroAdmin");
-    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
     await page.goto(appRoutes.adminRequests(neighborhoodId));
 
     await expect(page.getByTestId("admin-requests-root")).toBeVisible();

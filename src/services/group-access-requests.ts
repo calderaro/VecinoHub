@@ -409,6 +409,34 @@ export async function listNeighborhoodAccessRequests(
   };
 }
 
+export async function getNeighborhoodAccessRequestStats(
+  ctx: ServiceContext,
+  input: z.input<typeof neighborhoodAccessRequestListSchema>
+) {
+  const { neighborhoodId } = neighborhoodAccessRequestListSchema.parse(input);
+  await requireNeighborhoodAdminOrPlatform(ctx, neighborhoodId);
+
+  // Aggregate in SQL so the admin overview never loads request rows (and their
+  // requester PII) just to render KPI counts. Pending excludes expired requests,
+  // mirroring getEffectiveGroupAccessRequestStatus.
+  const rows = await db
+    .select({
+      pending: sql<number>`count(*) filter (where ${groupAccessRequests.status} = 'pending' and ${groupAccessRequests.expiresAt} > now())`,
+      approved: sql<number>`count(*) filter (where ${groupAccessRequests.status} = 'approved')`,
+      rejected: sql<number>`count(*) filter (where ${groupAccessRequests.status} = 'rejected')`,
+    })
+    .from(groupAccessRequests)
+    .where(eq(groupAccessRequests.neighborhoodId, neighborhoodId));
+
+  const row = rows[0];
+
+  return {
+    pending: Number(row?.pending ?? 0),
+    approved: Number(row?.approved ?? 0),
+    rejected: Number(row?.rejected ?? 0),
+  };
+}
+
 export async function createGroupAccessRequest(
   ctx: ServiceContext,
   input: z.input<typeof createGroupAccessRequestSchema>
