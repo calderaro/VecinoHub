@@ -733,41 +733,6 @@ export async function getResidentCampaignDetail(
   return { ...campaign, contributions };
 }
 
-export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-  const openCampaigns = await db
-    .select()
-    .from(fundraisingCampaigns)
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(fundraisingCampaigns.status, "open")
-        : and(
-            eq(fundraisingCampaigns.status, "open"),
-            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
-          )
-    );
-
-  if (openCampaigns.length === 0) {
-    return [];
-  }
-
-  const campaignIds = openCampaigns.map((campaign) => campaign.id);
-  const contributionCounts = await db
-    .select({ campaignId: fundraisingContributions.campaignId, total: count() })
-    .from(fundraisingContributions)
-    .where(inArray(fundraisingContributions.campaignId, campaignIds))
-    .groupBy(fundraisingContributions.campaignId);
-
-  const counts = new Map(
-    contributionCounts.map((row) => [row.campaignId, Number(row.total)])
-  );
-
-  return openCampaigns.map((campaign) => ({
-    ...campaign,
-    contributionCount: counts.get(campaign.id) ?? 0,
-  }));
-}
-
 const campaignParticipationSchema = z.object({ campaignId: idSchema });
 
 export async function getCampaignParticipation(
@@ -912,40 +877,4 @@ export async function listOpenCampaignsWithProgress(ctx: ServiceContext) {
       progress: Math.min(progress, 100),
     };
   });
-}
-
-export async function listPendingContributions(ctx: ServiceContext, limit = 10) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-
-  const rows = await db
-    .select({
-      contribution: fundraisingContributions,
-      groupName: groups.name,
-      submitterName: users.name,
-      campaignTitle: fundraisingCampaigns.title,
-    })
-    .from(fundraisingContributions)
-    .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
-    .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
-    .innerJoin(
-      fundraisingCampaigns,
-      eq(fundraisingContributions.campaignId, fundraisingCampaigns.id)
-    )
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(fundraisingContributions.status, "submitted")
-        : and(
-            eq(fundraisingContributions.status, "submitted"),
-            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
-          )
-    )
-    .orderBy(fundraisingContributions.createdAt)
-    .limit(limit);
-
-  return rows.map((row) => ({
-    ...row.contribution,
-    groupName: row.groupName,
-    submitterName: row.submitterName,
-    campaignTitle: row.campaignTitle,
-  }));
 }

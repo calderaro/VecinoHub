@@ -592,25 +592,6 @@ export async function getPollVoteCounts(
   return new Map(rows.map((row) => [row.pollId, Number(row.total)]));
 }
 
-export async function listPollsWithOptions(ctx: ServiceContext) {
-  const pollList = await listPolls(ctx);
-  const pollIds = pollList.map((poll) => poll.id);
-
-  if (pollIds.length === 0) {
-    return [];
-  }
-
-  const options = await db
-    .select()
-    .from(pollOptions)
-    .where(inArray(pollOptions.pollId, pollIds));
-
-  return pollList.map((poll) => ({
-    ...poll,
-    options: options.filter((option) => option.pollId === poll.id),
-  }));
-}
-
 const getPollSchema = z.object({ pollId: idSchema });
 
 export async function getPollWithOptions(
@@ -722,41 +703,6 @@ export async function getPollParticipation(
   };
 }
 
-export async function listOpenPollsWithVoteCounts(ctx: ServiceContext) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-  const openPolls = await db
-    .select()
-    .from(polls)
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(polls.status, "active")
-        : and(
-            eq(polls.status, "active"),
-            inArray(polls.neighborhoodId, neighborhoodAdminIds ?? [])
-          )
-    );
-
-  if (openPolls.length === 0) {
-    return [];
-  }
-
-  const pollIds = openPolls.map((poll) => poll.id);
-  const voteCounts = await db
-    .select({ pollId: votes.pollId, total: count() })
-    .from(votes)
-    .where(inArray(votes.pollId, pollIds))
-    .groupBy(votes.pollId);
-
-  const counts = new Map(
-    voteCounts.map((row) => [row.pollId, Number(row.total)])
-  );
-
-  return openPolls.map((poll) => ({
-    ...poll,
-    voteCount: counts.get(poll.id) ?? 0,
-  }));
-}
-
 export async function getPollsStats(ctx: ServiceContext) {
   const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
   const scopeFilter = isPlatformAdmin(ctx)
@@ -783,29 +729,6 @@ export async function getPollsStats(ctx: ServiceContext) {
     drafts: Number(draftResult[0]?.value ?? 0),
     closed: Number(closedResult[0]?.value ?? 0),
   };
-}
-
-export async function listDraftPolls(ctx: ServiceContext, limit = 6) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-
-  const rows = await db
-    .select({
-      poll: polls,
-      creatorName: users.name,
-    })
-    .from(polls)
-    .leftJoin(users, eq(polls.createdBy, users.id))
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(polls.status, "draft")
-        : and(eq(polls.status, "draft"), inArray(polls.neighborhoodId, neighborhoodAdminIds ?? []))
-    )
-    .limit(limit);
-
-  return rows.map((row) => ({
-    ...row.poll,
-    creatorName: row.creatorName,
-  }));
 }
 
 export async function listActivePollsWithParticipation(ctx: ServiceContext) {

@@ -377,27 +377,3 @@ export async function listRecentPosts(ctx: ServiceContext, limit = 6) {
     creatorName: row.creatorName,
   }));
 }
-
-export async function listDraftPosts(ctx: ServiceContext, limit = 6) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-
-  const rows = await db
-    .select({
-      post: posts,
-      creatorName: users.name,
-    })
-    .from(posts)
-    .leftJoin(users, eq(posts.createdBy, users.id))
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(posts.status, "draft")
-        : and(eq(posts.status, "draft"), inArray(posts.neighborhoodId, neighborhoodAdminIds ?? []))
-    )
-    .orderBy(desc(posts.createdAt))
-    .limit(limit);
-
-  return rows.map((row) => ({
-    ...row.post,
-    creatorName: row.creatorName,
-  }));
-}

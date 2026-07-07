@@ -13,10 +13,6 @@ const mailFrom =
 let warnedMissingSmtp = false;
 let smtpTransporter: nodemailer.Transporter | null = null;
 
-export function getMailFrom() {
-  return mailFrom;
-}
-
 export function getAppBaseUrl() {
   return (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }

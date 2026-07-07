@@ -746,30 +746,6 @@ export async function getNeighborhoodById(
   };
 }
 
-const slugSchema = z.object({ slug: z.string().trim().min(1) });
-
-export async function getNeighborhoodBySlug(
-  ctx: ServiceContext,
-  input: z.input<typeof slugSchema>
-) {
-  const { slug } = slugSchema.parse(input);
-  const row = await db
-    .select()
-    .from(neighborhoods)
-    .where(sql`lower(${neighborhoods.slug}) = lower(${slug})`)
-    .limit(1);
-
-  if (!row[0]) {
-    throw new ServiceError("Neighborhood not found", "NOT_FOUND");
-  }
-
-  if (!isPlatformAdmin(ctx)) {
-    await requireNeighborhoodMember(ctx, row[0].id);
-  }
-
-  return row[0];
-}
-
 export async function hasNeighborhoodAdminRole(ctx: ServiceContext) {
   if (isPlatformAdmin(ctx)) {
     return true;
