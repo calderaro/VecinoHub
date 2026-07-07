@@ -1476,6 +1476,7 @@
       "noAvailability": "No hay disponibilidad semanal.",
       "reservations": "Reservas",
       "noReservations": "No hay reservas.",
+      "reserved": "Reservado",
       "unknownGroup": "Grupo no identificado",
       "blocks": "Bloqueos",
       "noBlocks": "No hay bloqueos."

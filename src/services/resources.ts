@@ -7,6 +7,7 @@ import {
   fundGroupCharges,
   groupMemberships,
   groups,
+  neighborhoodMemberships,
   neighborhoods,
   resourceAvailabilityWindows,
   resourceBlocks,
@@ -634,6 +635,7 @@ function buildCalendarEntries(args: {
     reservation: typeof resourceReservations.$inferSelect;
     groupName: string | null;
     requestedByName: string | null;
+    maskDetails?: boolean;
   }>;
   blocks: Array<typeof resourceBlocks.$inferSelect>;
 }) {
@@ -666,12 +668,12 @@ function buildCalendarEntries(args: {
       return [
         {
           id: item.reservation.id,
-          title: item.reservation.title,
+          title: item.maskDetails ? null : item.reservation.title,
           status: item.reservation.status,
           startMinute,
           endMinute,
-          groupName: item.groupName,
-          requestedByName: item.requestedByName,
+          groupName: item.maskDetails ? null : item.groupName,
+          requestedByName: item.maskDetails ? null : item.requestedByName,
         },
       ];
     });
@@ -942,7 +944,7 @@ export async function getResourceCalendar(
     timeZone: record.timeZone,
   });
 
-  const [windows, reservations, blocks] = await Promise.all([
+  const [windows, reservations, blocks, adminRows, callerGroupRows] = await Promise.all([
     getResourceAvailabilityWindows(resourceId),
     db
       .select({
@@ -972,7 +974,40 @@ export async function getResourceCalendar(
         )
       )
       .orderBy(asc(resourceBlocks.startAt)),
+    db
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, ctx.user.id),
+          eq(neighborhoodMemberships.neighborhoodId, record.resource.neighborhoodId),
+          eq(neighborhoodMemberships.role, "neighborhood_admin"),
+          eq(neighborhoodMemberships.status, "active")
+        )
+      )
+      .limit(1),
+    db
+      .select({ groupId: groupMemberships.groupId })
+      .from(groupMemberships)
+      .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+      .where(
+        and(
+          eq(groupMemberships.userId, ctx.user.id),
+          eq(groups.neighborhoodId, record.resource.neighborhoodId),
+          eq(groupMemberships.status, "active")
+        )
+      ),
   ]);
+
+  // Non-admins see other groups' reservations as busy slots only; the booker
+  // name, group, and free-text title are reserved for the reserving group and
+  // neighborhood admins.
+  const canSeeAllDetails = isPlatformAdmin(ctx) || adminRows.length > 0;
+  const callerGroupIds = new Set(callerGroupRows.map((row) => row.groupId));
+  const scopedReservations = reservations.map((item) => ({
+    ...item,
+    maskDetails: !canSeeAllDetails && !callerGroupIds.has(item.reservation.groupId),
+  }));
 
   return {
     resourceId,
@@ -984,7 +1019,7 @@ export async function getResourceCalendar(
       days,
       timeZone: record.timeZone,
       windows,
-      reservations,
+      reservations: scopedReservations,
       blocks,
     }),
   };

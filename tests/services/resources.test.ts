@@ -23,6 +23,7 @@ import {
   cancelResourceReservation,
   createResource,
   createResourceReservation,
+  getResourceCalendar,
 } from "@/services/resources";
 import {
   closeTestDatabase,
@@ -417,6 +418,70 @@ describe("resources service", () => {
       attendeeCount: 4,
     });
     expect(ok?.status).toBe("approved");
+  });
+
+  it("masks other groups' reservation identity on the calendar for non-admins", async () => {
+    const fixtures = await seedResourceFixtures();
+    const reservationDate = formatDateKey(addDays(new Date(), 9));
+    const dayOfWeek = dayOfWeekForDateKey(reservationDate);
+
+    const resource = await createResource(fixtures.adminCtx, {
+      neighborhoodId: fixtures.neighborhoodId,
+      name: "Pool",
+      location: "Back",
+      availabilityWindows: [{ dayOfWeek, startMinute: 540, endMinute: 1320 }],
+      rules: {
+        minAdvanceHours: 1,
+        maxAdvanceDays: 90,
+        minDurationMinutes: 60,
+        maxDurationMinutes: 360,
+        bufferBeforeMinutes: 0,
+        bufferAfterMinutes: 0,
+        maxConcurrentReservations: 1,
+        requireNoDebt: false,
+        lateCancellationCountsAsUsage: false,
+        lateCancellationForfeitsDeposit: false,
+      },
+    });
+
+    // Reservation owned by the OTHER group.
+    await db.insert(resourceReservations).values({
+      id: randomUUID(),
+      resourceId: resource.id,
+      neighborhoodId: fixtures.neighborhoodId,
+      groupId: fixtures.secondGroupId,
+      requestedBy: fixtures.secondResidentId,
+      startAt: new Date(`${reservationDate}T18:00:00.000Z`),
+      endAt: new Date(`${reservationDate}T20:00:00.000Z`),
+      title: "Private party",
+      status: "approved",
+    });
+
+    // A resident of the first group (non-admin) sees the slot as busy only.
+    const residentView = await getResourceCalendar(fixtures.residentCtx, {
+      resourceId: resource.id,
+      fromDate: reservationDate,
+      days: 1,
+    });
+    const residentEntry = residentView.entries
+      .flatMap((e) => e.reservations)
+      .find((r) => r.status === "approved");
+    expect(residentEntry).toBeDefined();
+    expect(residentEntry?.title).toBeNull();
+    expect(residentEntry?.groupName).toBeNull();
+    expect(residentEntry?.requestedByName).toBeNull();
+
+    // A member of the reserving group sees the full details.
+    const ownerView = await getResourceCalendar(fixtures.secondResidentCtx, {
+      resourceId: resource.id,
+      fromDate: reservationDate,
+      days: 1,
+    });
+    const ownerEntry = ownerView.entries
+      .flatMap((e) => e.reservations)
+      .find((r) => r.status === "approved");
+    expect(ownerEntry?.title).toBe("Private party");
+    expect(ownerEntry?.requestedByName).toBe("Resident Two");
   });
 
   it("rejects resident cancellation once the cancellation limit has passed", async () => {
