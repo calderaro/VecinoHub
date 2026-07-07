@@ -428,6 +428,28 @@ describe("funds service", () => {
     expect(movements).toHaveLength(2);
   });
 
+  it("enforces at most one reversal per movement at the database level", async () => {
+    const fixtures = await seedFundFixtures();
+    const sourceId = randomUUID();
+    const makeReversal = () => ({
+      fundId: fixtures.fundId,
+      neighborhoodId: fixtures.neighborhoodId,
+      type: "reversal" as const,
+      entrySide: "debit" as const,
+      amount: "10.00",
+      description: "Reversal",
+      sourceType: "reversal",
+      sourceId,
+      createdBy: fixtures.adminId,
+    });
+
+    await db.insert(fundMovements).values(makeReversal());
+    await expect(db.insert(fundMovements).values(makeReversal())).rejects.toThrow();
+
+    const rows = await db.select().from(fundMovements);
+    expect(rows).toHaveLength(1);
+  });
+
   it("scopes period payment details to the caller's own group but keeps the full dues board", async () => {
     const fixtures = await seedFundFixtures();
 

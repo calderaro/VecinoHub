@@ -323,6 +323,9 @@ mem.public.none(`
     created_at timestamptz NOT NULL DEFAULT now()
   );
 
+  CREATE UNIQUE INDEX fund_movements_reversal_source_unique
+    ON fund_movements (source_id) WHERE type = 'reversal';
+
   CREATE TABLE resources (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     neighborhood_id uuid NOT NULL,

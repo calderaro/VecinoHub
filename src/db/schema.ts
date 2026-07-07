@@ -669,6 +669,11 @@ export const fundMovements = pgTable(
     index("fund_movements_fund_id_idx").on(table.fundId),
     index("fund_movements_neighborhood_id_idx").on(table.neighborhoodId),
     index("fund_movements_effective_at_idx").on(table.effectiveAt),
+    // A movement may be reversed at most once (backs the app-level guard in
+    // reverseFundMovement against concurrent double-reversal).
+    uniqueIndex("fund_movements_reversal_source_unique")
+      .on(table.sourceId)
+      .where(sql`${table.type} = 'reversal'`),
   ]
 );
 

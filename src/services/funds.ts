@@ -1346,10 +1346,9 @@ export async function reverseFundMovement(
   return db.transaction(async (tx) => {
     // A movement may be reversed at most once. Without this guard a
     // double-click/retry (or two admins) inserts multiple opposite entries and
-    // drives the fund balance arbitrarily wrong.
-    // ponytail: app-level check; a partial unique index on
-    // fund_movements(source_id) WHERE type='reversal' would also close the
-    // truly-concurrent double-reversal window.
+    // drives the fund balance arbitrarily wrong. Also enforced at the DB level
+    // by the partial unique index fund_movements_reversal_source_unique
+    // (migration 0018), which closes the truly-concurrent window.
     const existing = await tx
       .select({ id: fundMovements.id })
       .from(fundMovements)

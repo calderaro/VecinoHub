@@ -1289,10 +1289,10 @@ export async function createResourceReservation(
     // Serialize reservation creation per resource so two concurrent requests
     // can't both pass the overlap check and double-book. The row lock is held
     // until commit; a second request blocks here until the first inserts, then
-    // its availability check sees the new row.
-    // ponytail: app-level lock; a tstzrange exclusion constraint on
-    // resource_reservations (WHERE status='approved') would enforce this at the
-    // DB level too.
+    // its availability check sees the new row. (A tstzrange exclusion constraint
+    // can't replace this: maxConcurrentReservations may be >1 and buffers vary
+    // per resource, so DB-level raw-overlap exclusion would reject legitimate
+    // bookings — the lock is the correct durable fix.)
     await tx
       .select({ id: resources.id })
       .from(resources)
