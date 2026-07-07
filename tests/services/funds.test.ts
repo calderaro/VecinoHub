@@ -32,6 +32,7 @@ import {
   createNeighborhoodFund,
   getResidentFundDashboard,
   rejectFundPayment,
+  reverseFundMovement,
   submitFundPayment,
 } from "@/services/funds";
 
@@ -352,5 +353,77 @@ describe("funds service", () => {
     expect(storedCharge?.status).toBe("unpaid");
     expect(allocations).toHaveLength(0);
     expect(movements).toHaveLength(0);
+  });
+
+  it("accumulates amountPaid across multiple confirmed payments on the same charge", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+    const adminCtx = createCtx(fixtures.adminId, {
+      role: "admin",
+      activeNeighborhoodId: fixtures.neighborhoodId,
+    });
+
+    const first = await submitFundPayment(residentCtx, {
+      fundId: fixtures.fundId,
+      groupId: fixtures.groupId,
+      groupChargeId: fixtures.groupChargeId,
+      method: "cash",
+      amount: "40.00",
+      paidAt: new Date("2026-03-10T00:00:00.000Z"),
+    });
+    await confirmFundPayment(adminCtx, { paymentId: first.id });
+
+    let [charge] = await db.select().from(fundGroupCharges);
+    expect(Number(charge?.amountPaid ?? 0)).toBe(40);
+
+    const second = await submitFundPayment(residentCtx, {
+      fundId: fixtures.fundId,
+      groupId: fixtures.groupId,
+      groupChargeId: fixtures.groupChargeId,
+      method: "cash",
+      amount: "60.00",
+      paidAt: new Date("2026-03-12T00:00:00.000Z"),
+    });
+    await confirmFundPayment(adminCtx, { paymentId: second.id });
+
+    [charge] = await db.select().from(fundGroupCharges);
+    expect(Number(charge?.amountPaid ?? 0)).toBe(100);
+    expect(charge?.status).toBe("paid");
+  });
+
+  it("reverses a movement once and rejects reversing it again or reversing a reversal", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+    const adminCtx = createCtx(fixtures.adminId, {
+      role: "admin",
+      activeNeighborhoodId: fixtures.neighborhoodId,
+    });
+
+    const submission = await submitFundPayment(residentCtx, {
+      fundId: fixtures.fundId,
+      groupId: fixtures.groupId,
+      groupChargeId: fixtures.groupChargeId,
+      method: "cash",
+      amount: "100.00",
+      paidAt: new Date("2026-03-15T00:00:00.000Z"),
+    });
+    await confirmFundPayment(adminCtx, { paymentId: submission.id });
+
+    const [movement] = await db.select().from(fundMovements);
+
+    const reversal = await reverseFundMovement(adminCtx, { movementId: movement.id });
+    expect(reversal?.type).toBe("reversal");
+    expect(reversal?.entrySide).toBe("debit");
+
+    await expect(
+      reverseFundMovement(adminCtx, { movementId: movement.id })
+    ).rejects.toMatchObject({ message: "This movement has already been reversed" });
+
+    await expect(
+      reverseFundMovement(adminCtx, { movementId: reversal!.id })
+    ).rejects.toMatchObject({ message: "A reversal cannot be reversed" });
+
+    const movements = await db.select().from(fundMovements);
+    expect(movements).toHaveLength(2);
   });
 });
