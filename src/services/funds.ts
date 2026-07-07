@@ -833,6 +833,27 @@ export async function getFundPeriodDetail(
   const fund = await requireFundAccess(ctx, period.fundId);
   const canModerate = await hasNeighborhoodAdminScope(ctx, fund.neighborhoodId);
 
+  // The per-group dues board (charges) stays neighborhood-visible, but a
+  // non-admin resident may only see the individual payment details (amount,
+  // method, date) of their own group(s).
+  const visibleGroupIds = canModerate
+    ? null
+    : new Set(
+        (
+          await db
+            .select({ groupId: groupMemberships.groupId })
+            .from(groupMemberships)
+            .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+            .where(
+              and(
+                eq(groupMemberships.userId, ctx.user.id),
+                eq(groups.neighborhoodId, fund.neighborhoodId),
+                eq(groupMemberships.status, "active")
+              )
+            )
+        ).map((row) => row.groupId)
+      );
+
   const [charges, payments] = await Promise.all([
     db
       .select({
@@ -869,20 +890,22 @@ export async function getFundPeriodDetail(
       .where(eq(fundGroupCharges.periodId, periodId)),
   ]);
 
-  const sanitizedPayments = payments.map((payment) =>
-    canModerate
-      ? payment
-      : {
-          id: payment.id,
-          groupChargeId: payment.groupChargeId,
-          groupId: payment.groupId,
-          groupName: payment.groupName,
-          amount: payment.amount,
-          status: payment.status,
-          method: payment.method,
-          paidAt: payment.paidAt,
-        }
-  );
+  const sanitizedPayments = payments
+    .filter((payment) => visibleGroupIds === null || visibleGroupIds.has(payment.groupId))
+    .map((payment) =>
+      canModerate
+        ? payment
+        : {
+            id: payment.id,
+            groupChargeId: payment.groupChargeId,
+            groupId: payment.groupId,
+            groupName: payment.groupName,
+            amount: payment.amount,
+            status: payment.status,
+            method: payment.method,
+            paidAt: payment.paidAt,
+          }
+    );
 
   return {
     ...period,
