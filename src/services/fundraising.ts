@@ -316,6 +316,7 @@ export async function deleteContribution(
       id: fundraisingContributions.id,
       submittedBy: fundraisingContributions.submittedBy,
       campaignId: fundraisingContributions.campaignId,
+      status: fundraisingContributions.status,
     })
     .from(fundraisingContributions)
     .where(eq(fundraisingContributions.id, contributionId))
@@ -326,9 +327,13 @@ export async function deleteContribution(
   }
 
   const campaignScope = await getCampaignScope(contribution[0].campaignId);
-  const isOwner = contribution[0].submittedBy === ctx.user.id;
+  // Owners may remove only their own still-submitted contribution; deleting a
+  // confirmed/rejected one changes the campaign's live raised total, so it
+  // requires admin scope.
+  const ownerCanDelete =
+    contribution[0].submittedBy === ctx.user.id && contribution[0].status === "submitted";
 
-  if (!isOwner && !isPlatformAdmin(ctx)) {
+  if (!ownerCanDelete && !isPlatformAdmin(ctx)) {
     if (!campaignScope.neighborhoodId) {
       throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
     }
