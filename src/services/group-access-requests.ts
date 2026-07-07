@@ -559,7 +559,12 @@ export async function cancelGroupAccessRequest(
       cancelledAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(groupAccessRequests.id, actionableRequest.id))
+    .where(
+      and(
+        eq(groupAccessRequests.id, actionableRequest.id),
+        eq(groupAccessRequests.status, "pending")
+      )
+    )
     .returning();
 
   if (!updated[0]) {
@@ -581,6 +586,17 @@ export async function approveGroupAccessRequest(
   const actionableRequest = await ensureGroupAccessRequestIsActionable(request);
   await requireGroupAdminOrAdmin(ctx, actionableRequest.groupId);
   const requestContext = await loadGroupAccessRequestContext(actionableRequest);
+
+  // Re-validate the creation-time preconditions before granting membership: the
+  // neighborhood may have been deactivated (or the requester deactivated)
+  // between the request and this approval.
+  if (requestContext.neighborhoodStatus !== "active") {
+    throw new ServiceError("This neighborhood is not active", "FORBIDDEN");
+  }
+  const requester = await getRequesterProfile(actionableRequest.requestedBy);
+  if (requester.status !== "active") {
+    throw new ServiceError("The requester is not active", "FORBIDDEN");
+  }
 
   await db.transaction(async (tx) => {
     const existingGroupMembership = await tx
@@ -625,7 +641,10 @@ export async function approveGroupAccessRequest(
       actionableRequest.requestedBy
     );
 
-    await tx
+    // Guard the transition on status inside the txn: if the request was
+    // cancelled/approved concurrently between the pre-check and here, this
+    // matches zero rows and the throw rolls back the membership writes above.
+    const finalized = await tx
       .update(groupAccessRequests)
       .set({
         status: "approved",
@@ -634,7 +653,17 @@ export async function approveGroupAccessRequest(
         approvedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(groupAccessRequests.id, actionableRequest.id));
+      .where(
+        and(
+          eq(groupAccessRequests.id, actionableRequest.id),
+          eq(groupAccessRequests.status, "pending")
+        )
+      )
+      .returning({ id: groupAccessRequests.id });
+
+    if (!finalized[0]) {
+      throw new ServiceError("Request is no longer pending", "INVALID");
+    }
   });
 
   return {
@@ -662,7 +691,12 @@ export async function rejectGroupAccessRequest(
       rejectedAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(groupAccessRequests.id, actionableRequest.id))
+    .where(
+      and(
+        eq(groupAccessRequests.id, actionableRequest.id),
+        eq(groupAccessRequests.status, "pending")
+      )
+    )
     .returning();
 
   if (!updated[0]) {

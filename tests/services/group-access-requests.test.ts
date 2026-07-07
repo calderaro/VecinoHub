@@ -365,4 +365,35 @@ describe("group access request services", () => {
     expect(storedRequest[0]?.note).toBe("New residency note");
     expect(storedRequest[0]?.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
+
+  it("rejects approving a request into a neighborhood deactivated after the request, creating no membership", async () => {
+    const { managerId, requesterId, neighborhoodId, groupId } =
+      await seedNeighborhoodWithGroup();
+
+    const requestId = randomUUID();
+    await db.insert(groupAccessRequests).values({
+      id: requestId,
+      groupId,
+      neighborhoodId,
+      requestedBy: requesterId,
+      status: "pending",
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+    });
+
+    // Neighborhood deactivated between request and approval.
+    await db
+      .update(neighborhoods)
+      .set({ status: "inactive" })
+      .where(eq(neighborhoods.id, neighborhoodId));
+
+    await expect(
+      approveGroupAccessRequest(createCtx(managerId), { requestId })
+    ).rejects.toMatchObject({ message: "This neighborhood is not active" });
+
+    const memberships = await db
+      .select()
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, requesterId));
+    expect(memberships).toHaveLength(0);
+  });
 });
