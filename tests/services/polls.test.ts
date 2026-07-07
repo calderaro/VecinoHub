@@ -18,7 +18,7 @@ vi.mock("@/db", async () => {
   return { db: testDb };
 });
 
-import { voteInPoll } from "@/services/polls";
+import { updatePoll, voteInPoll } from "@/services/polls";
 import {
   closeTestDatabase,
   ensureTestDatabase,
@@ -189,5 +189,33 @@ describe("poll vote integrity", () => {
 
     expect(storedVotes).toHaveLength(1);
     expect(storedVotes[0]?.optionId).toBe(validOptionId);
+  });
+
+  it("blocks returning a poll to draft while it still has votes", async () => {
+    const { userId, groupId, pollId, validOptionId } = await seedVotingFixtures();
+    const adminCtx: ServiceContext = {
+      user: { id: randomUUID(), role: "admin", activeNeighborhoodId: null },
+    };
+
+    await voteInPoll(createCtx(userId), { pollId, groupId, optionId: validOptionId });
+
+    await expect(
+      updatePoll(adminCtx, { pollId, status: "draft" })
+    ).rejects.toMatchObject({
+      message: "Reset the poll to return it to draft; it still has votes",
+    });
+
+    const stored = (await db.select().from(polls)).find((p) => p.id === pollId);
+    expect(stored?.status).toBe("active");
+  });
+
+  it("allows returning a poll to draft when it has no votes", async () => {
+    const { pollId } = await seedVotingFixtures();
+    const adminCtx: ServiceContext = {
+      user: { id: randomUUID(), role: "admin", activeNeighborhoodId: null },
+    };
+
+    const updated = await updatePoll(adminCtx, { pollId, status: "draft" });
+    expect(updated?.status).toBe("draft");
   });
 });

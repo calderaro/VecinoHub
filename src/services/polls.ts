@@ -154,6 +154,24 @@ export async function updatePoll(
   const { pollId, ...data } = updatePollSchema.parse(input);
   await requirePollAdminScope(ctx, pollId);
 
+  // Draft is the only state where options are editable/deletable
+  // (requireDraftPoll). Letting a voted poll return to draft would allow option
+  // edits/removals that orphan existing votes. resetPoll is the sanctioned path
+  // back to draft — it clears the votes first.
+  if (data.status === "draft") {
+    const [voteRow] = await db
+      .select({ value: count() })
+      .from(votes)
+      .where(eq(votes.pollId, pollId));
+
+    if ((voteRow?.value ?? 0) > 0) {
+      throw new ServiceError(
+        "Reset the poll to return it to draft; it still has votes",
+        "INVALID"
+      );
+    }
+  }
+
   const updated = await db
     .update(polls)
     .set(data)
