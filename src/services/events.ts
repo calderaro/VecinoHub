@@ -66,11 +66,11 @@ async function requireEventAdminScope(ctx: ServiceContext, eventId: string) {
 const createEventSchema = z
   .object({
     neighborhoodId: idSchema.optional(),
-    title: z.string().min(1),
-    description: z.string().optional(),
+    title: z.string().min(1).max(200),
+    description: z.string().max(5000).optional(),
     startsAt: z.date(),
     endsAt: z.date().optional(),
-    location: z.string().optional(),
+    location: z.string().max(300).optional(),
   })
   .refine((data) => !data.endsAt || data.endsAt >= data.startsAt, {
     message: "Event end time must be after the start time.",
@@ -121,11 +121,11 @@ export async function createEvent(
 const updateEventSchema = z
   .object({
     eventId: idSchema,
-    title: z.string().min(1).optional(),
-    description: z.string().optional(),
+    title: z.string().min(1).max(200).optional(),
+    description: z.string().max(5000).optional(),
     startsAt: z.date().optional(),
     endsAt: z.date().nullable().optional(),
-    location: z.string().optional(),
+    location: z.string().max(300).optional(),
   })
   .refine(
     (data) =>

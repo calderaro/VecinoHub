@@ -77,8 +77,8 @@ async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
 
 const createCampaignSchema = z.object({
   neighborhoodId: idSchema.optional(),
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(5000).optional(),
   goalAmount: z.string().min(1),
   dueDate: z.date().optional(),
 });
@@ -139,8 +139,8 @@ export async function createCampaign(
 
 const updateCampaignSchema = z.object({
   campaignId: idSchema,
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(5000).optional(),
   goalAmount: z.string().min(1).optional(),
   dueDate: z.date().optional(),
   status: z.enum(["open", "closed"]).optional(),
