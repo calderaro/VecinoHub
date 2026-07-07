@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const headersMock = vi.fn();
+const cookiesMock = vi.fn();
 const getSessionMock = vi.fn();
 const dbLimitMock = vi.fn();
 const dbWhereMock = vi.fn(() => ({ limit: dbLimitMock }));
@@ -9,6 +10,7 @@ const dbSelectMock = vi.fn(() => ({ from: dbFromMock }));
 
 vi.mock("next/headers", () => ({
   headers: headersMock,
+  cookies: cookiesMock,
 }));
 
 vi.mock("@/server/better-auth", () => ({
@@ -38,6 +40,14 @@ describe("server auth session enforcement", () => {
 
         return null;
       }),
+    });
+
+    cookiesMock.mockResolvedValue({
+      get: vi.fn((name: string) =>
+        name === "vh_active_neighborhood"
+          ? { value: "00000000-0000-4000-8000-0000000000aa" }
+          : undefined
+      ),
     });
   });
 

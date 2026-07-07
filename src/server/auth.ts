@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -24,11 +24,7 @@ export async function getSession(): Promise<Session> {
   const headerStore = await headers();
   const cookie = headerStore.get("cookie");
   const cookieNeighborhoodId =
-    cookie
-      ?.split(";")
-      .map((entry) => entry.trim())
-      .find((entry) => entry.startsWith("vh_active_neighborhood="))
-      ?.split("=")[1] ?? null;
+    (await cookies()).get("vh_active_neighborhood")?.value ?? null;
   const referer = headerStore.get("referer");
   const refererNeighborhoodId =
     referer?.match(/\/admin\/([0-9a-fA-F-]{36})(?:\/|$)/)?.[1] ?? null;
