@@ -353,6 +353,72 @@ describe("resources service", () => {
     });
   });
 
+  it("enforces the turnover buffer against a reservation that does not raw-overlap", async () => {
+    const fixtures = await seedResourceFixtures();
+    const reservationDate = formatDateKey(addDays(new Date(), 14));
+    const dayOfWeek = dayOfWeekForDateKey(reservationDate);
+
+    // America/Mexico_City is UTC-6, so local 11:20-12:00 == 17:20-18:00 UTC.
+    const resource = await createResource(fixtures.adminCtx, {
+      neighborhoodId: fixtures.neighborhoodId,
+      name: "Court",
+      location: "Sports area",
+      availabilityWindows: [{ dayOfWeek, startMinute: 540, endMinute: 1320 }],
+      rules: {
+        minAdvanceHours: 24,
+        maxAdvanceDays: 90,
+        minDurationMinutes: 30,
+        maxDurationMinutes: 360,
+        bufferBeforeMinutes: 15,
+        bufferAfterMinutes: 15,
+        maxConcurrentReservations: 1,
+        requireNoDebt: false,
+        lateCancellationCountsAsUsage: false,
+        lateCancellationForfeitsDeposit: false,
+      },
+    });
+
+    await db.insert(resourceReservations).values({
+      id: randomUUID(),
+      resourceId: resource.id,
+      neighborhoodId: fixtures.neighborhoodId,
+      groupId: fixtures.secondGroupId,
+      requestedBy: fixtures.secondResidentId,
+      startAt: new Date(`${reservationDate}T17:20:00.000Z`),
+      endAt: new Date(`${reservationDate}T18:00:00.000Z`),
+      title: "Already booked",
+      status: "approved",
+    });
+
+    // Request 10:00-11:00 local: ends 20 min before the existing 11:20 start,
+    // less than the 30 min of combined turnover buffer -> must be rejected even
+    // though the raw windows don't overlap.
+    await expect(
+      createResourceReservation(fixtures.residentCtx, {
+        resourceId: resource.id,
+        groupId: fixtures.groupId,
+        date: reservationDate,
+        startMinute: 600,
+        endMinute: 660,
+        title: "Too close",
+        attendeeCount: 4,
+      })
+    ).rejects.toMatchObject({ message: "The requested slot is no longer available" });
+
+    // Request 10:00-10:45 local: 35 min gap to the existing 11:20 start, beyond
+    // the buffer -> allowed.
+    const ok = await createResourceReservation(fixtures.residentCtx, {
+      resourceId: resource.id,
+      groupId: fixtures.groupId,
+      date: reservationDate,
+      startMinute: 600,
+      endMinute: 645,
+      title: "Comfortable gap",
+      attendeeCount: 4,
+    });
+    expect(ok?.status).toBe("approved");
+  });
+
   it("rejects resident cancellation once the cancellation limit has passed", async () => {
     const fixtures = await seedResourceFixtures();
     const reservationDate = formatDateKey(addDays(new Date(), 3));

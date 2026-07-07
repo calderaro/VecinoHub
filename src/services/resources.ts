@@ -481,6 +481,18 @@ async function validateAvailabilityAndRules(args: {
     rules.bufferAfterMinutes
   );
 
+  // The exact isOverlap check below expands BOTH sides by the buffer, but the DB
+  // pre-filter must widen by the existing reservation's buffer too — otherwise a
+  // conflict whose raw window sits within bufferBefore/After of the requested
+  // window is never fetched and the exact check never runs on it. Expanding the
+  // requested effective window by the opposite buffer on each side is exact.
+  const prefilterStart = new Date(
+    effectiveRequestedWindow.start.getTime() - rules.bufferAfterMinutes * 60 * 1000
+  );
+  const prefilterEnd = new Date(
+    effectiveRequestedWindow.end.getTime() + rules.bufferBeforeMinutes * 60 * 1000
+  );
+
   const reservationCandidates = await db
     .select({
       reservation: resourceReservations,
@@ -491,8 +503,8 @@ async function validateAvailabilityAndRules(args: {
         eq(resourceReservations.resourceId, resourceId),
         eq(resourceReservations.status, "approved"),
         requestedReservationId ? ne(resourceReservations.id, requestedReservationId) : undefined,
-        lte(resourceReservations.startAt, effectiveRequestedWindow.end),
-        gte(resourceReservations.endAt, effectiveRequestedWindow.start),
+        lte(resourceReservations.startAt, prefilterEnd),
+        gte(resourceReservations.endAt, prefilterStart),
       ])
     );
 
@@ -1238,37 +1250,52 @@ export async function createResourceReservation(
     rules.requireNoDebt
   );
 
-  const { startAt, endAt } = await validateAvailabilityAndRules({
-    resourceId: parsed.resourceId,
-    timeZone: resourceRecord.timeZone,
-    date: parsed.date,
-    startMinute: parsed.startMinute,
-    endMinute: parsed.endMinute,
-    rules,
-    groupId: parsed.groupId,
-  });
+  return db.transaction(async (tx) => {
+    // Serialize reservation creation per resource so two concurrent requests
+    // can't both pass the overlap check and double-book. The row lock is held
+    // until commit; a second request blocks here until the first inserts, then
+    // its availability check sees the new row.
+    // ponytail: app-level lock; a tstzrange exclusion constraint on
+    // resource_reservations (WHERE status='approved') would enforce this at the
+    // DB level too.
+    await tx
+      .select({ id: resources.id })
+      .from(resources)
+      .where(eq(resources.id, parsed.resourceId))
+      .for("update");
 
-  const createdRows = await db
-    .insert(resourceReservations)
-    .values({
+    const { startAt, endAt } = await validateAvailabilityAndRules({
       resourceId: parsed.resourceId,
-      neighborhoodId: resourceRecord.resource.neighborhoodId,
+      timeZone: resourceRecord.timeZone,
+      date: parsed.date,
+      startMinute: parsed.startMinute,
+      endMinute: parsed.endMinute,
+      rules,
       groupId: parsed.groupId,
-      requestedBy: ctx.user.id,
-      startAt,
-      endAt,
-      title: parsed.title.trim(),
-      notes: parsed.notes?.trim() || null,
-      attendeeCount: parsed.attendeeCount ?? null,
-      status: "approved",
-    })
-    .returning();
+    });
 
-  if (!createdRows[0]) {
-    throw new ServiceError("Failed to create reservation", "INVALID");
-  }
+    const createdRows = await tx
+      .insert(resourceReservations)
+      .values({
+        resourceId: parsed.resourceId,
+        neighborhoodId: resourceRecord.resource.neighborhoodId,
+        groupId: parsed.groupId,
+        requestedBy: ctx.user.id,
+        startAt,
+        endAt,
+        title: parsed.title.trim(),
+        notes: parsed.notes?.trim() || null,
+        attendeeCount: parsed.attendeeCount ?? null,
+        status: "approved",
+      })
+      .returning();
 
-  return createdRows[0];
+    if (!createdRows[0]) {
+      throw new ServiceError("Failed to create reservation", "INVALID");
+    }
+
+    return createdRows[0];
+  });
 }
 
 export async function cancelResourceReservation(
