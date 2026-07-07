@@ -53,35 +53,19 @@ export default async function DashboardPage({
       activeNeighborhoodId: group.neighborhoodId,
     },
   };
-  const members = await listGroupMembers(scopedContext, {
-    groupId: resolvedParams.groupId,
-  });
-  const neighborhood = await getNeighborhoodById(scopedContext, {
-    neighborhoodId: group.neighborhoodId,
-  });
-  const polls = await listPollsPaged(scopedContext, {
-    limit: 5,
-    offset: 0,
-  });
-  const events = await listEventsPaged(scopedContext, {
-    limit: 5,
-    offset: 0,
-  });
-  const posts = await listPostsPaged(scopedContext, {
-    limit: 5,
-    offset: 0,
-  });
-  const campaigns = await listCampaignsPaged(scopedContext, {
-    status: "open",
-    limit: 5,
-    offset: 0,
-  });
-  const resourceList = await listResourcesForGroup(scopedContext, {
-    groupId: resolvedParams.groupId,
-  });
-  const funds = await listNeighborhoodFunds(scopedContext, {
-    neighborhoodId: group.neighborhoodId,
-  });
+  // These 8 fetches are independent (they only need group/scopedContext), so
+  // run them concurrently instead of as a sequential await waterfall.
+  const [members, neighborhood, polls, events, posts, campaigns, resourceList, funds] =
+    await Promise.all([
+      listGroupMembers(scopedContext, { groupId: resolvedParams.groupId }),
+      getNeighborhoodById(scopedContext, { neighborhoodId: group.neighborhoodId }),
+      listPollsPaged(scopedContext, { limit: 5, offset: 0 }),
+      listEventsPaged(scopedContext, { limit: 5, offset: 0 }),
+      listPostsPaged(scopedContext, { limit: 5, offset: 0 }),
+      listCampaignsPaged(scopedContext, { status: "open", limit: 5, offset: 0 }),
+      listResourcesForGroup(scopedContext, { groupId: resolvedParams.groupId }),
+      listNeighborhoodFunds(scopedContext, { neighborhoodId: group.neighborhoodId }),
+    ]);
 
   const locale = await getLocale();
   const t = await getTranslations("dashboard.overview");
