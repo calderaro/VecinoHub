@@ -10,35 +10,13 @@ import {
   listNeighborhoodAdminIdsForUser,
   listNeighborhoodIdsForUser,
   requireNeighborhoodAdminOrPlatform,
+  requireNeighborhoodAdminScope,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, paginationSchema } from "./validators";
 
 const postStatusSchema = z.enum(["draft", "published"]);
-
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
-
-async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
-  if (isPlatformAdmin(ctx)) {
-    return null;
-  }
-
-  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
-  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
-    throw new ServiceError("Admin access required", "FORBIDDEN");
-  }
-
-  return neighborhoodAdminIds;
-}
 
 async function getPostScope(postId: string) {
   const post = await db
@@ -188,7 +166,7 @@ export async function listPostsPaged(
       : eq(posts.status, "published");
   }
 
-  const combinedFilter = combineFilters([searchFilter, statusFilter, scopeFilter]);
+  const combinedFilter = and(searchFilter, statusFilter, scopeFilter);
 
   const rows = await db
     .select({
@@ -341,12 +319,12 @@ export async function getPostsStats(ctx: ServiceContext) {
   const publishedResult = await db
     .select({ value: count() })
     .from(posts)
-    .where(combineFilters([eq(posts.status, "published"), scopeFilter]));
+    .where(and(eq(posts.status, "published"), scopeFilter));
 
   const draftResult = await db
     .select({ value: count() })
     .from(posts)
-    .where(combineFilters([eq(posts.status, "draft"), scopeFilter]));
+    .where(and(eq(posts.status, "draft"), scopeFilter));
 
   return {
     published: Number(publishedResult[0]?.value ?? 0),

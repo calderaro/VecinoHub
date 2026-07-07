@@ -49,16 +49,6 @@ function nowDateString() {
   return new Date().toISOString().split("T")[0] ?? "";
 }
 
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
-
 function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
 }
@@ -225,11 +215,11 @@ async function ensureFundNameAvailable(
     .select({ id: neighborhoodFunds.id })
     .from(neighborhoodFunds)
     .where(
-      combineFilters([
+      and(
         eq(neighborhoodFunds.neighborhoodId, neighborhoodId),
         sql`lower(${neighborhoodFunds.name}) = ${normalizedName}`,
-        excludeFundId ? ne(neighborhoodFunds.id, excludeFundId) : undefined,
-      ])
+        excludeFundId ? ne(neighborhoodFunds.id, excludeFundId) : undefined
+      )
     )
     .limit(1);
 
@@ -743,7 +733,7 @@ export async function listFundChargePeriods(
   const periods = await db
     .select()
     .from(fundChargePeriods)
-    .where(combineFilters([eq(fundChargePeriods.fundId, fundId), status ? eq(fundChargePeriods.status, status) : undefined]))
+    .where(and(eq(fundChargePeriods.fundId, fundId), status ? eq(fundChargePeriods.status, status) : undefined))
     .orderBy(desc(fundChargePeriods.dueDate), desc(fundChargePeriods.createdAt))
     .limit(limit)
     .offset(offset);
@@ -751,7 +741,7 @@ export async function listFundChargePeriods(
   const totalRows = await db
     .select({ value: count() })
     .from(fundChargePeriods)
-    .where(combineFilters([eq(fundChargePeriods.fundId, fundId), status ? eq(fundChargePeriods.status, status) : undefined]));
+    .where(and(eq(fundChargePeriods.fundId, fundId), status ? eq(fundChargePeriods.status, status) : undefined));
 
   if (periods.length === 0) {
     return { items: [], total: Number(totalRows[0]?.value ?? 0) };
@@ -1206,7 +1196,7 @@ export async function listFundMovements(
     })
     .from(fundMovements)
     .leftJoin(users, eq(fundMovements.createdBy, users.id))
-    .where(combineFilters(filters))
+    .where(and(...filters))
     .orderBy(desc(fundMovements.effectiveAt), desc(fundMovements.createdAt))
     .limit(limit)
     .offset(offset);

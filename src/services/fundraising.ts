@@ -18,20 +18,11 @@ import {
   listNeighborhoodIdsForUser,
   requireGroupMember,
   requireNeighborhoodAdminOrPlatform,
+  requireNeighborhoodAdminScope,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, contributionMethodSchema } from "./validators";
-
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
 
 async function getCampaignScope(campaignId: string) {
   const campaign = await db
@@ -60,19 +51,6 @@ async function requireCampaignAdminScope(ctx: ServiceContext, campaignId: string
 
   await requireNeighborhoodAdminOrPlatform(ctx, campaign.neighborhoodId);
   return campaign;
-}
-
-async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
-  if (isPlatformAdmin(ctx)) {
-    return null;
-  }
-
-  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
-  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
-    throw new ServiceError("Admin access required", "FORBIDDEN");
-  }
-
-  return neighborhoodAdminIds;
 }
 
 const createCampaignSchema = z.object({
@@ -556,7 +534,7 @@ export async function listCampaignsPaged(
       : inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds);
   }
 
-  const combinedFilter = combineFilters([searchFilter, statusFilter, scopeFilter]);
+  const combinedFilter = and(searchFilter, statusFilter, scopeFilter);
 
   const rows = await db
     .select({
@@ -785,7 +763,7 @@ export async function getFundraisingStats(ctx: ServiceContext) {
   const openCampaignsResult = await db
     .select({ value: count() })
     .from(fundraisingCampaigns)
-    .where(combineFilters([eq(fundraisingCampaigns.status, "open"), scopeFilter]));
+    .where(and(eq(fundraisingCampaigns.status, "open"), scopeFilter));
 
   const contributionsScopeFilter = isPlatformAdmin(ctx)
     ? undefined
@@ -801,10 +779,10 @@ export async function getFundraisingStats(ctx: ServiceContext) {
     .select({ value: count() })
     .from(fundraisingContributions)
     .where(
-      combineFilters([
+      and(
         eq(fundraisingContributions.status, "submitted"),
-        contributionsScopeFilter,
-      ])
+        contributionsScopeFilter
+      )
     );
 
   return {

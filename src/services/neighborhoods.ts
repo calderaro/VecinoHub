@@ -31,7 +31,6 @@ import {
   idSchema,
   neighborhoodRoleSchema,
   neighborhoodStatusSchema,
-  statusSchema,
   timeZoneSchema,
 } from "./validators";
 
@@ -52,10 +51,7 @@ export async function listNeighborhoodsPaged(
     ? or(ilike(neighborhoods.name, search), ilike(neighborhoods.slug, search))
     : undefined;
   const statusFilter = status ? eq(neighborhoods.status, status) : undefined;
-  const combinedFilter =
-    searchFilter && statusFilter
-      ? and(searchFilter, statusFilter)
-      : (searchFilter ?? statusFilter);
+  const combinedFilter = and(searchFilter, statusFilter);
 
   if (isPlatformAdmin(ctx)) {
     const rows = await db
@@ -440,7 +436,7 @@ export async function addNeighborhoodMemberByEmail(
 const updateMembershipStatusSchema = z.object({
   neighborhoodId: idSchema,
   userId: idSchema,
-  status: statusSchema,
+  status: neighborhoodStatusSchema,
 });
 
 export async function updateNeighborhoodMembershipStatus(
@@ -513,7 +509,7 @@ const updateNeighborhoodMemberSchema = z
     neighborhoodId: idSchema,
     userId: idSchema,
     role: neighborhoodRoleSchema.optional(),
-    status: statusSchema.optional(),
+    status: neighborhoodStatusSchema.optional(),
   })
   .refine((value) => value.role !== undefined || value.status !== undefined, {
     message: "At least one field is required.",
@@ -647,7 +643,7 @@ const listMembersSchema = z.object({
   neighborhoodId: idSchema,
   query: z.string().optional(),
   role: neighborhoodRoleSchema.optional(),
-  status: statusSchema.optional(),
+  status: neighborhoodStatusSchema.optional(),
   limit: z.number().int().positive().max(200).default(50),
   offset: z.number().int().min(0).default(0),
 });
@@ -666,16 +662,7 @@ export async function listNeighborhoodMembersPaged(
     : undefined;
   const roleFilter = role ? eq(neighborhoodMemberships.role, role) : undefined;
   const statusFilter = status ? eq(neighborhoodMemberships.status, status) : undefined;
-  const combinedFilter =
-    searchFilter && roleFilter && statusFilter
-      ? and(searchFilter, roleFilter, statusFilter)
-      : searchFilter && roleFilter
-        ? and(searchFilter, roleFilter)
-        : searchFilter && statusFilter
-          ? and(searchFilter, statusFilter)
-          : roleFilter && statusFilter
-            ? and(roleFilter, statusFilter)
-            : (searchFilter ?? roleFilter ?? statusFilter);
+  const combinedFilter = and(searchFilter, roleFilter, statusFilter);
   const scopedFilter = combinedFilter
     ? and(eq(neighborhoodMemberships.neighborhoodId, neighborhoodId), combinedFilter)
     : eq(neighborhoodMemberships.neighborhoodId, neighborhoodId);

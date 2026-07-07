@@ -11,14 +11,14 @@ import {
   users,
 } from "@/db/schema";
 import { ServiceError } from "./errors";
-import { requireAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
+import { requirePlatformAdmin, requireNeighborhoodAdminOrPlatform } from "./guards";
 import type { ServiceContext } from "./types";
 import {
   idSchema,
   nameSchema,
+  neighborhoodStatusSchema,
   preferredLanguageSchema,
   roleSchema,
-  statusSchema,
   usernameSchema,
 } from "./validators";
 
@@ -30,7 +30,7 @@ const listUsersSchema = z
   .default({ limit: 50, offset: 0 });
 
 export async function listUsers(ctx: ServiceContext, input?: z.input<typeof listUsersSchema>) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { limit, offset } = listUsersSchema.parse(input ?? {});
 
   return db
@@ -44,7 +44,7 @@ export async function listUsers(ctx: ServiceContext, input?: z.input<typeof list
 const listUsersPagedSchema = z.object({
   query: z.string().optional(),
   role: roleSchema.optional(),
-  status: statusSchema.optional(),
+  status: neighborhoodStatusSchema.optional(),
   limit: z.number().int().positive().max(100).default(10),
   offset: z.number().int().min(0).default(0),
 });
@@ -53,7 +53,7 @@ export async function listUsersPaged(
   ctx: ServiceContext,
   input: z.input<typeof listUsersPagedSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { query, role, status, limit, offset } = listUsersPagedSchema.parse(input);
   const search = query ? `%${query}%` : undefined;
   const searchFilter = search
@@ -65,16 +65,7 @@ export async function listUsersPaged(
     : undefined;
   const roleFilter = role ? eq(users.role, role) : undefined;
   const statusFilter = status ? eq(users.status, status) : undefined;
-  const combinedFilter =
-    searchFilter && roleFilter && statusFilter
-      ? and(searchFilter, roleFilter, statusFilter)
-      : searchFilter && roleFilter
-        ? and(searchFilter, roleFilter)
-        : searchFilter && statusFilter
-          ? and(searchFilter, statusFilter)
-          : roleFilter && statusFilter
-            ? and(roleFilter, statusFilter)
-            : (searchFilter ?? roleFilter ?? statusFilter);
+  const combinedFilter = and(searchFilter, roleFilter, statusFilter);
 
   const items = await db
     .select()
@@ -95,7 +86,7 @@ export async function listUsersPaged(
 const listNeighborhoodGroupUsersPagedSchema = z.object({
   neighborhoodId: idSchema,
   query: z.string().optional(),
-  status: statusSchema.optional(),
+  status: neighborhoodStatusSchema.optional(),
   limit: z.number().int().positive().max(100).default(10),
   offset: z.number().int().min(0).default(0),
 });
@@ -117,10 +108,7 @@ export async function listNeighborhoodGroupUsersPaged(
       )
     : undefined;
   const statusFilter = status ? eq(users.status, status) : undefined;
-  const combinedFilter =
-    searchFilter && statusFilter
-      ? and(searchFilter, statusFilter)
-      : (searchFilter ?? statusFilter);
+  const combinedFilter = and(searchFilter, statusFilter);
   const scopedFilter = combinedFilter
     ? and(
         eq(groups.neighborhoodId, neighborhoodId),
@@ -185,7 +173,7 @@ export async function getUserGroupCounts(
   ctx: ServiceContext,
   input: z.input<typeof userGroupCountsSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userIds } = userGroupCountsSchema.parse(input);
 
   if (userIds.length === 0) {
@@ -212,7 +200,7 @@ export async function getPlatformUserById(
   ctx: ServiceContext,
   input: z.input<typeof getPlatformUserByIdSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId } = getPlatformUserByIdSchema.parse(input);
 
   const userRows = await db
@@ -289,7 +277,7 @@ export async function listPlatformUserNeighborhoodMemberships(
   ctx: ServiceContext,
   input: z.input<typeof listPlatformUserNeighborhoodMembershipsSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId, limit } = listPlatformUserNeighborhoodMembershipsSchema.parse(input);
 
   return db
@@ -320,7 +308,7 @@ export async function listPlatformUserGroupMemberships(
   ctx: ServiceContext,
   input: z.input<typeof listPlatformUserGroupMembershipsSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId, limit } = listPlatformUserGroupMembershipsSchema.parse(input);
 
   return db
@@ -462,7 +450,7 @@ export async function updateUserRole(
   ctx: ServiceContext,
   input: z.input<typeof updateRoleSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId, role } = updateRoleSchema.parse(input);
 
   const updated = await db
@@ -480,14 +468,14 @@ export async function updateUserRole(
 
 const updateStatusSchema = z.object({
   userId: idSchema,
-  status: statusSchema,
+  status: neighborhoodStatusSchema,
 });
 
 export async function updateUserStatus(
   ctx: ServiceContext,
   input: z.input<typeof updateStatusSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId, status } = updateStatusSchema.parse(input);
 
   const updated = await db.transaction(async (tx) => {
@@ -628,7 +616,7 @@ export async function updateUserProfileByAdmin(
   ctx: ServiceContext,
   input: z.input<typeof updateUserProfileByAdminSchema>
 ) {
-  requireAdmin(ctx);
+  requirePlatformAdmin(ctx);
   const { userId, ...updates } = updateUserProfileByAdminSchema.parse(input);
   return updateUserProfileRecord(userId, updates);
 }
