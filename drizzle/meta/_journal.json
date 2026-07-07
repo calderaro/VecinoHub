@@ -127,6 +127,13 @@
       "when": 1774733872670,
       "tag": "0017_overrated_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783444981730,
+      "tag": "0018_left_vision",
+      "breakpoints": true
     }
   ]
 }
