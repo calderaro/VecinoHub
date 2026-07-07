@@ -1022,6 +1022,13 @@ export async function confirmFundPayment(
     throw new ServiceError("Fund period is closed", "INVALID");
   }
 
+  // Mirror the submit-time guard: a waived charge is not payable, so a payment
+  // submitted before the waiver must not be confirmable afterward (it would
+  // credit the fund while the charge still reads "waived").
+  if (charge.status === "waived") {
+    throw new ServiceError("This charge has been waived", "INVALID");
+  }
+
   return db.transaction(async (tx) => {
     await tx.insert(fundPaymentAllocations).values({
       paymentId: payment.id,
