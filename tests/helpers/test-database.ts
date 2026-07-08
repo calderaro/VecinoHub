@@ -9,6 +9,9 @@ const mem = newDb({ autoCreateForeignKeyIndices: true });
 mem.public.registerFunction({
   name: "gen_random_uuid",
   returns: DataType.uuid,
+  // Volatile like the real Postgres function: must re-run per row, else pg-mem
+  // caches one value and a second default-id insert into the same table collides.
+  impure: true,
   implementation: () => randomUUID(),
 });
 mem.public.none(`

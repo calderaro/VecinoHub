@@ -1006,21 +1006,29 @@ export async function confirmFundPayment(
       amount: payment.amount,
     });
 
-    const nextAmountPaid = toNumber(charge.amountPaid) + toNumber(payment.amount);
+    // Increment atomically in SQL rather than reading amountPaid outside the txn
+    // and writing back a computed value: under READ COMMITTED two concurrent
+    // confirmations of different payments on the same charge would otherwise both
+    // read the same starting balance and the second would clobber the first.
+    const [incremented] = await tx
+      .update(fundGroupCharges)
+      .set({
+        amountPaid: sql`${fundGroupCharges.amountPaid} + ${payment.amount}::numeric`,
+        updatedAt: new Date(),
+      })
+      .where(eq(fundGroupCharges.id, charge.id))
+      .returning({ amountPaid: fundGroupCharges.amountPaid });
+
     const nextStatus = computeGroupChargeStatus({
       amountDue: toNumber(charge.amountDue),
-      amountPaid: nextAmountPaid,
+      amountPaid: toNumber(incremented.amountPaid),
       dueDate: charge.dueDate,
       waived: Boolean(charge.waivedBy),
     });
 
     await tx
       .update(fundGroupCharges)
-      .set({
-        amountPaid: String(nextAmountPaid.toFixed(2)),
-        status: nextStatus,
-        updatedAt: new Date(),
-      })
+      .set({ status: nextStatus })
       .where(eq(fundGroupCharges.id, charge.id));
 
     await tx.insert(fundMovements).values({
@@ -1308,25 +1316,47 @@ export async function reverseFundMovement(
 
   await requireFundAdminScope(ctx, movement.fundId);
 
-  const reversed = await db
-    .insert(fundMovements)
-    .values({
-      fundId: movement.fundId,
-      neighborhoodId: movement.neighborhoodId,
-      type: "reversal",
-      entrySide: movement.entrySide === "credit" ? "debit" : "credit",
-      amount: movement.amount,
-      effectiveAt: new Date(),
-      description:
-        parsed.description ??
-        `Reversal of movement ${movement.id}: ${movement.description}`,
-      sourceType: "reversal",
-      sourceId: movement.id,
-      createdBy: ctx.user.id,
-    })
-    .returning();
+  if (movement.type === "reversal") {
+    throw new ServiceError("A reversal cannot be reversed", "INVALID");
+  }
 
-  return reversed[0];
+  return db.transaction(async (tx) => {
+    // A movement may be reversed at most once. Without this guard a
+    // double-click/retry (or two admins) inserts multiple opposite entries and
+    // drives the fund balance arbitrarily wrong.
+    // ponytail: app-level check; a partial unique index on
+    // fund_movements(source_id) WHERE type='reversal' would also close the
+    // truly-concurrent double-reversal window.
+    const existing = await tx
+      .select({ id: fundMovements.id })
+      .from(fundMovements)
+      .where(and(eq(fundMovements.type, "reversal"), eq(fundMovements.sourceId, movement.id)))
+      .limit(1);
+
+    if (existing[0]) {
+      throw new ServiceError("This movement has already been reversed", "INVALID");
+    }
+
+    const reversed = await tx
+      .insert(fundMovements)
+      .values({
+        fundId: movement.fundId,
+        neighborhoodId: movement.neighborhoodId,
+        type: "reversal",
+        entrySide: movement.entrySide === "credit" ? "debit" : "credit",
+        amount: movement.amount,
+        effectiveAt: new Date(),
+        description:
+          parsed.description ??
+          `Reversal of movement ${movement.id}: ${movement.description}`,
+        sourceType: "reversal",
+        sourceId: movement.id,
+        createdBy: ctx.user.id,
+      })
+      .returning();
+
+    return reversed[0];
+  });
 }
 
 const waiveGroupChargeSchema = z.object({
