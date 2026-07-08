@@ -630,6 +630,13 @@
       "addGroup": "Agregar grupo",
       "searchPlaceholder": "Buscar grupos",
       "filter": "Filtrar",
+      "summary": "{active} activos · {inactive} inactivos · {total} en total",
+      "downloadCsv": "Descargar CSV",
+      "statusFilter": {
+        "all": "Todos los estados",
+        "active": "Activos",
+        "inactive": "Inactivos"
+      },
       "empty": "No se encontraron grupos.",
       "table": {
         "name": "Nombre",

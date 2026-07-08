@@ -5,7 +5,7 @@ import { ChevronDownIcon, UsersIcon } from "lucide-react";
 
 import { formatPortDate } from "@/lib/port-time";
 import { SearchInput, StatusBadge } from "@/components/ui-v3";
-import { getGroupMemberCounts, listGroupsPaged } from "@/services/groups";
+import { getGroupMemberCounts, getGroupsStats, listGroupsPaged } from "@/services/groups";
 import { getNeighborhoodById } from "@/services/neighborhoods";
 import { getSession } from "@/server/auth";
 
@@ -59,6 +59,8 @@ export default async function GroupsPage({
     typeof resolvedSearchParams.status === "string"
       ? resolvedSearchParams.status
       : "";
+  const statusFilter =
+    status === "active" || status === "inactive" ? status : undefined;
   const pageRaw =
     typeof resolvedSearchParams.page === "string"
       ? Number(resolvedSearchParams.page)
@@ -66,20 +68,22 @@ export default async function GroupsPage({
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
-  const [{ items: rawGroups, total }, neighborhood, locale] = await Promise.all([
-    listGroupsPaged(
-      serviceContext,
-      {
+  const [{ items: rawGroups, total }, stats, neighborhood, locale] =
+    await Promise.all([
+      listGroupsPaged(serviceContext, {
         query: query || undefined,
+        status: statusFilter,
         limit: PAGE_SIZE,
         offset,
-      }
-    ),
-    getNeighborhoodById(serviceContext, {
-      neighborhoodId: resolvedParams.neighborhoodId,
-    }),
-    getLocale(),
-  ]);
+      }),
+      getGroupsStats(serviceContext, {
+        neighborhoodId: resolvedParams.neighborhoodId,
+      }),
+      getNeighborhoodById(serviceContext, {
+        neighborhoodId: resolvedParams.neighborhoodId,
+      }),
+      getLocale(),
+    ]);
 
   const groups = rawGroups;
 
@@ -96,15 +100,30 @@ export default async function GroupsPage({
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-stone-900">{t("title")}</h1>
-          <p className="mt-0.5 text-sm text-stone-500">{total} total groups</p>
+          <p className="mt-0.5 text-sm text-stone-500" data-testid="admin-groups-summary">
+            {t("summary", {
+              active: stats.active,
+              inactive: stats.inactive,
+              total: stats.total,
+            })}
+          </p>
         </div>
-        <Link
-          className="vh-v3-focus rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
-          href={`${adminBasePath}/groups/new`}
-          data-testid="admin-groups-add"
-        >
-          + New Group
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            className="vh-v3-focus rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-semibold text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
+            href={`${adminBasePath}/groups/export${buildQuery({ q: query || undefined, status: status || undefined })}`}
+            data-testid="admin-groups-export"
+          >
+            {t("downloadCsv")}
+          </Link>
+          <Link
+            className="vh-v3-focus rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+            href={`${adminBasePath}/groups/new`}
+            data-testid="admin-groups-add"
+          >
+            + New Group
+          </Link>
+        </div>
       </header>
 
       <form className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm" method="get">
@@ -123,8 +142,9 @@ export default async function GroupsPage({
               data-testid="admin-groups-status"
               defaultValue={status}
             >
-              <option value="">All statuses</option>
-              <option value="active">Active</option>
+              <option value="">{t("statusFilter.all")}</option>
+              <option value="active">{t("statusFilter.active")}</option>
+              <option value="inactive">{t("statusFilter.inactive")}</option>
             </select>
             <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
           </div>

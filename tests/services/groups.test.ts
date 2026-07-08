@@ -18,9 +18,12 @@ vi.mock("@/db", async () => {
 });
 
 import { db } from "@/db";
+import { escapeCsv, rowsToCsv } from "@/lib/csv";
 import {
   leaveGroup,
   listGroupMembers,
+  listGroupsForExport,
+  listGroupsPaged,
   removeMember,
   setGroupMemberRole,
 } from "@/services/groups";
@@ -338,5 +341,113 @@ describe("group services", () => {
     ).rejects.toMatchObject({
       message: "Assign another group admin before leaving the group",
     });
+  });
+
+  async function seedActiveAndEmptyGroups() {
+    const adminId = randomUUID();
+    const { neighborhoodId, groupId: activeGroupId } =
+      await seedGroupWithMembers([
+        {
+          id: adminId,
+          email: "admin@example.com",
+          name: "Admin",
+          groupRole: "group_admin",
+        },
+      ]);
+
+    const emptyGroupId = randomUUID();
+    await db.insert(groups).values({
+      id: emptyGroupId,
+      neighborhoodId,
+      name: "Empty House",
+    });
+
+    const ctx: ServiceContext = {
+      user: {
+        id: adminId,
+        role: "platform_admin",
+        activeNeighborhoodId: neighborhoodId,
+      },
+    };
+
+    return { ctx, neighborhoodId, activeGroupId, emptyGroupId };
+  }
+
+  it("listGroupsPaged returns only groups with an active member when status is 'active'", async () => {
+    const { ctx, activeGroupId } = await seedActiveAndEmptyGroups();
+
+    const result = await listGroupsPaged(ctx, { status: "active" });
+
+    expect(result.total).toBe(1);
+    expect(result.items.map((group) => group.id)).toEqual([activeGroupId]);
+  });
+
+  it("listGroupsPaged returns only groups with no active member when status is 'inactive'", async () => {
+    const { ctx, emptyGroupId } = await seedActiveAndEmptyGroups();
+
+    const result = await listGroupsPaged(ctx, { status: "inactive" });
+
+    expect(result.total).toBe(1);
+    expect(result.items.map((group) => group.id)).toEqual([emptyGroupId]);
+  });
+
+  it("listGroupsPaged returns all groups when no status filter is provided", async () => {
+    const { ctx, activeGroupId, emptyGroupId } = await seedActiveAndEmptyGroups();
+
+    const result = await listGroupsPaged(ctx, {});
+
+    expect(result.total).toBe(2);
+    expect(new Set(result.items.map((group) => group.id))).toEqual(
+      new Set([activeGroupId, emptyGroupId])
+    );
+  });
+
+  it("listGroupsForExport returns the full filtered set without pagination", async () => {
+    const { ctx, activeGroupId, emptyGroupId } = await seedActiveAndEmptyGroups();
+
+    const all = await listGroupsForExport(ctx, {});
+    expect(new Set(all.map((group) => group.id))).toEqual(
+      new Set([activeGroupId, emptyGroupId])
+    );
+
+    const inactiveOnly = await listGroupsForExport(ctx, { status: "inactive" });
+    expect(inactiveOnly.map((group) => group.id)).toEqual([emptyGroupId]);
+  });
+});
+
+describe("csv helpers", () => {
+  it("leaves plain fields untouched", () => {
+    expect(escapeCsv("Casa 101")).toBe("Casa 101");
+    expect(escapeCsv(7)).toBe("7");
+    expect(escapeCsv(null)).toBe("");
+    expect(escapeCsv(undefined)).toBe("");
+  });
+
+  it("quotes and doubles quotes for fields with commas, quotes, or newlines", () => {
+    expect(escapeCsv("Smith, John")).toBe('"Smith, John"');
+    expect(escapeCsv('He said "hi"')).toBe('"He said ""hi"""');
+    expect(escapeCsv("line1\nline2")).toBe('"line1\nline2"');
+  });
+
+  it("neutralizes leading formula/DDE characters (spreadsheet injection)", () => {
+    expect(escapeCsv("=1+1")).toBe("'=1+1");
+    expect(escapeCsv("+cmd")).toBe("'+cmd");
+    expect(escapeCsv("-2")).toBe("'-2");
+    expect(escapeCsv("@SUM(A1)")).toBe("'@SUM(A1)");
+    // still quoted when it also contains a comma
+    expect(escapeCsv("=HYPERLINK(1,2)")).toBe(`"'=HYPERLINK(1,2)"`);
+    // a formula char not in the first position is left alone
+    expect(escapeCsv("Casa=1")).toBe("Casa=1");
+  });
+
+  it("joins rows into CRLF-delimited CSV with escaped fields", () => {
+    const csv = rowsToCsv([
+      ["Group name", "Address", "Member count"],
+      ["Casa, 1", 'Apt "A"', 3],
+    ]);
+
+    expect(csv).toBe(
+      'Group name,Address,Member count\r\n"Casa, 1","Apt ""A""",3'
+    );
   });
 });

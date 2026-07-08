@@ -117,6 +117,8 @@
   - `/admin/[neighborhoodId]`
   - `/admin/[neighborhoodId]/groups`, `/admin/[neighborhoodId]/groups/new`, `/admin/[neighborhoodId]/groups/[groupId]`, `/admin/[neighborhoodId]/groups/[groupId]/edit`
     - group creation accepts an optional existing user email for the initial group admin.
+    - the list supports an active/inactive status filter (a group is active when it has ≥1 active membership, inactive otherwise) plus free-text search, and the header shows an active/inactive/total summary.
+    - a "Download CSV" action exports the current filtered set (`q` + `status` + neighborhood scope, not just the visible page) via the `groups/export` route handler; columns are Group name, Address, Neighborhood, Member count, Status, Admin(s), Created date.
   - `/admin/[neighborhoodId]/polls`, `/admin/[neighborhoodId]/polls/new`, `/admin/[neighborhoodId]/polls/[pollId]`, `/admin/[neighborhoodId]/polls/[pollId]/edit`
   - `/admin/[neighborhoodId]/fundraising`, `/admin/[neighborhoodId]/fundraising/new`, `/admin/[neighborhoodId]/fundraising/[campaignId]`, `/admin/[neighborhoodId]/fundraising/[campaignId]/edit`, `/admin/[neighborhoodId]/fundraising/[campaignId]/contribute`
     - campaign due date and contribution dates use the shared date selector and render in neighborhood time.
