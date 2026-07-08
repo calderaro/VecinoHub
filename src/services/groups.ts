@@ -1,4 +1,5 @@
-import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, notInArray, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -643,9 +644,98 @@ export async function getGroupsStats(
   };
 }
 
+const groupStatusSchema = z.enum(["active", "inactive"]);
+
+/**
+ * Build an IN / NOT IN predicate over the set of groups that have at least one
+ * active membership. Active = the group has ≥1 `status = 'active'` membership;
+ * inactive = it has none. Matches the definition used by `getGroupsStats`.
+ * A non-correlated subquery is used (rather than a correlated EXISTS) so it
+ * runs on both Postgres and the pg-mem test harness.
+ */
+function buildGroupStatusFilter(
+  status: z.infer<typeof groupStatusSchema> | undefined
+): SQL | undefined {
+  if (!status) {
+    return undefined;
+  }
+
+  const activeGroupIds = db
+    .selectDistinct({ groupId: groupMemberships.groupId })
+    .from(groupMemberships)
+    .where(eq(groupMemberships.status, "active"));
+
+  return status === "active"
+    ? inArray(groups.id, activeGroupIds)
+    : notInArray(groups.id, activeGroupIds);
+}
+
+function buildGroupListFilters(
+  ctx: ServiceContext,
+  {
+    neighborhoodId,
+    query,
+    status,
+  }: {
+    neighborhoodId?: string;
+    query?: string;
+    status?: z.infer<typeof groupStatusSchema>;
+  }
+): SQL | undefined {
+  const activeNeighborhoodId = ctx.user.activeNeighborhoodId ?? undefined;
+  const neighborhoodScopeId = neighborhoodId ?? activeNeighborhoodId;
+  const search = query ? `%${query}%` : undefined;
+  const searchFilter = search ? ilike(groups.name, search) : undefined;
+  const neighborhoodFilter = neighborhoodScopeId
+    ? eq(groups.neighborhoodId, neighborhoodScopeId)
+    : undefined;
+  const statusFilter = buildGroupStatusFilter(status);
+
+  return and(searchFilter, neighborhoodFilter, statusFilter);
+}
+
+/**
+ * Layer the caller's neighborhood scope on top of the search/status filters.
+ * Returns `null` when a non-platform caller has no accessible neighborhoods
+ * (meaning the result set is empty).
+ */
+async function scopeGroupListFilter(
+  ctx: ServiceContext,
+  scopedFilters: SQL | undefined
+): Promise<SQL | undefined | null> {
+  if (isPlatformAdmin(ctx)) {
+    return scopedFilters;
+  }
+
+  const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
+  if (!neighborhoodIds || neighborhoodIds.length === 0) {
+    return null;
+  }
+
+  const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
+  return scopedFilters ? and(membershipFilter, scopedFilters) : membershipFilter;
+}
+
+async function attachGroupAdminSummaries<
+  T extends { id: string },
+>(rows: T[]) {
+  const adminSummaries = await listGroupAdminSummaries(rows.map((row) => row.id));
+
+  return rows.map((row) => {
+    const summary = adminSummaries.get(row.id);
+    return {
+      ...row,
+      adminUserIds: summary?.adminUserIds ?? [],
+      adminNames: summary?.adminNames ?? [],
+      adminLabel: summary?.adminLabel ?? null,
+    };
+  });
+}
+
 const listGroupsPagedSchema = z.object({
   neighborhoodId: idSchema.optional(),
   query: z.string().optional(),
+  status: groupStatusSchema.optional(),
   limit: z.number().int().positive().max(100).default(10),
   offset: z.number().int().min(0).default(0),
 });
@@ -654,77 +744,63 @@ export async function listGroupsPaged(
   ctx: ServiceContext,
   input: z.input<typeof listGroupsPagedSchema>
 ) {
-  const { neighborhoodId, query, limit, offset } = listGroupsPagedSchema.parse(input);
-  const activeNeighborhoodId = ctx.user.activeNeighborhoodId ?? undefined;
-  const neighborhoodScopeId = neighborhoodId ?? activeNeighborhoodId;
-  const search = query ? `%${query}%` : undefined;
-  const searchFilter = search ? ilike(groups.name, search) : undefined;
-  const neighborhoodFilter = neighborhoodScopeId
-    ? eq(groups.neighborhoodId, neighborhoodScopeId)
-    : undefined;
-  const scopedFilters =
-    searchFilter && neighborhoodFilter
-      ? and(searchFilter, neighborhoodFilter)
-      : (searchFilter ?? neighborhoodFilter);
+  const { neighborhoodId, query, status, limit, offset } =
+    listGroupsPagedSchema.parse(input);
 
-  let rows:
-    | Array<{
-        id: string;
-        neighborhoodId: string;
-        name: string;
-        address: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-      }>
-    | [];
-  let total = 0;
-
-  if (isPlatformAdmin(ctx)) {
-    rows = await db.select().from(groups).where(scopedFilters).limit(limit).offset(offset);
-    const totalResult = await db
-      .select({ value: count() })
-      .from(groups)
-      .where(scopedFilters);
-    total = Number(totalResult[0]?.value ?? 0);
-  } else {
-    const neighborhoodIds = await listNeighborhoodIdsForUser(ctx);
-    if (!neighborhoodIds || neighborhoodIds.length === 0) {
-      return { items: [], total: 0 };
-    }
-
-    const membershipFilter = inArray(groups.neighborhoodId, neighborhoodIds);
-    const combinedFilter = scopedFilters
-      ? and(membershipFilter, scopedFilters)
-      : membershipFilter;
-
-    rows = await db
-      .select()
-      .from(groups)
-      .where(combinedFilter)
-      .limit(limit)
-      .offset(offset);
-
-    const totalResult = await db
-      .select({ value: count() })
-      .from(groups)
-      .where(combinedFilter);
-    total = Number(totalResult[0]?.value ?? 0);
+  const scopedFilters = buildGroupListFilters(ctx, { neighborhoodId, query, status });
+  const filter = await scopeGroupListFilter(ctx, scopedFilters);
+  if (filter === null) {
+    return { items: [], total: 0 };
   }
 
-  const adminSummaries = await listGroupAdminSummaries(rows.map((row) => row.id));
+  const rows = await db
+    .select()
+    .from(groups)
+    .where(filter)
+    .limit(limit)
+    .offset(offset);
+
+  const totalResult = await db
+    .select({ value: count() })
+    .from(groups)
+    .where(filter);
+  const total = Number(totalResult[0]?.value ?? 0);
 
   return {
-    items: rows.map((row) => {
-      const summary = adminSummaries.get(row.id);
-      return {
-        ...row,
-        adminUserIds: summary?.adminUserIds ?? [],
-        adminNames: summary?.adminNames ?? [],
-        adminLabel: summary?.adminLabel ?? null,
-      };
-    }),
+    items: await attachGroupAdminSummaries(rows),
     total,
   };
+}
+
+const listGroupsForExportSchema = z.object({
+  neighborhoodId: idSchema.optional(),
+  query: z.string().optional(),
+  status: groupStatusSchema.optional(),
+});
+
+/**
+ * Return the full filtered set of groups (no pagination) for CSV export,
+ * honoring the same search/status/neighborhood scope as `listGroupsPaged`.
+ */
+export async function listGroupsForExport(
+  ctx: ServiceContext,
+  input: z.input<typeof listGroupsForExportSchema>
+) {
+  const { neighborhoodId, query, status } = listGroupsForExportSchema.parse(input);
+
+  const scopedFilters = buildGroupListFilters(ctx, { neighborhoodId, query, status });
+  const filter = await scopeGroupListFilter(ctx, scopedFilters);
+  if (filter === null) {
+    return [];
+  }
+
+  const rows = await db
+    .select()
+    .from(groups)
+    .where(filter)
+    .orderBy(asc(groups.name));
+
+  return attachGroupAdminSummaries(rows);
 }
 
 const groupMemberCountsSchema = z.object({

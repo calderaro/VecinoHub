@@ -35,6 +35,10 @@
 
 ### groups
 - `groups.list` (query, scoped by neighborhood permissions)
+  - The admin groups screen reads via the `listGroupsPaged` service (SSR), which additionally accepts an optional `status` filter (`active` | `inactive`). A group is **active** when it has ≥1 `group_memberships` row with `status = 'active'` and **inactive** when it has none (derived, no schema column). The filter applies to both the rows and the total count, on top of the existing neighborhood scope.
+- `GET /admin/[neighborhoodId]/groups/export` (Next.js route handler, neighborhood admin or platform admin)
+  - Streams the current filtered group set as a CSV attachment (`Content-Type: text/csv`, `Content-Disposition: attachment; filename="groups-<slug>-<date>.csv"`). Reads `q` and `status` from the query string, returns the full unpaginated set (`listGroupsForExport`) plus per-group active-member counts. Columns: Group name, Address, Neighborhood, Member count, Status, Admin(s), Created date.
+  - Not a tRPC procedure and NOT covered by the `(admin)` layout guard, so it enforces `getSession` + `requireNeighborhoodAdminOrPlatform` itself; unauthenticated → 401, insufficient scope → 403.
  - `groups.create` (mutation, neighborhood admin or platform admin; may be created without any members)
 - `groups.update` (mutation, neighborhood admin/platform or group admin as allowed)
 - `groups.remove` (mutation, neighborhood admin/platform or group admin as allowed)
