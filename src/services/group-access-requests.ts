@@ -599,6 +599,24 @@ export async function approveGroupAccessRequest(
   }
 
   await db.transaction(async (tx) => {
+    const [lockedNeighborhood] = await tx
+      .select({ status: neighborhoods.status })
+      .from(neighborhoods)
+      .where(eq(neighborhoods.id, actionableRequest.neighborhoodId))
+      .for("update");
+    const [lockedRequester] = await tx
+      .select({ status: users.status })
+      .from(users)
+      .where(eq(users.id, actionableRequest.requestedBy))
+      .for("update");
+
+    if (lockedNeighborhood?.status !== "active") {
+      throw new ServiceError("This neighborhood is not active", "FORBIDDEN");
+    }
+    if (lockedRequester?.status !== "active") {
+      throw new ServiceError("The requester is not active", "FORBIDDEN");
+    }
+
     const existingGroupMembership = await tx
       .select({
         id: groupMemberships.id,

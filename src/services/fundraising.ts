@@ -358,12 +358,23 @@ export async function deleteContribution(
     throw new ServiceError("Campaign is closed", "INVALID");
   }
 
+  const ownerDeleteFilter = ownerCanDelete
+    ? and(
+        eq(fundraisingContributions.id, contributionId),
+        eq(fundraisingContributions.submittedBy, ctx.user.id),
+        eq(fundraisingContributions.status, "submitted")
+      )
+    : eq(fundraisingContributions.id, contributionId);
+
   const deleted = await db
     .delete(fundraisingContributions)
-    .where(eq(fundraisingContributions.id, contributionId))
+    .where(ownerDeleteFilter)
     .returning({ id: fundraisingContributions.id });
 
   if (!deleted[0]) {
+    if (ownerCanDelete) {
+      throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
+    }
     throw new ServiceError("Contribution not found", "NOT_FOUND");
   }
 

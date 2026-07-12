@@ -396,4 +396,30 @@ describe("group access request services", () => {
       .where(eq(groupMemberships.userId, requesterId));
     expect(memberships).toHaveLength(0);
   });
+
+  it("rejects approving a request for a user deactivated after requesting access", async () => {
+    const { managerId, requesterId, neighborhoodId, groupId } =
+      await seedNeighborhoodWithGroup();
+    const requestId = randomUUID();
+
+    await db.insert(groupAccessRequests).values({
+      id: requestId,
+      groupId,
+      neighborhoodId,
+      requestedBy: requesterId,
+      status: "pending",
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+    });
+    await db.update(users).set({ status: "inactive" }).where(eq(users.id, requesterId));
+
+    await expect(
+      approveGroupAccessRequest(createCtx(managerId), { requestId })
+    ).rejects.toMatchObject({ message: "The requester is not active" });
+
+    const memberships = await db
+      .select()
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, requesterId));
+    expect(memberships).toHaveLength(0);
+  });
 });

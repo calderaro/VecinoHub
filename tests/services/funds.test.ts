@@ -36,6 +36,7 @@ import {
   rejectFundPayment,
   reverseFundMovement,
   submitFundPayment,
+  waiveFundGroupCharge,
 } from "@/services/funds";
 
 function createCtx(
@@ -422,6 +423,36 @@ describe("funds service", () => {
     // No credit movement should have been created.
     const movements = await db.select().from(fundMovements);
     expect(movements).toHaveLength(0);
+  });
+
+  it("rejects waiving a charge after its submitted payment was confirmed", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+    const adminCtx = createCtx(fixtures.adminId, {
+      role: "admin",
+      activeNeighborhoodId: fixtures.neighborhoodId,
+    });
+
+    const submission = await submitFundPayment(residentCtx, {
+      fundId: fixtures.fundId,
+      groupId: fixtures.groupId,
+      groupChargeId: fixtures.groupChargeId,
+      method: "cash",
+      amount: "100.00",
+      paidAt: new Date("2026-03-15T00:00:00.000Z"),
+    });
+    await confirmFundPayment(adminCtx, { paymentId: submission.id });
+
+    await expect(
+      waiveFundGroupCharge(adminCtx, { groupChargeId: fixtures.groupChargeId })
+    ).rejects.toMatchObject({ message: "A charge with payments cannot be waived" });
+
+    const [charge] = await db
+      .select()
+      .from(fundGroupCharges)
+      .where(eq(fundGroupCharges.id, fixtures.groupChargeId));
+    expect(charge?.status).toBe("paid");
+    expect(Number(charge?.amountPaid)).toBe(100);
   });
 
   it("reverses a movement once and rejects reversing it again or reversing a reversal", async () => {

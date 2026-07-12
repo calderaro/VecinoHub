@@ -505,6 +505,24 @@ export async function acceptGroupInvite(
   }
 
   await db.transaction(async (tx) => {
+    const [lockedNeighborhood] = await tx
+      .select({ status: neighborhoods.status })
+      .from(neighborhoods)
+      .where(eq(neighborhoods.id, actionableInvite.neighborhoodId))
+      .for("update");
+    const [lockedUser] = await tx
+      .select({ status: users.status })
+      .from(users)
+      .where(eq(users.id, ctx.user.id))
+      .for("update");
+
+    if (lockedNeighborhood?.status !== "active") {
+      throw new ServiceError("This neighborhood is not active", "FORBIDDEN");
+    }
+    if (lockedUser?.status !== "active") {
+      throw new ServiceError("Your account is not active", "FORBIDDEN");
+    }
+
     const existingGroupMembership = await tx
       .select({
         id: groupMemberships.id,
