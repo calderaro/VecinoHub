@@ -833,6 +833,27 @@ export async function getFundPeriodDetail(
   const fund = await requireFundAccess(ctx, period.fundId);
   const canModerate = await hasNeighborhoodAdminScope(ctx, fund.neighborhoodId);
 
+  // The per-group dues board (charges) stays neighborhood-visible, but a
+  // non-admin resident may only see the individual payment details (amount,
+  // method, date) of their own group(s).
+  const visibleGroupIds = canModerate
+    ? null
+    : new Set(
+        (
+          await db
+            .select({ groupId: groupMemberships.groupId })
+            .from(groupMemberships)
+            .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+            .where(
+              and(
+                eq(groupMemberships.userId, ctx.user.id),
+                eq(groups.neighborhoodId, fund.neighborhoodId),
+                eq(groupMemberships.status, "active")
+              )
+            )
+        ).map((row) => row.groupId)
+      );
+
   const [charges, payments] = await Promise.all([
     db
       .select({
@@ -869,20 +890,22 @@ export async function getFundPeriodDetail(
       .where(eq(fundGroupCharges.periodId, periodId)),
   ]);
 
-  const sanitizedPayments = payments.map((payment) =>
-    canModerate
-      ? payment
-      : {
-          id: payment.id,
-          groupChargeId: payment.groupChargeId,
-          groupId: payment.groupId,
-          groupName: payment.groupName,
-          amount: payment.amount,
-          status: payment.status,
-          method: payment.method,
-          paidAt: payment.paidAt,
-        }
-  );
+  const sanitizedPayments = payments
+    .filter((payment) => visibleGroupIds === null || visibleGroupIds.has(payment.groupId))
+    .map((payment) =>
+      canModerate
+        ? payment
+        : {
+            id: payment.id,
+            groupChargeId: payment.groupChargeId,
+            groupId: payment.groupId,
+            groupName: payment.groupName,
+            amount: payment.amount,
+            status: payment.status,
+            method: payment.method,
+            paidAt: payment.paidAt,
+          }
+    );
 
   return {
     ...period,
@@ -1323,10 +1346,9 @@ export async function reverseFundMovement(
   return db.transaction(async (tx) => {
     // A movement may be reversed at most once. Without this guard a
     // double-click/retry (or two admins) inserts multiple opposite entries and
-    // drives the fund balance arbitrarily wrong.
-    // ponytail: app-level check; a partial unique index on
-    // fund_movements(source_id) WHERE type='reversal' would also close the
-    // truly-concurrent double-reversal window.
+    // drives the fund balance arbitrarily wrong. Also enforced at the DB level
+    // by the partial unique index fund_movements_reversal_source_unique
+    // (migration 0018), which closes the truly-concurrent window.
     const existing = await tx
       .select({ id: fundMovements.id })
       .from(fundMovements)

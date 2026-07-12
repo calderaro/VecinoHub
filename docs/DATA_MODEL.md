@@ -276,6 +276,9 @@
 - `source_id` (nullable)
 - `created_by` (fk -> users.id)
 - `created_at`
+- Partial unique index: `source_id` where `type = 'reversal'`
+- Semantics:
+  - A source movement may be reversed at most once; the partial unique index preserves this invariant under concurrent reversal attempts.
 
 ## resources
 - `id` (pk)
@@ -352,7 +355,9 @@
 - `updated_at`
 - Semantics:
   - Reservation limits are enforced per `group_id` so usage is scoped to the house/unit, not the individual user.
-  - Only non-overlapping reservations that satisfy weekly availability, advance notice, duration, quota, block, and overdue-dues rules may be created.
+  - Conflict checks apply `buffer_before_minutes` and `buffer_after_minutes` to both the requested reservation and existing approved reservations, including reservations whose raw time ranges do not overlap.
+  - Reservation creation is serialized per resource so concurrent requests cannot both pass availability checks against stale data.
+  - Only reservations within `max_concurrent_reservations` that satisfy weekly availability, turnover buffers, advance notice, duration, quota, block, and overdue-dues rules may be created.
 
 ## resource_blocks
 - `id` (pk)
@@ -412,6 +417,7 @@
   - `fund_payment_submissions(fund_id)`
   - `fund_payment_submissions(group_id)`
   - `fund_movements(fund_id, effective_at)`
+  - `fund_movements(source_id)` unique where `type = 'reversal'`
   - `events.neighborhood_id`
   - `posts.neighborhood_id`
 

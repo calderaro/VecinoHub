@@ -68,6 +68,7 @@
 - Group managers can resend and cancel pending invites for their own group only.
 - Signed-in users can open `/dashboard/request-access`, launch the access-request dialog, look up an active neighborhood by exact slug, and see requestable groups in that neighborhood.
 - Visiting `/dashboard/request-access?slug=<neighborhood-slug>` preloads the neighborhood, locks the slug field, and lets the resident choose only a requestable group plus note.
+- Requestable-group options shown before approval contain group names but never group street addresses.
 - Neighborhood admins can view share-link actions on `/dashboard/request-access` for neighborhoods they manage and copy a join link for each one.
 - Creating a group access request does not create resident access before approval.
 - A user cannot create a duplicate pending request for the same group.
@@ -116,6 +117,9 @@
 - Contextual help content changes according to screen role where resident and admin guidance differ.
 - Resources: resident can create a reservation only inside configured availability windows, with timezone-aware advance notice and duration limits.
 - Resources: overlapping reservations and administrative blocks prevent booking the same slot.
+- Resources: configured before/after turnover buffers reject near-adjacent reservations even when their raw time ranges do not overlap.
+- Resources: simultaneous requests for the same resource are serialized so accepted reservations never exceed the configured concurrency limit.
+- Resources: residents see their own groups' reservation titles in the shared calendar, while other groups' titles and identities are replaced by anonymous reserved slots; neighborhood/platform admins see the title, group, and requester.
 - Resources: reservations are limited per group, not per individual user.
 - Resources: resident can cancel an eligible approved reservation, and late cancellations are rejected once the configured cutoff is reached.
 - Resources: neighborhood admin can create and remove administrative blocks from `/admin/[neighborhoodId]/resources/blocks`.
@@ -126,9 +130,11 @@
 - Funds: neighborhood admin can create due periods, record expenses/manual income/adjustments, and confirm/reject fund payments.
 - Fund balances are derived from confirmed movements only; rejected payments do not change balance.
 - Residents can view fund balance, confirmed movements, and group-level paid/unpaid status for their authorized neighborhood only.
+- Residents can see individual payment amount, method, and date only for their own active groups; other groups remain visible only in the aggregate dues board.
 - Residents can submit fund payments only for their own active groups.
 - Partial fund payments move the group charge to `partial`, full allocations move it to `paid`, and overdue periods display correctly after due date.
 - Residents cannot see payer identity on fund status boards; admins can see submitter and confirmer details.
+- Reversing the same fund movement twice, including through concurrent requests, leaves exactly one reversal movement.
 - Re-adding a neighborhood membership does not automatically restore prior group memberships or group-admin access.
 - Events: create/edit/delete and list/detail render correctly.
 - Events: event start/end use the shared datetime dialog and render the same clock time regardless of browser timezone.

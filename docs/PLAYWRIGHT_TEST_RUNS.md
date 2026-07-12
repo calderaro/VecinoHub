@@ -81,6 +81,53 @@ Expected:
 - Submission fails with a visible validation error.
 - No new row appears in `dashboard-reservations-table`.
 
+### Test Run: Resident Cannot Reserve Inside a Turnover Buffer
+Preconditions:
+- Logged in as a resident with an active membership for `{groupId}`.
+- A target resource has `buffer_before_minutes` or `buffer_after_minutes` greater than zero and `max_concurrent_reservations` set to `1`.
+- An approved reservation exists with a raw time range that does not overlap the requested range, but the gap is shorter than the combined configured buffers.
+
+Steps:
+1. Open `/dashboard/{groupId}/resources/{resourceId}/reserve`.
+2. Select the near-adjacent date and time range described in the preconditions.
+3. Submit `resource-reservation-submit`.
+
+Expected:
+- Submission fails with the unavailable-slot validation error even though the raw reservation times do not overlap.
+- No new row appears in `dashboard-reservations-table`.
+
+### Test Run: Concurrent Reservation Attempts Do Not Overbook
+Preconditions:
+- Two browser contexts are signed in as residents of different active groups in the same neighborhood.
+- A target resource has `max_concurrent_reservations` set to `1`, and the target slot is initially available to both groups.
+
+Steps:
+1. In both contexts, open `/dashboard/{groupId}/resources/{resourceId}/reserve` for the corresponding group.
+2. Fill the same date and time range with a unique title in each context.
+3. Trigger both `resource-reservation-submit` actions concurrently.
+4. Refresh the resource calendar and both groups' reservation-history pages.
+
+Expected:
+- Exactly one reservation is created for the contested slot.
+- The other submission receives the unavailable-slot validation error after the first reservation commits.
+- The calendar never shows more than the configured concurrency limit for the slot.
+
+### Test Run: Shared Calendar Masks Other Groups' Reservation Details
+Preconditions:
+- A target resource has approved reservations for two different groups in the same neighborhood.
+- Each reservation has a unique title, and the resident account is an active member of only one of those groups.
+
+Steps:
+1. As the resident, open `/dashboard/{groupId}/resources/{resourceId}`.
+2. Inspect `resource-calendar` for both reservations.
+3. Sign in as a neighborhood admin and open `/admin/{neighborhoodId}/resources/{resourceId}`.
+4. Inspect the same slots in `resource-calendar`.
+
+Expected:
+- The resident sees their own group's reservation title.
+- The other group's slot uses the generic reserved label and does not reveal its title, group, or requester.
+- The neighborhood admin sees the title, group, and requester for both reservations.
+
 ### Test Run: Neighborhood Admin Manages Resource Blocks
 Preconditions:
 - Logged in as a `neighborhood_admin` or `platform_admin`.
@@ -95,6 +142,25 @@ Steps:
 
 Expected:
 - Block creation and removal succeed without leaving stale rows behind.
+
+## Feature: Neighborhood Funds
+
+### Test Run: Resident Fund Period Hides Other Groups' Payment Details
+Preconditions:
+- A fund period has charges for at least two groups in the same neighborhood.
+- Both groups have submitted payments with distinguishable amount, method, date, reference, or notes.
+- The resident account is an active member of only one of the groups.
+
+Steps:
+1. As the resident, open `/dashboard/{groupId}/fund/{fundId}/{periodId}`.
+2. Inspect `dashboard-fund-period-my-charge` and `dashboard-fund-period-board`.
+3. Sign in as a neighborhood admin and open `/admin/{neighborhoodId}/fund/{fundId}/periods/{periodId}`.
+4. Inspect the submitted-payments section for both groups.
+
+Expected:
+- The resident sees the neighborhood-wide aggregate dues board and their own charge summary.
+- The resident view does not expose the other group's individual payment method, date, reference, notes, submitter, or confirmer.
+- The neighborhood admin sees the payment submissions and moderation details for both groups.
 
 ## Feature: Port-Time and Shared DateTime Picker
 
@@ -471,12 +537,13 @@ Steps:
 3. Verify the neighborhood slug field is prefilled with `colonia-centro` and is locked.
 4. Verify the neighborhood lookup resolves automatically.
 5. Verify requestable groups are listed for the neighborhood.
-6. Select a group and submit the request.
-7. Verify the new request appears under pending requests.
+6. Verify each option contains only the group name and does not expose its street address.
+7. Select a group and submit the request.
+8. Verify the new request appears under pending requests.
 
 Expected:
 - The shared join link preloads the neighborhood context without requiring the resident to type the slug manually.
-- The resident only needs to choose a group and optional note before submitting.
+- The resident only needs to choose a group by name and optional note before submitting; no group street address is exposed before approval.
 - The request is created under the correct neighborhood scope.
 
 ### Test Run: Neighborhood Admin Reviews Requests From the Neighborhood Screen

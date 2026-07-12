@@ -9,7 +9,7 @@ type CalendarEntry = {
   windows: Array<{ id: string; startMinute: number; endMinute: number }>;
   reservations: Array<{
     id: string;
-    title: string;
+    title: string | null;
     status: string;
     startMinute: number;
     endMinute: number;
@@ -88,7 +88,9 @@ export function AvailabilityCalendar({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium text-stone-900">{reservation.title}</p>
+                          <p className="text-sm font-medium text-stone-900">
+                            {reservation.title ?? t("reserved")}
+                          </p>
                           <p className="text-xs text-stone-500">
                             {minuteToTimeLabel(reservation.startMinute)} -{" "}
                             {minuteToTimeLabel(reservation.endMinute)}

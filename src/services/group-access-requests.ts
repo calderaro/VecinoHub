@@ -233,11 +233,12 @@ export async function listRequestableGroupsForNeighborhood(
     throw new ServiceError("Neighborhood not found", "NOT_FOUND");
   }
 
+  // No address here: this is the pre-membership picker, so a caller who is not
+  // yet a member should not see group street addresses (revealed after joining).
   const availableGroups = await db
     .select({
       id: groups.id,
       name: groups.name,
-      address: groups.address,
     })
     .from(groups)
     .where(eq(groups.neighborhoodId, neighborhoodId))

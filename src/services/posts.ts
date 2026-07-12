@@ -67,8 +67,8 @@ async function requirePostAdminScope(ctx: ServiceContext, postId: string) {
 
 const createPostSchema = z.object({
   neighborhoodId: idSchema.optional(),
-  title: z.string().min(1),
-  content: z.string().min(1),
+  title: z.string().min(1).max(200),
+  content: z.string().min(1).max(50000),
   status: postStatusSchema.optional(),
 });
 
@@ -115,8 +115,8 @@ export async function createPost(
 const updatePostSchema = z
   .object({
     postId: idSchema,
-    title: z.string().min(1).optional(),
-    content: z.string().min(1).optional(),
+    title: z.string().min(1).max(200).optional(),
+    content: z.string().min(1).max(50000).optional(),
   })
   .refine((data) => data.title !== undefined || data.content !== undefined, {
     message: "Post updates require at least one field.",

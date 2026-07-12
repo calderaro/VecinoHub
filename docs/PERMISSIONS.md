@@ -40,8 +40,10 @@
 - Vote for own groups in active polls.
 - Submit/delete own group contributions while campaign is open.
 - Read neighborhood fund balances, confirmed movements, and group-level paid/unpaid status in authorized neighborhoods.
+- Read individual fund payment details only for their own active groups; the neighborhood-wide group dues board does not expose other groups' payment submissions.
 - Submit fund payments only for their own active groups.
-- Browse resources and create/cancel reservations only for their own active groups in authorized neighborhoods.
+- Browse resources and create/cancel reservations only for their own active groups in authorized neighborhoods; shared calendars expose other groups' reservations as anonymous busy slots.
+- Discover requestable groups by name before membership approval without receiving group street addresses.
 - Update own profile.
 - Cannot access `/admin/*` or `/platform/*`.
 - A synchronized `neighbor` neighborhood membership may exist in storage, but it does not independently grant resident access.
@@ -68,10 +70,13 @@
   - contribution: campaign neighborhood must match group neighborhood
   - fund charge template/period/movement: fund neighborhood must match the authorized neighborhood
   - fund payment: fund, group, charge period, and allocation rows must belong to the same neighborhood and fund
-  - resource reservation: resource neighborhood must match group neighborhood, the actor must be an active group member, and the reservation must pass availability/quota/block validation
+  - fund period read: a resident may see the neighborhood group dues board, but payment submission details must be filtered to the resident's own active groups
+  - resource reservation: resource neighborhood must match group neighborhood, the actor must be an active group member, and the reservation must pass availability/quota/block validation, including configured turnover buffers; creation must be serialized per resource to prevent concurrent overbooking
+  - resource calendar read: neighborhood/platform admins may see all reservation details; residents may see details for their own active groups and only anonymous busy slots for other groups
   - resource block: resource block neighborhood must match the resource neighborhood and only admins within scope may create, update, or remove it
   - invite: group invite neighborhood must match the target group neighborhood, and invite acceptance must require an email match with the signed-in user
   - access request create: target group must belong to an active neighborhood, requester must be authenticated, and request creation must not create access directly
+  - access request discovery: pre-membership group lookup returns only the group identifier and name, not the group's street address
   - access request review: only group/neighborhood/platform managers within scope may approve or reject, and approval must activate group membership plus synchronized resident neighborhood membership
   - access request neighborhood read: the neighborhood-wide request listing and its aggregate counts require an active `neighborhood_admin` membership for that specific neighborhood (or platform admin)
   - leave group: the actor may only leave their own active membership, and the final active `group_admin` in a group cannot leave

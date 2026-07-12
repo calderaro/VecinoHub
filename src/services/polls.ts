@@ -74,13 +74,13 @@ function combineFilters<T>(filters: Array<T | undefined>) {
 
 const createPollSchema = z.object({
   neighborhoodId: idSchema.optional(),
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(5000).optional(),
   options: z
     .array(
       z.object({
-        label: z.string().min(1),
-        description: z.string().optional(),
+        label: z.string().min(1).max(200),
+        description: z.string().max(2000).optional(),
         amount: z.string().optional(),
       })
     )
@@ -142,8 +142,8 @@ export async function createPoll(
 
 const updatePollSchema = z.object({
   pollId: idSchema,
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(5000).optional(),
   status: z.enum(["draft", "active", "closed"]).optional(),
 });
 
@@ -275,8 +275,8 @@ export async function resetPoll(
 
 const addOptionSchema = z.object({
   pollId: idSchema,
-  label: z.string().min(1),
-  description: z.string().optional(),
+  label: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
   amount: z.string().optional(),
   sortOrder: z.number().int().positive().optional(),
 });
@@ -306,8 +306,8 @@ export async function addOption(
 
 const updateOptionSchema = z.object({
   optionId: idSchema,
-  label: z.string().min(1),
-  description: z.string().optional(),
+  label: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
   amount: z.string().optional(),
 });
 

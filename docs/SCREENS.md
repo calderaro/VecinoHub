@@ -46,7 +46,7 @@
   - page presents a CTA summary and opens the request form inside a dialog.
   - supports a shareable neighborhood join-link format (`/dashboard/request-access?slug=<neighborhood-slug>`) that preloads and locks the neighborhood slug so the resident only chooses a group and submits the request.
   - neighborhood admins also see share-link actions for their managed neighborhoods on this page.
-  - exact neighborhood slug lookup, then group selection, optional note, and submit action.
+  - exact neighborhood slug lookup, then group-name selection, optional note, and submit action; group street addresses are not exposed before membership approval.
   - shows the requester’s pending requests and request history.
   - supports requester-side cancel for pending requests.
   - exposes contextual help for resident access requests and shared join links.
@@ -86,6 +86,7 @@
     - shows fund balance, recent confirmed movements, current due summary for the signed-in resident's group, and neighborhood group payment status.
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]`
     - shows due-period detail, the resident's group obligation, and neighborhood payment-status board.
+    - exposes other groups only through aggregate dues status; individual payment submissions returned to resident fund views are scoped to the signed-in resident's own active groups.
   - `/dashboard/[groupId]/fund/[fundId]/[periodId]/pay`
     - uses the shared date selector for payment date submission.
   - `/dashboard/[groupId]/resources`
@@ -93,9 +94,11 @@
     - exposes role-aware contextual help for reservation discovery and resource usage.
   - `/dashboard/[groupId]/resources/[resourceId]`
     - resident resource detail with timezone, rules summary, and availability calendar.
+    - shows reservation titles for the resident's own active groups and a generic reserved label for other groups; group and requester identity remain admin-only.
   - `/dashboard/[groupId]/resources/[resourceId]/reserve`
     - resident reservation form for date, time window, title, attendee count, and notes.
     - date and time are selected with the shared dialog-based controls and interpreted in neighborhood time.
+    - rejects slots that violate configured before/after turnover buffers, including near-adjacent reservations whose raw time ranges do not overlap.
   - `/dashboard/[groupId]/resources/reservations`
     - resident reservation history for the current group with cancellation CTA when allowed.
   - `/dashboard/[groupId]/events`
@@ -143,6 +146,7 @@
     - weekly availability windows use the shared time selector and neighborhood timezone-aware validation.
   - `/admin/[neighborhoodId]/resources/[resourceId]`
     - resource detail with rules summary, upcoming reservations, upcoming blocks, and availability calendar.
+    - the admin calendar includes reservation title, group, and requester details that resident calendars mask outside the resident's own groups.
   - `/admin/[neighborhoodId]/resources/[resourceId]/edit`
     - uses shared time selectors for weekly availability and rule editing.
   - `/admin/[neighborhoodId]/resources/reservations`

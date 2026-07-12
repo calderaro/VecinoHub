@@ -23,6 +23,7 @@ import {
   cancelResourceReservation,
   createResource,
   createResourceReservation,
+  getResourceCalendar,
 } from "@/services/resources";
 import {
   closeTestDatabase,
@@ -351,6 +352,136 @@ describe("resources service", () => {
     ).rejects.toMatchObject({
       message: "The requested slot is no longer available",
     });
+  });
+
+  it("enforces the turnover buffer against a reservation that does not raw-overlap", async () => {
+    const fixtures = await seedResourceFixtures();
+    const reservationDate = formatDateKey(addDays(new Date(), 14));
+    const dayOfWeek = dayOfWeekForDateKey(reservationDate);
+
+    // America/Mexico_City is UTC-6, so local 11:20-12:00 == 17:20-18:00 UTC.
+    const resource = await createResource(fixtures.adminCtx, {
+      neighborhoodId: fixtures.neighborhoodId,
+      name: "Court",
+      location: "Sports area",
+      availabilityWindows: [{ dayOfWeek, startMinute: 540, endMinute: 1320 }],
+      rules: {
+        minAdvanceHours: 24,
+        maxAdvanceDays: 90,
+        minDurationMinutes: 30,
+        maxDurationMinutes: 360,
+        bufferBeforeMinutes: 15,
+        bufferAfterMinutes: 15,
+        maxConcurrentReservations: 1,
+        requireNoDebt: false,
+        lateCancellationCountsAsUsage: false,
+        lateCancellationForfeitsDeposit: false,
+      },
+    });
+
+    await db.insert(resourceReservations).values({
+      id: randomUUID(),
+      resourceId: resource.id,
+      neighborhoodId: fixtures.neighborhoodId,
+      groupId: fixtures.secondGroupId,
+      requestedBy: fixtures.secondResidentId,
+      startAt: new Date(`${reservationDate}T17:20:00.000Z`),
+      endAt: new Date(`${reservationDate}T18:00:00.000Z`),
+      title: "Already booked",
+      status: "approved",
+    });
+
+    // Request 10:00-11:00 local: ends 20 min before the existing 11:20 start,
+    // less than the 30 min of combined turnover buffer -> must be rejected even
+    // though the raw windows don't overlap.
+    await expect(
+      createResourceReservation(fixtures.residentCtx, {
+        resourceId: resource.id,
+        groupId: fixtures.groupId,
+        date: reservationDate,
+        startMinute: 600,
+        endMinute: 660,
+        title: "Too close",
+        attendeeCount: 4,
+      })
+    ).rejects.toMatchObject({ message: "The requested slot is no longer available" });
+
+    // Request 10:00-10:45 local: 35 min gap to the existing 11:20 start, beyond
+    // the buffer -> allowed.
+    const ok = await createResourceReservation(fixtures.residentCtx, {
+      resourceId: resource.id,
+      groupId: fixtures.groupId,
+      date: reservationDate,
+      startMinute: 600,
+      endMinute: 645,
+      title: "Comfortable gap",
+      attendeeCount: 4,
+    });
+    expect(ok?.status).toBe("approved");
+  });
+
+  it("masks other groups' reservation identity on the calendar for non-admins", async () => {
+    const fixtures = await seedResourceFixtures();
+    const reservationDate = formatDateKey(addDays(new Date(), 9));
+    const dayOfWeek = dayOfWeekForDateKey(reservationDate);
+
+    const resource = await createResource(fixtures.adminCtx, {
+      neighborhoodId: fixtures.neighborhoodId,
+      name: "Pool",
+      location: "Back",
+      availabilityWindows: [{ dayOfWeek, startMinute: 540, endMinute: 1320 }],
+      rules: {
+        minAdvanceHours: 1,
+        maxAdvanceDays: 90,
+        minDurationMinutes: 60,
+        maxDurationMinutes: 360,
+        bufferBeforeMinutes: 0,
+        bufferAfterMinutes: 0,
+        maxConcurrentReservations: 1,
+        requireNoDebt: false,
+        lateCancellationCountsAsUsage: false,
+        lateCancellationForfeitsDeposit: false,
+      },
+    });
+
+    // Reservation owned by the OTHER group.
+    await db.insert(resourceReservations).values({
+      id: randomUUID(),
+      resourceId: resource.id,
+      neighborhoodId: fixtures.neighborhoodId,
+      groupId: fixtures.secondGroupId,
+      requestedBy: fixtures.secondResidentId,
+      startAt: new Date(`${reservationDate}T18:00:00.000Z`),
+      endAt: new Date(`${reservationDate}T20:00:00.000Z`),
+      title: "Private party",
+      status: "approved",
+    });
+
+    // A resident of the first group (non-admin) sees the slot as busy only.
+    const residentView = await getResourceCalendar(fixtures.residentCtx, {
+      resourceId: resource.id,
+      fromDate: reservationDate,
+      days: 1,
+    });
+    const residentEntry = residentView.entries
+      .flatMap((e) => e.reservations)
+      .find((r) => r.status === "approved");
+    expect(residentEntry).toBeDefined();
+    expect(residentEntry?.title).toBeNull();
+    expect(residentEntry?.groupName).toBeNull();
+    expect(residentEntry?.requestedByName).toBeNull();
+
+    // A member of the reserving group sees the full details.
+    const ownerView = await getResourceCalendar(fixtures.secondResidentCtx, {
+      resourceId: resource.id,
+      fromDate: reservationDate,
+      days: 1,
+    });
+    const ownerEntry = ownerView.entries
+      .flatMap((e) => e.reservations)
+      .find((r) => r.status === "approved");
+    expect(ownerEntry?.title).toBe("Private party");
+    expect(ownerEntry?.requestedByName).toBe("Resident Two");
   });
 
   it("rejects resident cancellation once the cancellation limit has passed", async () => {

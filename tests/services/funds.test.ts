@@ -30,6 +30,7 @@ import {
 import {
   confirmFundPayment,
   createNeighborhoodFund,
+  getFundPeriodDetail,
   getResidentFundDashboard,
   rejectFundPayment,
   reverseFundMovement,
@@ -425,5 +426,91 @@ describe("funds service", () => {
 
     const movements = await db.select().from(fundMovements);
     expect(movements).toHaveLength(2);
+  });
+
+  it("enforces at most one reversal per movement at the database level", async () => {
+    const fixtures = await seedFundFixtures();
+    const sourceId = randomUUID();
+    const makeReversal = () => ({
+      fundId: fixtures.fundId,
+      neighborhoodId: fixtures.neighborhoodId,
+      type: "reversal" as const,
+      entrySide: "debit" as const,
+      amount: "10.00",
+      description: "Reversal",
+      sourceType: "reversal",
+      sourceId,
+      createdBy: fixtures.adminId,
+    });
+
+    await db.insert(fundMovements).values(makeReversal());
+    await expect(db.insert(fundMovements).values(makeReversal())).rejects.toThrow();
+
+    const rows = await db.select().from(fundMovements);
+    expect(rows).toHaveLength(1);
+  });
+
+  it("scopes period payment details to the caller's own group but keeps the full dues board", async () => {
+    const fixtures = await seedFundFixtures();
+
+    // A second group in the same period with its own charge + payment.
+    const secondGroupId = randomUUID();
+    const secondChargeId = randomUUID();
+    await db.insert(groups).values({
+      id: secondGroupId,
+      neighborhoodId: fixtures.neighborhoodId,
+      name: "Casa 202",
+    });
+    await db.insert(fundGroupCharges).values({
+      id: secondChargeId,
+      periodId: fixtures.periodId,
+      groupId: secondGroupId,
+      amountDue: "100.00",
+      amountPaid: "0.00",
+      status: "unpaid",
+    });
+    await db.insert(fundPaymentSubmissions).values([
+      {
+        id: randomUUID(),
+        fundId: fixtures.fundId,
+        neighborhoodId: fixtures.neighborhoodId,
+        groupChargeId: secondChargeId,
+        groupId: secondGroupId,
+        submittedBy: fixtures.adminId,
+        method: "cash",
+        amount: "50.00",
+        paidAt: "2026-03-10",
+        status: "submitted",
+      },
+      {
+        id: randomUUID(),
+        fundId: fixtures.fundId,
+        neighborhoodId: fixtures.neighborhoodId,
+        groupChargeId: fixtures.groupChargeId,
+        groupId: fixtures.groupId,
+        submittedBy: fixtures.residentId,
+        method: "cash",
+        amount: "30.00",
+        paidAt: "2026-03-11",
+        status: "submitted",
+      },
+    ]);
+
+    const residentView = await getFundPeriodDetail(createCtx(fixtures.residentId), {
+      periodId: fixtures.periodId,
+    });
+    // Board still lists every group.
+    expect(residentView.groupCharges.map((c) => c.groupId).sort()).toEqual(
+      [fixtures.groupId, secondGroupId].sort()
+    );
+    // Payments limited to the resident's own group.
+    expect(residentView.payments).toHaveLength(1);
+    expect(residentView.payments[0]?.groupId).toBe(fixtures.groupId);
+
+    const adminView = await getFundPeriodDetail(
+      createCtx(fixtures.adminId, { role: "admin", activeNeighborhoodId: fixtures.neighborhoodId }),
+      { periodId: fixtures.periodId }
+    );
+    expect(adminView.payments).toHaveLength(2);
   });
 });

@@ -1483,6 +1483,7 @@
       "noAvailability": "No weekly availability.",
       "reservations": "Reservations",
       "noReservations": "No reservations.",
+      "reserved": "Reserved",
       "unknownGroup": "Unknown group",
       "blocks": "Blocks",
       "noBlocks": "No blocks."

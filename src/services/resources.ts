@@ -7,6 +7,7 @@ import {
   fundGroupCharges,
   groupMemberships,
   groups,
+  neighborhoodMemberships,
   neighborhoods,
   resourceAvailabilityWindows,
   resourceBlocks,
@@ -481,6 +482,18 @@ async function validateAvailabilityAndRules(args: {
     rules.bufferAfterMinutes
   );
 
+  // The exact isOverlap check below expands BOTH sides by the buffer, but the DB
+  // pre-filter must widen by the existing reservation's buffer too — otherwise a
+  // conflict whose raw window sits within bufferBefore/After of the requested
+  // window is never fetched and the exact check never runs on it. Expanding the
+  // requested effective window by the opposite buffer on each side is exact.
+  const prefilterStart = new Date(
+    effectiveRequestedWindow.start.getTime() - rules.bufferAfterMinutes * 60 * 1000
+  );
+  const prefilterEnd = new Date(
+    effectiveRequestedWindow.end.getTime() + rules.bufferBeforeMinutes * 60 * 1000
+  );
+
   const reservationCandidates = await db
     .select({
       reservation: resourceReservations,
@@ -491,8 +504,8 @@ async function validateAvailabilityAndRules(args: {
         eq(resourceReservations.resourceId, resourceId),
         eq(resourceReservations.status, "approved"),
         requestedReservationId ? ne(resourceReservations.id, requestedReservationId) : undefined,
-        lte(resourceReservations.startAt, effectiveRequestedWindow.end),
-        gte(resourceReservations.endAt, effectiveRequestedWindow.start),
+        lte(resourceReservations.startAt, prefilterEnd),
+        gte(resourceReservations.endAt, prefilterStart),
       ])
     );
 
@@ -622,6 +635,7 @@ function buildCalendarEntries(args: {
     reservation: typeof resourceReservations.$inferSelect;
     groupName: string | null;
     requestedByName: string | null;
+    maskDetails?: boolean;
   }>;
   blocks: Array<typeof resourceBlocks.$inferSelect>;
 }) {
@@ -654,12 +668,12 @@ function buildCalendarEntries(args: {
       return [
         {
           id: item.reservation.id,
-          title: item.reservation.title,
+          title: item.maskDetails ? null : item.reservation.title,
           status: item.reservation.status,
           startMinute,
           endMinute,
-          groupName: item.groupName,
-          requestedByName: item.requestedByName,
+          groupName: item.maskDetails ? null : item.groupName,
+          requestedByName: item.maskDetails ? null : item.requestedByName,
         },
       ];
     });
@@ -930,7 +944,7 @@ export async function getResourceCalendar(
     timeZone: record.timeZone,
   });
 
-  const [windows, reservations, blocks] = await Promise.all([
+  const [windows, reservations, blocks, adminRows, callerGroupRows] = await Promise.all([
     getResourceAvailabilityWindows(resourceId),
     db
       .select({
@@ -960,7 +974,40 @@ export async function getResourceCalendar(
         )
       )
       .orderBy(asc(resourceBlocks.startAt)),
+    db
+      .select({ id: neighborhoodMemberships.id })
+      .from(neighborhoodMemberships)
+      .where(
+        and(
+          eq(neighborhoodMemberships.userId, ctx.user.id),
+          eq(neighborhoodMemberships.neighborhoodId, record.resource.neighborhoodId),
+          eq(neighborhoodMemberships.role, "neighborhood_admin"),
+          eq(neighborhoodMemberships.status, "active")
+        )
+      )
+      .limit(1),
+    db
+      .select({ groupId: groupMemberships.groupId })
+      .from(groupMemberships)
+      .innerJoin(groups, eq(groupMemberships.groupId, groups.id))
+      .where(
+        and(
+          eq(groupMemberships.userId, ctx.user.id),
+          eq(groups.neighborhoodId, record.resource.neighborhoodId),
+          eq(groupMemberships.status, "active")
+        )
+      ),
   ]);
+
+  // Non-admins see other groups' reservations as busy slots only; the booker
+  // name, group, and free-text title are reserved for the reserving group and
+  // neighborhood admins.
+  const canSeeAllDetails = isPlatformAdmin(ctx) || adminRows.length > 0;
+  const callerGroupIds = new Set(callerGroupRows.map((row) => row.groupId));
+  const scopedReservations = reservations.map((item) => ({
+    ...item,
+    maskDetails: !canSeeAllDetails && !callerGroupIds.has(item.reservation.groupId),
+  }));
 
   return {
     resourceId,
@@ -972,7 +1019,7 @@ export async function getResourceCalendar(
       days,
       timeZone: record.timeZone,
       windows,
-      reservations,
+      reservations: scopedReservations,
       blocks,
     }),
   };
@@ -1238,37 +1285,52 @@ export async function createResourceReservation(
     rules.requireNoDebt
   );
 
-  const { startAt, endAt } = await validateAvailabilityAndRules({
-    resourceId: parsed.resourceId,
-    timeZone: resourceRecord.timeZone,
-    date: parsed.date,
-    startMinute: parsed.startMinute,
-    endMinute: parsed.endMinute,
-    rules,
-    groupId: parsed.groupId,
-  });
+  return db.transaction(async (tx) => {
+    // Serialize reservation creation per resource so two concurrent requests
+    // can't both pass the overlap check and double-book. The row lock is held
+    // until commit; a second request blocks here until the first inserts, then
+    // its availability check sees the new row. (A tstzrange exclusion constraint
+    // can't replace this: maxConcurrentReservations may be >1 and buffers vary
+    // per resource, so DB-level raw-overlap exclusion would reject legitimate
+    // bookings — the lock is the correct durable fix.)
+    await tx
+      .select({ id: resources.id })
+      .from(resources)
+      .where(eq(resources.id, parsed.resourceId))
+      .for("update");
 
-  const createdRows = await db
-    .insert(resourceReservations)
-    .values({
+    const { startAt, endAt } = await validateAvailabilityAndRules({
       resourceId: parsed.resourceId,
-      neighborhoodId: resourceRecord.resource.neighborhoodId,
+      timeZone: resourceRecord.timeZone,
+      date: parsed.date,
+      startMinute: parsed.startMinute,
+      endMinute: parsed.endMinute,
+      rules,
       groupId: parsed.groupId,
-      requestedBy: ctx.user.id,
-      startAt,
-      endAt,
-      title: parsed.title.trim(),
-      notes: parsed.notes?.trim() || null,
-      attendeeCount: parsed.attendeeCount ?? null,
-      status: "approved",
-    })
-    .returning();
+    });
 
-  if (!createdRows[0]) {
-    throw new ServiceError("Failed to create reservation", "INVALID");
-  }
+    const createdRows = await tx
+      .insert(resourceReservations)
+      .values({
+        resourceId: parsed.resourceId,
+        neighborhoodId: resourceRecord.resource.neighborhoodId,
+        groupId: parsed.groupId,
+        requestedBy: ctx.user.id,
+        startAt,
+        endAt,
+        title: parsed.title.trim(),
+        notes: parsed.notes?.trim() || null,
+        attendeeCount: parsed.attendeeCount ?? null,
+        status: "approved",
+      })
+      .returning();
 
-  return createdRows[0];
+    if (!createdRows[0]) {
+      throw new ServiceError("Failed to create reservation", "INVALID");
+    }
+
+    return createdRows[0];
+  });
 }
 
 export async function cancelResourceReservation(

@@ -483,7 +483,6 @@ export function DashboardRequestAccess({
                         {requestableGroupItems.map((group) => (
                           <option key={group.id} value={group.id}>
                             {group.name}
-                            {group.address ? ` - ${group.address}` : ""}
                           </option>
                         ))}
                       </select>
