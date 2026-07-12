@@ -287,6 +287,40 @@ describe("group invite services", () => {
     ).rejects.toMatchObject({ message: "This invite was sent to a different email address" });
   });
 
+  it("blocks an inactive user from accepting an invite without creating memberships", async () => {
+    const { groupId, neighborhoodId } = await seedManagedGroup();
+    const residentId = randomUUID();
+    const inviteId = randomUUID();
+
+    await db.insert(users).values({
+      id: residentId,
+      email: "inactive@example.com",
+      name: "Inactive Invitee",
+      status: "inactive",
+    });
+    await db.insert(groupInvites).values({
+      id: inviteId,
+      groupId,
+      neighborhoodId,
+      email: "inactive@example.com",
+      role: "group_member",
+      status: "pending",
+      tokenHash: "token-hash-inactive-user",
+      invitedBy: randomUUID(),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+    });
+
+    await expect(
+      acceptGroupInvite(createCtx(residentId), { inviteId })
+    ).rejects.toMatchObject({ message: "Your account is not active" });
+
+    const memberships = await db
+      .select()
+      .from(groupMemberships)
+      .where(eq(groupMemberships.userId, residentId));
+    expect(memberships).toHaveLength(0);
+  });
+
   it("resends an expired invite by moving it back to pending", async () => {
     const { managerId, groupId, neighborhoodId } = await seedManagedGroup();
     const inviteId = randomUUID();

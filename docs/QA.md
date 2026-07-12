@@ -63,6 +63,7 @@
 - Group managers can invite a registered user by email, the user receives an email, sees the invite in `/dashboard/invites`, and can accept or reject it.
 - Group managers can invite an email with no existing account, the recipient can register, and the pending invite appears in `/dashboard/invites` after sign-up.
 - Accepting an invite creates or reactivates the user’s neighborhood membership and group membership with the invited role.
+- Accepting an invite fails without creating memberships if the signed-in user or target neighborhood becomes inactive before acceptance is finalized.
 - Rejecting an invite does not create group membership.
 - Users signed in with a different email from the invite target cannot accept or reject that invite.
 - Group managers can resend and cancel pending invites for their own group only.
@@ -76,6 +77,7 @@
 - Group admins, neighborhood admins, and platform admins can review requests only within their scope.
 - Approving a request creates or reactivates the requester’s `group_membership` as `group_member`.
 - Approving a request also creates or reactivates the synchronized `neighbor` neighborhood membership.
+- Approving a request fails without creating memberships if the requester or target neighborhood becomes inactive before approval is finalized.
 - Rejecting a request closes it without creating resident access.
 - `/admin/[neighborhoodId]/requests` lists pending and historical access requests for every group in the neighborhood, each row showing requester, target group, note, and dates.
 - `/admin/[neighborhoodId]/requests` lets neighborhood/platform admins approve or reject pending requests, moving them to the history tab.
@@ -107,6 +109,7 @@
 - Polls: draft -> active -> closed lifecycle still works; one vote per group per poll enforced.
 - Poll voting rejects option ids that belong to a different poll and preserves the existing valid vote.
 - Fundraising: create campaign, submit contribution, confirm/reject still work.
+- A resident can delete only their own submitted contribution; confirmation winning concurrently preserves the contribution and raised total.
 - Resident campaign detail only shows contributions submitted by the signed-in user for the selected group.
 - Former or inactive group memberships do not expose contributions in fundraising detail pages.
 - Resources: neighborhood admin can create, edit, and deactivate a resource with weekly availability and reservation rules.
@@ -128,6 +131,7 @@
 - `/dashboard/[groupId]/fund` exposes contextual help for resident fund reading.
 - `/admin/[neighborhoodId]/fund` exposes contextual help for admin fund operations.
 - Funds: neighborhood admin can create due periods, record expenses/manual income/adjustments, and confirm/reject fund payments.
+- Confirming a submitted payment and waiving its charge cannot produce both a credit and a waived charge: a waiver prevents confirmation, and a confirmed/partially paid charge cannot be waived.
 - Fund balances are derived from confirmed movements only; rejected payments do not change balance.
 - Residents can view fund balance, confirmed movements, and group-level paid/unpaid status for their authorized neighborhood only.
 - Residents can see individual payment amount, method, and date only for their own active groups; other groups remain visible only in the aggregate dues board.

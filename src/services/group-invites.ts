@@ -143,6 +143,7 @@ async function loadInviteContext(invite: InviteRecord) {
       groupName: groups.name,
       neighborhoodId: groups.neighborhoodId,
       neighborhoodName: neighborhoods.name,
+      neighborhoodStatus: neighborhoods.status,
     })
     .from(groups)
     .innerJoin(neighborhoods, eq(neighborhoods.id, groups.neighborhoodId))
@@ -477,7 +478,7 @@ export async function cancelGroupInvite(
       cancelledAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(groupInvites.id, actionableInvite.id))
+    .where(and(eq(groupInvites.id, actionableInvite.id), eq(groupInvites.status, "pending")))
     .returning();
 
   if (!updated[0]) {
@@ -497,7 +498,31 @@ export async function acceptGroupInvite(
   await ensureInviteEmailMatchesUser(ctx, actionableInvite);
   const inviteContext = await loadInviteContext(actionableInvite);
 
+  // Re-validate the creation-time precondition: don't grant membership into a
+  // neighborhood that was deactivated after the invite was sent.
+  if (inviteContext.neighborhoodStatus !== "active") {
+    throw new ServiceError("This neighborhood is not active", "FORBIDDEN");
+  }
+
   await db.transaction(async (tx) => {
+    const [lockedNeighborhood] = await tx
+      .select({ status: neighborhoods.status })
+      .from(neighborhoods)
+      .where(eq(neighborhoods.id, actionableInvite.neighborhoodId))
+      .for("update");
+    const [lockedUser] = await tx
+      .select({ status: users.status })
+      .from(users)
+      .where(eq(users.id, ctx.user.id))
+      .for("update");
+
+    if (lockedNeighborhood?.status !== "active") {
+      throw new ServiceError("This neighborhood is not active", "FORBIDDEN");
+    }
+    if (lockedUser?.status !== "active") {
+      throw new ServiceError("Your account is not active", "FORBIDDEN");
+    }
+
     const existingGroupMembership = await tx
       .select({
         id: groupMemberships.id,
@@ -540,7 +565,10 @@ export async function acceptGroupInvite(
       ctx.user.id
     );
 
-    await tx
+    // Guard the transition on status inside the txn: if the invite was
+    // cancelled/accepted concurrently between the pre-check and here, this
+    // matches zero rows and the throw rolls back the membership writes above.
+    const finalized = await tx
       .update(groupInvites)
       .set({
         status: "accepted",
@@ -548,7 +576,12 @@ export async function acceptGroupInvite(
         acceptedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(groupInvites.id, actionableInvite.id));
+      .where(and(eq(groupInvites.id, actionableInvite.id), eq(groupInvites.status, "pending")))
+      .returning({ id: groupInvites.id });
+
+    if (!finalized[0]) {
+      throw new ServiceError("Invite is no longer pending", "INVALID");
+    }
   });
 
   return {
@@ -575,7 +608,7 @@ export async function rejectGroupInvite(
       rejectedAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(groupInvites.id, actionableInvite.id))
+    .where(and(eq(groupInvites.id, actionableInvite.id), eq(groupInvites.status, "pending")))
     .returning();
 
   if (!updated[0]) {

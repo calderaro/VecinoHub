@@ -18,6 +18,7 @@ vi.mock("@/db", async () => {
 });
 
 import {
+  deleteContribution,
   getCampaignDetail,
   getResidentCampaignDetail,
   listCampaigns,
@@ -488,5 +489,82 @@ describe("fundraising service authorization", () => {
     expect(campaigns).toHaveLength(1);
     expect(campaigns[0]?.contributions).toHaveLength(1);
     expect(campaigns[0]?.contributions[0]?.groupId).toBe(activeGroupId);
+  });
+
+  it("lets an owner delete their submitted contribution but not a confirmed one", async () => {
+    const neighborhoodId = randomUUID();
+    const residentId = randomUUID();
+    const groupId = randomUUID();
+    const campaignId = randomUUID();
+
+    await db.insert(users).values({
+      id: residentId,
+      email: "owner@example.com",
+      name: "Owner",
+      status: "active",
+    });
+    await db.insert(neighborhoodMemberships).values({
+      id: randomUUID(),
+      neighborhoodId,
+      userId: residentId,
+      role: "neighbor",
+      status: "active",
+    });
+    await db.insert(groups).values({ id: groupId, neighborhoodId, name: "Casa 1" });
+    await db.insert(groupMemberships).values({
+      id: randomUUID(),
+      groupId,
+      userId: residentId,
+      role: "group_member",
+      status: "active",
+    });
+    await db.insert(fundraisingCampaigns).values({
+      id: campaignId,
+      neighborhoodId,
+      title: "Campaign",
+      amount: "100.00",
+      goalAmount: "1000.00",
+      status: "open",
+      createdBy: residentId,
+    });
+
+    const submittedId = randomUUID();
+    const confirmedId = randomUUID();
+    await db.insert(fundraisingContributions).values([
+      {
+        id: submittedId,
+        campaignId,
+        groupId,
+        submittedBy: residentId,
+        method: "cash",
+        amount: "50.00",
+        status: "submitted",
+      },
+      {
+        id: confirmedId,
+        campaignId,
+        groupId,
+        submittedBy: residentId,
+        method: "cash",
+        amount: "50.00",
+        status: "confirmed",
+      },
+    ]);
+
+    // Owner cannot delete their own confirmed contribution (would silently
+    // shrink the raised total) — requires admin scope.
+    await expect(
+      deleteContribution(createCtx(residentId), { contributionId: confirmedId })
+    ).rejects.toMatchObject({ message: "Cannot delete this contribution" });
+
+    // Owner can still delete their own submitted contribution.
+    const deleted = await deleteContribution(createCtx(residentId), {
+      contributionId: submittedId,
+    });
+    expect(deleted.id).toBe(submittedId);
+
+    const remaining = await db.select().from(fundraisingContributions);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.id).toBe(confirmedId);
   });
 });

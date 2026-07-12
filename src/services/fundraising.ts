@@ -316,6 +316,7 @@ export async function deleteContribution(
       id: fundraisingContributions.id,
       submittedBy: fundraisingContributions.submittedBy,
       campaignId: fundraisingContributions.campaignId,
+      status: fundraisingContributions.status,
     })
     .from(fundraisingContributions)
     .where(eq(fundraisingContributions.id, contributionId))
@@ -326,9 +327,13 @@ export async function deleteContribution(
   }
 
   const campaignScope = await getCampaignScope(contribution[0].campaignId);
-  const isOwner = contribution[0].submittedBy === ctx.user.id;
+  // Owners may remove only their own still-submitted contribution; deleting a
+  // confirmed/rejected one changes the campaign's live raised total, so it
+  // requires admin scope.
+  const ownerCanDelete =
+    contribution[0].submittedBy === ctx.user.id && contribution[0].status === "submitted";
 
-  if (!isOwner && !isPlatformAdmin(ctx)) {
+  if (!ownerCanDelete && !isPlatformAdmin(ctx)) {
     if (!campaignScope.neighborhoodId) {
       throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
     }
@@ -353,12 +358,23 @@ export async function deleteContribution(
     throw new ServiceError("Campaign is closed", "INVALID");
   }
 
+  const ownerDeleteFilter = ownerCanDelete
+    ? and(
+        eq(fundraisingContributions.id, contributionId),
+        eq(fundraisingContributions.submittedBy, ctx.user.id),
+        eq(fundraisingContributions.status, "submitted")
+      )
+    : eq(fundraisingContributions.id, contributionId);
+
   const deleted = await db
     .delete(fundraisingContributions)
-    .where(eq(fundraisingContributions.id, contributionId))
+    .where(ownerDeleteFilter)
     .returning({ id: fundraisingContributions.id });
 
   if (!deleted[0]) {
+    if (ownerCanDelete) {
+      throw new ServiceError("Cannot delete this contribution", "FORBIDDEN");
+    }
     throw new ServiceError("Contribution not found", "NOT_FOUND");
   }
 

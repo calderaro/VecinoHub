@@ -1022,7 +1022,54 @@ export async function confirmFundPayment(
     throw new ServiceError("Fund period is closed", "INVALID");
   }
 
+  // Mirror the submit-time guard: a waived charge is not payable, so a payment
+  // submitted before the waiver must not be confirmable afterward (it would
+  // credit the fund while the charge still reads "waived").
+  if (charge.status === "waived") {
+    throw new ServiceError("This charge has been waived", "INVALID");
+  }
+
   return db.transaction(async (tx) => {
+    const [lockedPayment] = await tx
+      .select()
+      .from(fundPaymentSubmissions)
+      .where(eq(fundPaymentSubmissions.id, payment.id))
+      .for("update");
+
+    if (!lockedPayment || lockedPayment.status !== "submitted") {
+      throw new ServiceError("Only submitted payments can be confirmed", "INVALID");
+    }
+
+    const [lockedCharge] = await tx
+      .select({
+        id: fundGroupCharges.id,
+        amountDue: fundGroupCharges.amountDue,
+        amountPaid: fundGroupCharges.amountPaid,
+        status: fundGroupCharges.status,
+        waivedBy: fundGroupCharges.waivedBy,
+        periodFundId: fundChargePeriods.fundId,
+        groupId: fundGroupCharges.groupId,
+        dueDate: fundChargePeriods.dueDate,
+        periodStatus: fundChargePeriods.status,
+      })
+      .from(fundGroupCharges)
+      .innerJoin(fundChargePeriods, eq(fundGroupCharges.periodId, fundChargePeriods.id))
+      .where(eq(fundGroupCharges.id, payment.groupChargeId))
+      .for("update");
+
+    if (!lockedCharge) {
+      throw new ServiceError("Fund group charge not found", "NOT_FOUND");
+    }
+    if (lockedCharge.periodFundId !== payment.fundId || lockedCharge.groupId !== payment.groupId) {
+      throw new ServiceError("Payment and charge do not match", "FORBIDDEN");
+    }
+    if (lockedCharge.periodStatus !== "open") {
+      throw new ServiceError("Fund period is closed", "INVALID");
+    }
+    if (lockedCharge.status === "waived") {
+      throw new ServiceError("This charge has been waived", "INVALID");
+    }
+
     await tx.insert(fundPaymentAllocations).values({
       paymentId: payment.id,
       groupChargeId: payment.groupChargeId,
@@ -1039,20 +1086,20 @@ export async function confirmFundPayment(
         amountPaid: sql`${fundGroupCharges.amountPaid} + ${payment.amount}::numeric`,
         updatedAt: new Date(),
       })
-      .where(eq(fundGroupCharges.id, charge.id))
+      .where(eq(fundGroupCharges.id, lockedCharge.id))
       .returning({ amountPaid: fundGroupCharges.amountPaid });
 
     const nextStatus = computeGroupChargeStatus({
-      amountDue: toNumber(charge.amountDue),
+      amountDue: toNumber(lockedCharge.amountDue),
       amountPaid: toNumber(incremented.amountPaid),
-      dueDate: charge.dueDate,
-      waived: Boolean(charge.waivedBy),
+      dueDate: lockedCharge.dueDate,
+      waived: Boolean(lockedCharge.waivedBy),
     });
 
     await tx
       .update(fundGroupCharges)
       .set({ status: nextStatus })
-      .where(eq(fundGroupCharges.id, charge.id));
+      .where(eq(fundGroupCharges.id, lockedCharge.id));
 
     await tx.insert(fundMovements).values({
       fundId: payment.fundId,
@@ -1394,16 +1441,35 @@ export async function waiveFundGroupCharge(
   const charge = await getGroupChargeRecord(parsed.groupChargeId);
   await requireFundAdminScope(ctx, charge.periodFundId);
 
-  const updated = await db
-    .update(fundGroupCharges)
-    .set({
-      status: "waived",
-      waivedBy: ctx.user.id,
-      waivedReason: parsed.waivedReason,
-      updatedAt: new Date(),
-    })
-    .where(eq(fundGroupCharges.id, parsed.groupChargeId))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [lockedCharge] = await tx
+      .select({
+        id: fundGroupCharges.id,
+        amountPaid: fundGroupCharges.amountPaid,
+        status: fundGroupCharges.status,
+      })
+      .from(fundGroupCharges)
+      .where(eq(fundGroupCharges.id, parsed.groupChargeId))
+      .for("update");
 
-  return updated[0];
+    if (!lockedCharge) {
+      throw new ServiceError("Fund group charge not found", "NOT_FOUND");
+    }
+    if (toNumber(lockedCharge.amountPaid) > 0 || ["partial", "paid"].includes(lockedCharge.status)) {
+      throw new ServiceError("A charge with payments cannot be waived", "INVALID");
+    }
+
+    const [updated] = await tx
+      .update(fundGroupCharges)
+      .set({
+        status: "waived",
+        waivedBy: ctx.user.id,
+        waivedReason: parsed.waivedReason,
+        updatedAt: new Date(),
+      })
+      .where(eq(fundGroupCharges.id, parsed.groupChargeId))
+      .returning();
+
+    return updated;
+  });
 }
