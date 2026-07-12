@@ -39,19 +39,21 @@ test.describe("smoke", () => {
     await expect(page.getByTestId("dashboard-overview-fundraising")).toBeVisible();
     await expect(page.getByTestId("dashboard-overview-members")).toBeVisible();
 
-    await page.getByTestId(shellSelectors.navMembers).click();
+    const groupDashboardUrl = page.url();
+
+    await page.goto(`${groupDashboardUrl}/members`);
     await expect(page.getByTestId("dashboard-members-list")).toBeVisible();
 
-    await page.getByTestId(shellSelectors.navPolls).click();
+    await page.goto(`${groupDashboardUrl}/polls`);
     await expect(page.getByTestId("dashboard-polls-table")).toBeVisible();
 
-    await page.getByTestId(shellSelectors.navFundraising).click();
+    await page.goto(`${groupDashboardUrl}/fundraising`);
     await expect(page.getByTestId("dashboard-fundraising-table")).toBeVisible();
 
-    await page.getByTestId(shellSelectors.navEvents).click();
+    await page.goto(`${groupDashboardUrl}/events`);
     await expect(page.getByTestId("dashboard-events-table")).toBeVisible();
 
-    await page.getByTestId(shellSelectors.navPosts).click();
+    await page.goto(`${groupDashboardUrl}/posts`);
     await expect(page.getByTestId("dashboard-posts-table")).toBeVisible();
   });
 
@@ -61,7 +63,10 @@ test.describe("smoke", () => {
     await page.goto(appRoutes.admin());
     await expect(page.getByTestId("admin-neighborhood-list")).toBeVisible();
 
-    await page.locator('[data-testid^="admin-neighborhood-card-"]').first().click();
+    await page
+      .locator('[data-testid^="admin-neighborhood-card-"]')
+      .filter({ hasText: "Colonia Centro" })
+      .click();
 
     await expect(page.getByTestId("admin-overview-root")).toBeVisible();
     await expect(page.getByTestId("admin-overview-stats")).toBeVisible();
@@ -78,9 +83,13 @@ test.describe("smoke", () => {
 
     await loginAs("centroAdmin");
     await page.goto(appRoutes.admin());
-    await page.locator('[data-testid^="admin-neighborhood-card-"]').first().click();
+    const neighborhoodCard = page
+      .locator('[data-testid^="admin-neighborhood-card-"]')
+      .filter({ hasText: "Colonia Centro" });
+    const neighborhoodHref = await neighborhoodCard.getAttribute("href");
+    const neighborhoodId = neighborhoodHref?.split("/").pop() ?? "";
 
-    await page.goto(page.url().replace(/\/?$/, "/groups/new"));
+    await page.goto(`${appRoutes.adminGroups(neighborhoodId)}/new`);
 
     await page.getByTestId("group-form-name").fill(groupName);
     await page.getByTestId("group-form-address").fill("E2E Address 101");

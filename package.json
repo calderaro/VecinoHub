@@ -13,6 +13,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
+    "qa:open-prs": "tsx scripts/qa-open-prs.ts",
     "seed": "tsx scripts/seed.ts",
     "backfill:neighborhoods": "tsx scripts/backfill-neighborhoods.ts",
     "backfill:resident-access": "tsx scripts/backfill-derived-neighborhood-access.ts",

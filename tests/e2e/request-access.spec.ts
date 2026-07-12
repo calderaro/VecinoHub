@@ -15,7 +15,12 @@ test.describe("group access requests", () => {
 
     await loginAs("centroAdmin");
     await page.goto(appRoutes.admin());
-    await page.locator('[data-testid^="admin-neighborhood-card-"]').first().click();
+    const neighborhoodCard = page
+      .locator('[data-testid^="admin-neighborhood-card-"]')
+      .filter({ hasText: "Colonia Centro" });
+    const neighborhoodHref = await neighborhoodCard.getAttribute("href");
+    const neighborhoodId = neighborhoodHref?.split("/").pop() ?? "";
+    await page.goto(appRoutes.adminGroups(neighborhoodId));
 
     await page.getByTestId("admin-groups-add").click();
     await page.getByTestId("group-form-name").fill(groupName);
@@ -31,6 +36,8 @@ test.describe("group access requests", () => {
     await loginAs("surAdmin");
     await page.goto(appRoutes.dashboardRequestAccess());
 
+    await page.getByTestId("request-access-open-dialog").click();
+    await expect(page.getByTestId("request-access-dialog")).toBeVisible();
     await page.getByTestId("request-access-slug-input").fill("colonia-centro");
     await page.getByTestId("request-access-slug-submit").click();
     await expect(page.getByTestId("request-access-neighborhood-result")).toBeVisible();
@@ -46,11 +53,11 @@ test.describe("group access requests", () => {
     await signOut();
 
     await loginAs("centroAdmin");
-    await page.goto(appRoutes.admin());
-    await page.locator('[data-testid^="admin-neighborhood-card-"]').first().click();
+    await page.goto(appRoutes.adminGroups(neighborhoodId));
     await page.getByTestId("admin-groups-search").fill(groupName);
     await page.keyboard.press("Enter");
     await page.getByRole("link", { name: groupName }).click();
+    await page.getByTestId("group-members-tab-requests").click();
 
     const pendingRequestRow = page
       .locator('[data-testid^="group-access-request-row-"]')
