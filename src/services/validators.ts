@@ -4,12 +4,10 @@ import { isValidTimezone } from "@/lib/timezones/catalog";
 
 export const idSchema = z.string().uuid();
 export const nameSchema = z.string().trim().min(1).max(120);
-export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
-export const roleSchema = systemRoleSchema;
+export const roleSchema = z.enum(["user", "admin", "platform_admin"]);
 export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
 export const groupRoleSchema = z.enum(["group_member", "group_admin"]);
 export const neighborhoodStatusSchema = z.enum(["active", "inactive"]);
-export const statusSchema = z.enum(["active", "inactive"]);
 export const groupInviteStatusSchema = z.enum([
   "pending",
   "accepted",

@@ -1,5 +1,48 @@
 # Playwright Test Logs
 
+## 2026-07-12 12:47 CST - Open PR stack automated QA - local
+### Scope
+- Corrected PR stack for #21, #22, and #23 on `angel/pr23-review-fixes`.
+- Access-request privacy and approval flows, dashboard/admin smoke coverage, and PostgreSQL concurrency invariants.
+
+### Environment
+- Node.js 22.22.0.
+- Chromium 145 via Playwright.
+- Disposable PostgreSQL database `vecinohub_qa_prs` created from the current Drizzle schema.
+- Seeded local-only QA accounts and data.
+
+### Results
+- PASS: 82 unit tests, ESLint, TypeScript, and production build.
+- PASS: 7 smoke browser tests.
+- PASS: shared access-request link hides group street addresses.
+- PASS: resident request creation and manager approval flow.
+- PASS: neighborhood access-request screen and approval flow.
+- PASS: real PostgreSQL confirm-vs-waive serialization.
+- PASS: real PostgreSQL contribution confirm-vs-owner-delete invariant.
+- PASS: real PostgreSQL reservation concurrency limit.
+- PASS: real PostgreSQL deactivation-vs-approval serialization.
+
+### QA Infrastructure Repairs
+- Playwright now uses `localhost` by default so Next.js hydration assets share the app origin.
+- Seed credentials come from the shared Playwright fixture instead of a hard-coded password.
+- Access-request selectors and expectations match the current dialog, tabs, and address-free group labels.
+- Smoke navigation selects the authorized neighborhood deterministically and follows current routes.
+
+### Issues
+- Fresh `npm run db:migrate` fails in the historical migration chain because an older backfill migration raises `Cannot create default neighborhood without users` on an empty database. This run used `drizzle-kit push --force` only for the disposable QA database.
+- Better Auth warns that the `next-cookies` integration plugin is not last in the plugin list.
+- The broad E2E inventory still contains many `test.fixme` placeholders; only implemented tests provide executable coverage.
+
+### Artifacts
+- Failure traces and screenshots from the red/green repair loop remain under `test-results/` locally.
+- Repeatable PostgreSQL checks: `npm run qa:open-prs`.
+
+### Data Modified
+- Disposable local database only.
+
+### Cleanup Completed
+- Dropped `vecinohub_qa_prs` and stopped the pre-existing local PostgreSQL container after validation.
+
 ## 2026-02-28 19:05 CST - Codex (Playwright MCP) - local
 ### Scope
 - Admin overview parity pass for `/admin`.

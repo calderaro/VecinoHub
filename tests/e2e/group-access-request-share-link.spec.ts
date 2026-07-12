@@ -1,12 +1,15 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../playwright/fixtures/auth";
 
-test("shared neighborhood join link prefills the slug and lets the user request a group", async ({ page }) => {
+test("shared neighborhood join link prefills the slug and lets the user request a group", async ({
+  page,
+  seededAccounts,
+}) => {
   test.setTimeout(60_000);
   await page.goto("/login?next=%2Fdashboard%2Frequest-access%3Fslug%3Dcolonia-centro");
   await page.context().clearCookies();
 
-  await page.getByTestId("auth-login-email").fill("luis@vecinohub.local");
-  await page.getByTestId("auth-login-password").fill("User12345!");
+  await page.getByTestId("auth-login-email").fill(seededAccounts.surAdmin.email);
+  await page.getByTestId("auth-login-password").fill(seededAccounts.surAdmin.password);
   await page.getByTestId("auth-login-submit").click();
 
   await expect(page).toHaveURL(/\/dashboard\/request-access\?slug=colonia-centro/);
@@ -21,7 +24,9 @@ test("shared neighborhood join link prefills the slug and lets the user request 
 
   const groupSelect = page.getByTestId("request-access-group-select");
   await expect(groupSelect).toBeVisible();
-  await groupSelect.selectOption({ label: "Casa 101 - Calle Principal 101" });
+  const optionLabels = await groupSelect.locator("option").allTextContents();
+  expect(optionLabels.join(" ")).not.toContain("Calle Principal 101");
+  await groupSelect.selectOption({ label: "Casa 101" });
 
   await page.getByTestId("request-access-note").fill("E2E shared join link test");
   await page.getByTestId("request-access-submit").click();

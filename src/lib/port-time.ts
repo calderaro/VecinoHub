@@ -128,10 +128,6 @@ export function getPortToday(timeZone: string) {
   return getPortDateKey(new Date(), timeZone);
 }
 
-export function getPortNow(timeZone: string) {
-  return getPortParts(new Date(), timeZone);
-}
-
 export function toUtcFromPortDateTime(value: PortDateTimeValue & { timeZone: string }) {
   const { dateKey, hour, minute, timeZone } = value;
   const { year, month, day } = parseDateKey(dateKey);

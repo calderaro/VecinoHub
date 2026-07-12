@@ -90,7 +90,3 @@ export function findTimezoneOption(value: string) {
 export function isValidTimezone(value: string) {
   return timezoneMap.has(value);
 }
-
-export function getTimezoneLabel(value: string) {
-  return findTimezoneOption(value)?.label ?? value;
-}

@@ -15,7 +15,6 @@ import {
   requireGroupMember,
   requireNeighborhoodMember,
   requireNeighborhoodAdminOrPlatform,
-  requirePlatformAdmin,
   resolveGroupAccess,
 } from "./guards";
 import {
@@ -583,11 +582,6 @@ export async function listUserGroups(ctx: ServiceContext) {
         ...(neighborhoodFilter ? [neighborhoodFilter] : [])
       )
     );
-}
-
-export async function listAllGroups(ctx: ServiceContext) {
-  requirePlatformAdmin(ctx);
-  return db.select().from(groups);
 }
 
 const getGroupsStatsSchema = z.object({

@@ -192,16 +192,6 @@ function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
 }
 
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
-
 function normalizeAmount(value?: string | null) {
   if (!value?.trim()) {
     return null;
@@ -271,11 +261,11 @@ async function ensureResourceNameAvailable(
     .select({ id: resources.id })
     .from(resources)
     .where(
-      combineFilters([
+      and(
         eq(resources.neighborhoodId, neighborhoodId),
         sql`lower(${resources.name}) = ${normalizedName}`,
-        excludeResourceId ? ne(resources.id, excludeResourceId) : undefined,
-      ])
+        excludeResourceId ? ne(resources.id, excludeResourceId) : undefined
+      )
     )
     .limit(1);
 
@@ -500,13 +490,13 @@ async function validateAvailabilityAndRules(args: {
     })
     .from(resourceReservations)
     .where(
-      combineFilters([
+      and(
         eq(resourceReservations.resourceId, resourceId),
         eq(resourceReservations.status, "approved"),
         requestedReservationId ? ne(resourceReservations.id, requestedReservationId) : undefined,
         lte(resourceReservations.startAt, prefilterEnd),
-        gte(resourceReservations.endAt, prefilterStart),
-      ])
+        gte(resourceReservations.endAt, prefilterStart)
+      )
     );
 
   const overlappingReservations = reservationCandidates.filter(({ reservation }) => {
@@ -1043,10 +1033,10 @@ export async function listGroupReservations(
     .innerJoin(resources, eq(resourceReservations.resourceId, resources.id))
     .innerJoin(neighborhoods, eq(resourceReservations.neighborhoodId, neighborhoods.id))
     .where(
-      combineFilters([
+      and(
         eq(resourceReservations.groupId, groupId),
-        status ? eq(resourceReservations.status, status) : undefined,
-      ])
+        status ? eq(resourceReservations.status, status) : undefined
+      )
     )
     .orderBy(desc(resourceReservations.startAt));
 }
@@ -1072,11 +1062,11 @@ export async function listNeighborhoodReservations(
     .innerJoin(users, eq(resourceReservations.requestedBy, users.id))
     .innerJoin(neighborhoods, eq(resourceReservations.neighborhoodId, neighborhoods.id))
     .where(
-      combineFilters([
+      and(
         eq(resourceReservations.neighborhoodId, neighborhoodId),
         status ? eq(resourceReservations.status, status) : undefined,
-        resourceId ? eq(resourceReservations.resourceId, resourceId) : undefined,
-      ])
+        resourceId ? eq(resourceReservations.resourceId, resourceId) : undefined
+      )
     )
     .orderBy(desc(resourceReservations.startAt));
 }
@@ -1100,10 +1090,10 @@ export async function listNeighborhoodBlocks(
     .innerJoin(users, eq(resourceBlocks.createdBy, users.id))
     .innerJoin(neighborhoods, eq(resourceBlocks.neighborhoodId, neighborhoods.id))
     .where(
-      combineFilters([
+      and(
         eq(resourceBlocks.neighborhoodId, neighborhoodId),
-        resourceId ? eq(resourceBlocks.resourceId, resourceId) : undefined,
-      ])
+        resourceId ? eq(resourceBlocks.resourceId, resourceId) : undefined
+      )
     )
     .orderBy(desc(resourceBlocks.startAt));
 }

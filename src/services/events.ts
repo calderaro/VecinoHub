@@ -10,33 +10,11 @@ import {
   listNeighborhoodAdminIdsForUser,
   listNeighborhoodIdsForUser,
   requireNeighborhoodAdminOrPlatform,
+  requireNeighborhoodAdminScope,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, paginationSchema } from "./validators";
-
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
-
-async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
-  if (isPlatformAdmin(ctx)) {
-    return null;
-  }
-
-  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
-  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
-    throw new ServiceError("Admin access required", "FORBIDDEN");
-  }
-
-  return neighborhoodAdminIds;
-}
 
 async function getEventScope(eventId: string) {
   const event = await db
@@ -218,7 +196,7 @@ export async function listEventsPaged(
       : inArray(events.neighborhoodId, neighborhoodIds);
   }
 
-  const combinedFilter = combineFilters([searchFilter, scopeFilter]);
+  const combinedFilter = and(searchFilter, scopeFilter);
 
   const rows = await db
     .select({

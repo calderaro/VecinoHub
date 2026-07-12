@@ -18,20 +18,11 @@ import {
   listNeighborhoodIdsForUser,
   requireGroupMember,
   requireNeighborhoodAdminOrPlatform,
+  requireNeighborhoodAdminScope,
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
 import { idSchema, contributionMethodSchema } from "./validators";
-
-function combineFilters<T>(filters: Array<T | undefined>) {
-  const filtered = filters.filter((filter): filter is T => Boolean(filter));
-  if (filtered.length === 0) {
-    return undefined;
-  }
-
-  const [first, ...rest] = filtered;
-  return and(first as never, ...(rest as never[]));
-}
 
 async function getCampaignScope(campaignId: string) {
   const campaign = await db
@@ -60,19 +51,6 @@ async function requireCampaignAdminScope(ctx: ServiceContext, campaignId: string
 
   await requireNeighborhoodAdminOrPlatform(ctx, campaign.neighborhoodId);
   return campaign;
-}
-
-async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
-  if (isPlatformAdmin(ctx)) {
-    return null;
-  }
-
-  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
-  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
-    throw new ServiceError("Admin access required", "FORBIDDEN");
-  }
-
-  return neighborhoodAdminIds;
 }
 
 const createCampaignSchema = z.object({
@@ -556,7 +534,7 @@ export async function listCampaignsPaged(
       : inArray(fundraisingCampaigns.neighborhoodId, neighborhoodIds);
   }
 
-  const combinedFilter = combineFilters([searchFilter, statusFilter, scopeFilter]);
+  const combinedFilter = and(searchFilter, statusFilter, scopeFilter);
 
   const rows = await db
     .select({
@@ -733,41 +711,6 @@ export async function getResidentCampaignDetail(
   return { ...campaign, contributions };
 }
 
-export async function listOpenCampaignsWithContributionCounts(ctx: ServiceContext) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-  const openCampaigns = await db
-    .select()
-    .from(fundraisingCampaigns)
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(fundraisingCampaigns.status, "open")
-        : and(
-            eq(fundraisingCampaigns.status, "open"),
-            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
-          )
-    );
-
-  if (openCampaigns.length === 0) {
-    return [];
-  }
-
-  const campaignIds = openCampaigns.map((campaign) => campaign.id);
-  const contributionCounts = await db
-    .select({ campaignId: fundraisingContributions.campaignId, total: count() })
-    .from(fundraisingContributions)
-    .where(inArray(fundraisingContributions.campaignId, campaignIds))
-    .groupBy(fundraisingContributions.campaignId);
-
-  const counts = new Map(
-    contributionCounts.map((row) => [row.campaignId, Number(row.total)])
-  );
-
-  return openCampaigns.map((campaign) => ({
-    ...campaign,
-    contributionCount: counts.get(campaign.id) ?? 0,
-  }));
-}
-
 const campaignParticipationSchema = z.object({ campaignId: idSchema });
 
 export async function getCampaignParticipation(
@@ -820,7 +763,7 @@ export async function getFundraisingStats(ctx: ServiceContext) {
   const openCampaignsResult = await db
     .select({ value: count() })
     .from(fundraisingCampaigns)
-    .where(combineFilters([eq(fundraisingCampaigns.status, "open"), scopeFilter]));
+    .where(and(eq(fundraisingCampaigns.status, "open"), scopeFilter));
 
   const contributionsScopeFilter = isPlatformAdmin(ctx)
     ? undefined
@@ -836,10 +779,10 @@ export async function getFundraisingStats(ctx: ServiceContext) {
     .select({ value: count() })
     .from(fundraisingContributions)
     .where(
-      combineFilters([
+      and(
         eq(fundraisingContributions.status, "submitted"),
-        contributionsScopeFilter,
-      ])
+        contributionsScopeFilter
+      )
     );
 
   return {
@@ -912,40 +855,4 @@ export async function listOpenCampaignsWithProgress(ctx: ServiceContext) {
       progress: Math.min(progress, 100),
     };
   });
-}
-
-export async function listPendingContributions(ctx: ServiceContext, limit = 10) {
-  const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-
-  const rows = await db
-    .select({
-      contribution: fundraisingContributions,
-      groupName: groups.name,
-      submitterName: users.name,
-      campaignTitle: fundraisingCampaigns.title,
-    })
-    .from(fundraisingContributions)
-    .innerJoin(groups, eq(fundraisingContributions.groupId, groups.id))
-    .innerJoin(users, eq(fundraisingContributions.submittedBy, users.id))
-    .innerJoin(
-      fundraisingCampaigns,
-      eq(fundraisingContributions.campaignId, fundraisingCampaigns.id)
-    )
-    .where(
-      isPlatformAdmin(ctx)
-        ? eq(fundraisingContributions.status, "submitted")
-        : and(
-            eq(fundraisingContributions.status, "submitted"),
-            inArray(fundraisingCampaigns.neighborhoodId, neighborhoodAdminIds ?? [])
-          )
-    )
-    .orderBy(fundraisingContributions.createdAt)
-    .limit(limit);
-
-  return rows.map((row) => ({
-    ...row.contribution,
-    groupName: row.groupName,
-    submitterName: row.submitterName,
-    campaignTitle: row.campaignTitle,
-  }));
 }

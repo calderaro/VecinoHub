@@ -20,10 +20,6 @@ export function requirePlatformAdmin(ctx: ServiceContext) {
   }
 }
 
-export function requireAdmin(ctx: ServiceContext) {
-  requirePlatformAdmin(ctx);
-}
-
 export async function requireNeighborhoodMember(
   ctx: ServiceContext,
   neighborhoodId: string
@@ -178,6 +174,19 @@ export async function listNeighborhoodAdminIdsForUser(ctx: ServiceContext) {
   return memberships
     .map((membership) => membership.neighborhoodId)
     .filter((id): id is string => Boolean(id));
+}
+
+export async function requireNeighborhoodAdminScope(ctx: ServiceContext) {
+  if (isPlatformAdmin(ctx)) {
+    return null;
+  }
+
+  const neighborhoodAdminIds = await listNeighborhoodAdminIdsForUser(ctx);
+  if (!neighborhoodAdminIds || neighborhoodAdminIds.length === 0) {
+    throw new ServiceError("Admin access required", "FORBIDDEN");
+  }
+
+  return neighborhoodAdminIds;
 }
 
 export async function resolveGroupAccess(ctx: ServiceContext, groupId: string) {

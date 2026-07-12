@@ -17,16 +17,15 @@ if (!authSecret) {
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-const socialProviders = {
-  ...(googleClientId && googleClientSecret
+const socialProviders =
+  googleClientId && googleClientSecret
     ? {
         google: {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
         },
       }
-    : {}),
-};
+    : undefined;
 
 const authEmailOtpExpiresInSeconds = 10 * 60;
 const authMagicLinkExpiresInSeconds = 10 * 60;
@@ -101,8 +100,8 @@ async function sendMagicLinkEmail({
     subject: "Your VecinoHub sign-in link",
     text: `Use this link to sign in to VecinoHub: ${url}`,
     html: `<p>Use this link to sign in to <strong>VecinoHub</strong>:</p><p><a href="${url}">${url}</a></p>`,
-    errorMessage: "Auth email delivery is not configured.",
-    warningPrefix: "[auth]",
+    notConfiguredMessage: "Auth email delivery is not configured.",
+    warnPrefix: "[auth]",
   });
 }
 
@@ -118,8 +117,8 @@ async function sendPasswordResetEmail({
     subject: "Reset your VecinoHub password",
     text: `Use this link to reset your VecinoHub password: ${url}`,
     html: `<p>Use this link to reset your <strong>VecinoHub</strong> password:</p><p><a href="${url}">${url}</a></p>`,
-    errorMessage: "Auth email delivery is not configured.",
-    warningPrefix: "[auth]",
+    notConfiguredMessage: "Auth email delivery is not configured.",
+    warnPrefix: "[auth]",
   });
 }
 
@@ -146,8 +145,8 @@ async function sendEmailOtp({
     subject: `Your VecinoHub ${purpose} code`,
     text: `Your VecinoHub ${purpose} code is: ${otp}`,
     html: `<p>Your VecinoHub <strong>${purpose}</strong> code is:</p><p style="font-size:20px;font-weight:700;letter-spacing:0.15em">${otp}</p>`,
-    errorMessage: "Auth email delivery is not configured.",
-    warningPrefix: "[auth]",
+    notConfiguredMessage: "Auth email delivery is not configured.",
+    warnPrefix: "[auth]",
   });
 }
 
@@ -170,8 +169,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: authEmailOtpExpiresInSeconds,
   },
-  socialProviders:
-    Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
+  socialProviders,
   rateLimit: {
     // Enabled by default; opt out (e.g. for end-to-end test runs that perform
     // many sign-in/session calls) by setting AUTH_RATE_LIMIT_DISABLED=true.
@@ -216,11 +214,6 @@ export const auth = betterAuth({
   }),
   user: {
     modelName: "users",
-    fields: {
-      emailVerified: "emailVerified",
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
     additionalFields: {
       username: {
         type: "string",
@@ -246,37 +239,12 @@ export const auth = betterAuth({
   account: {
     modelName: "accounts",
     encryptOAuthTokens: true,
-    fields: {
-      accountId: "accountId",
-      providerId: "providerId",
-      userId: "userId",
-      accessToken: "accessToken",
-      refreshToken: "refreshToken",
-      idToken: "idToken",
-      accessTokenExpiresAt: "accessTokenExpiresAt",
-      refreshTokenExpiresAt: "refreshTokenExpiresAt",
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
   },
   session: {
     modelName: "sessions",
-    fields: {
-      userId: "userId",
-      expiresAt: "expiresAt",
-      ipAddress: "ipAddress",
-      userAgent: "userAgent",
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
   },
   verification: {
     modelName: "verifications",
-    fields: {
-      expiresAt: "expiresAt",
-      createdAt: "createdAt",
-      updatedAt: "updatedAt",
-    },
   },
   plugins: [
     nextCookies(),

@@ -72,7 +72,10 @@ test.describe("neighborhood access requests screen", () => {
     const groupSelect = page.getByTestId("request-access-group-select");
     await expect(groupSelect.locator("option", { hasText: groupName })).toBeAttached();
     await expect(groupSelect).toBeEnabled();
-    await groupSelect.selectOption({ label: `${groupName} - Neighborhood Requests 101` });
+    await expect(groupSelect.locator("option", { hasText: groupName })).not.toContainText(
+      "Neighborhood Requests 101"
+    );
+    await groupSelect.selectOption({ label: groupName });
     await page.getByTestId("request-access-note").fill("Solicitud para prueba de pantalla de colonia.");
     await page.getByTestId("request-access-submit").click();
 

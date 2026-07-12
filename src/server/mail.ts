@@ -13,17 +13,20 @@ const mailFrom =
 let warnedMissingSmtp = false;
 let smtpTransporter: nodemailer.Transporter | null = null;
 
-export function getMailFrom() {
-  return mailFrom;
-}
-
 export function getAppBaseUrl() {
   return (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
-export function getSmtpTransporter() {
+function getTransporter(notConfiguredMessage: string, warnPrefix: string) {
   if (!smtpHost || !smtpUser || !smtpPass) {
-    return null;
+    if (!warnedMissingSmtp) {
+      warnedMissingSmtp = true;
+      console.warn(
+        `${warnPrefix} email delivery is disabled because SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.`,
+      );
+    }
+
+    throw new Error(notConfiguredMessage);
   }
 
   if (!smtpTransporter) {
@@ -41,48 +44,22 @@ export function getSmtpTransporter() {
   return smtpTransporter;
 }
 
-export function requireSmtpTransporter({
-  errorMessage,
-  warningPrefix,
-}: {
-  errorMessage: string;
-  warningPrefix: string;
-}) {
-  const transporter = getSmtpTransporter();
-
-  if (!transporter) {
-    if (!warnedMissingSmtp) {
-      warnedMissingSmtp = true;
-      console.warn(
-        `${warningPrefix} email delivery is disabled because SMTP is not configured. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM.`,
-      );
-    }
-
-    throw new Error(errorMessage);
-  }
-
-  return transporter;
-}
-
 export async function sendMail({
   to,
   subject,
   text,
   html,
-  errorMessage,
-  warningPrefix,
+  notConfiguredMessage = "Email delivery is not configured.",
+  warnPrefix = "[mail]",
 }: {
   to: string;
   subject: string;
   text: string;
   html: string;
-  errorMessage: string;
-  warningPrefix: string;
+  notConfiguredMessage?: string;
+  warnPrefix?: string;
 }) {
-  const transporter = requireSmtpTransporter({
-    errorMessage,
-    warningPrefix,
-  });
+  const transporter = getTransporter(notConfiguredMessage, warnPrefix);
 
   await transporter.sendMail({
     from: mailFrom,
@@ -121,7 +98,5 @@ export async function sendGroupInviteEmail({
     subject: `You were invited to join ${groupName} on VecinoHub`,
     text: `${inviterName} invited you to join ${groupName} in ${neighborhoodName} as a ${roleLabel}. Review the invite here: ${inviteUrl}. This invite expires on ${expiryLabel}.`,
     html: `<p><strong>${inviterName}</strong> invited you to join <strong>${groupName}</strong> in <strong>${neighborhoodName}</strong> as a <strong>${roleLabel}</strong>.</p><p><a href="${inviteUrl}">Review the invite in VecinoHub</a></p><p>This invite expires on ${expiryLabel}.</p>`,
-    errorMessage: "Email delivery is not configured.",
-    warningPrefix: "[mail]",
   });
 }
