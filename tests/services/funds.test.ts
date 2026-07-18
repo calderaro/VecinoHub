@@ -31,11 +31,13 @@ import {
 import {
   confirmFundPayment,
   createNeighborhoodFund,
+  getGroupFundSummary,
   getResidentFundDashboard,
   rejectFundPayment,
   reverseFundMovement,
   submitFundPayment,
 } from "@/services/funds";
+import { positiveAmountSchema } from "@/services/validators";
 
 function createCtx(
   userId: string,
@@ -457,5 +459,51 @@ describe("funds service", () => {
 
     const movements = await db.select().from(fundMovements);
     expect(movements).toHaveLength(2);
+  });
+
+  it("does not net an overpaid charge against an unpaid one in the group summary", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+
+    // Overpay the seeded charge (due 100 / paid 150) and add a second, unpaid one.
+    await db
+      .update(fundGroupCharges)
+      .set({ amountPaid: "150.00", status: "paid" })
+      .where(eq(fundGroupCharges.id, fixtures.groupChargeId));
+
+    const secondPeriodId = randomUUID();
+    await db.insert(fundChargePeriods).values({
+      id: secondPeriodId,
+      fundId: fixtures.fundId,
+      neighborhoodId: fixtures.neighborhoodId,
+      title: "April 2026",
+      amountPerGroup: "100.00",
+      dueDate: "2026-04-30",
+      status: "open",
+      createdBy: fixtures.adminId,
+    });
+    await db.insert(fundGroupCharges).values({
+      id: randomUUID(),
+      periodId: secondPeriodId,
+      groupId: fixtures.groupId,
+      amountDue: "100.00",
+      amountPaid: "0.00",
+      status: "unpaid",
+    });
+
+    const summary = await getGroupFundSummary(residentCtx, {
+      groupId: fixtures.groupId,
+      fundId: fixtures.fundId,
+    });
+
+    // The 50 overpayment must not hide that the second charge is fully unpaid.
+    expect(summary.outstandingAmount).toBe(100);
+  });
+
+  it("rejects non-finite fund amount strings at the validator boundary", async () => {
+    expect(positiveAmountSchema.safeParse("10.00").success).toBe(true);
+    expect(positiveAmountSchema.safeParse("Infinity").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("1e400").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("0").success).toBe(false);
   });
 });

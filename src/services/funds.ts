@@ -34,6 +34,7 @@ import {
   fundTemplateStatusSchema,
   idSchema,
   nameSchema,
+  positiveAmountSchema,
 } from "./validators";
 
 type FundsTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -463,7 +464,7 @@ const createTemplateSchema = z
     description: z.string().trim().max(500).optional(),
     status: fundTemplateStatusSchema.optional(),
     frequency: fundChargeFrequencySchema,
-    defaultAmount: z.string().trim().refine((value) => toNumber(value) > 0),
+    defaultAmount: positiveAmountSchema,
     dueDayOfMonth: z.number().int().min(1).max(31).optional(),
     startsOn: z.date(),
     endsOn: z.date().optional(),
@@ -510,11 +511,7 @@ const updateTemplateSchema = z.object({
   description: z.string().trim().max(500).optional(),
   status: fundTemplateStatusSchema.optional(),
   frequency: fundChargeFrequencySchema.optional(),
-  defaultAmount: z
-    .string()
-    .trim()
-    .refine((value) => toNumber(value) > 0)
-    .optional(),
+  defaultAmount: positiveAmountSchema.optional(),
   dueDayOfMonth: z.number().int().min(1).max(31).optional(),
   startsOn: z.date().optional(),
   endsOn: z.date().optional(),
@@ -636,7 +633,7 @@ const createPeriodSchema = z.object({
   templateId: idSchema.optional(),
   title: nameSchema,
   description: z.string().trim().max(500).optional(),
-  amountPerGroup: z.string().trim().refine((value) => toNumber(value) > 0),
+  amountPerGroup: positiveAmountSchema,
   dueDate: z.date(),
 });
 
@@ -902,7 +899,7 @@ const submitPaymentSchema = z
     groupId: idSchema,
     groupChargeId: idSchema,
     method: fundPaymentMethodSchema,
-    amount: z.string().trim().refine((value) => toNumber(value) > 0),
+    amount: positiveAmountSchema,
     paidAt: z.date(),
     reference: z.string().trim().max(120).optional(),
     notes: z.string().trim().max(500).optional(),
@@ -1185,7 +1182,13 @@ export async function getGroupFundSummary(
     .orderBy(desc(fundChargePeriods.dueDate));
 
   const totalDue = charges.reduce((sum, charge) => sum + toNumber(charge.amountDue), 0);
-  const totalPaid = charges.reduce((sum, charge) => sum + toNumber(charge.amountPaid), 0);
+  // Cap paid per charge at its own amount due before summing, so an overpaid
+  // charge can't net against a fully-unpaid one and understate outstanding
+  // (matches listFundChargePeriods).
+  const totalPaid = charges.reduce(
+    (sum, charge) => sum + Math.min(toNumber(charge.amountPaid), toNumber(charge.amountDue)),
+    0
+  );
 
   return {
     fund,
@@ -1219,7 +1222,7 @@ export async function getResidentFundDashboard(
 
 const recordMovementSchema = z.object({
   fundId: idSchema,
-  amount: z.string().trim().refine((value) => toNumber(value) > 0),
+  amount: positiveAmountSchema,
   effectiveAt: z.date().optional(),
   description: z.string().trim().min(1).max(500),
 });
@@ -1232,6 +1235,10 @@ async function createManualMovement(
   const parsed = recordMovementSchema.parse(input);
   const fund = await requireFundAdminScope(ctx, parsed.fundId);
 
+  // ponytail: a debit is allowed to drive the recorded balance negative on
+  // purpose — a real expense can predate the opening balance / income entry
+  // during catch-up bookkeeping, and this is an admin-only ledger. Add a
+  // balance check inside a txn here if negatives are later disallowed.
   const created = await db
     .insert(fundMovements)
     .values({
@@ -1269,7 +1276,7 @@ export async function recordFundManualIncome(
 
 const recordAdjustmentSchema = z.object({
   fundId: idSchema,
-  amount: z.string().trim().refine((value) => toNumber(value) > 0),
+  amount: positiveAmountSchema,
   effectiveAt: z.date().optional(),
   description: z.string().trim().min(1).max(500),
   entrySide: fundEntrySideSchema,
@@ -1330,10 +1337,9 @@ export async function reverseFundMovement(
   return db.transaction(async (tx) => {
     // A movement may be reversed at most once. Without this guard a
     // double-click/retry (or two admins) inserts multiple opposite entries and
-    // drives the fund balance arbitrarily wrong.
-    // ponytail: app-level check; a partial unique index on
-    // fund_movements(source_id) WHERE type='reversal' would also close the
-    // truly-concurrent double-reversal window.
+    // drives the fund balance arbitrarily wrong. Also enforced at the DB level
+    // by the partial unique index fund_movements_reversal_source_unique
+    // (migration 0018), which closes the truly-concurrent window.
     const existing = await tx
       .select({ id: fundMovements.id })
       .from(fundMovements)

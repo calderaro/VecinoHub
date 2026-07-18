@@ -23,6 +23,19 @@ import {
 import type { ServiceContext } from "./types";
 import { idSchema, contributionMethodSchema } from "./validators";
 
+// Per-group suggested contribution shown on the campaign. Computed in integer
+// cents and rounded UP so the groups collectively meet-or-exceed the goal — a
+// single shared scalar can't hold a true remainder split, and under-targeting
+// (e.g. 3×33.33 = 99.99 for a 100 goal) is the worse direction for a fundraiser.
+// Display-only: contributions are free-form and progress tracks goalAmount.
+export function perGroupSuggestedAmount(goalAmount: string, activeGroups: number) {
+  if (activeGroups <= 0) {
+    return goalAmount;
+  }
+  const goalCents = Math.round(Number(goalAmount) * 100);
+  return (Math.ceil(goalCents / activeGroups) / 100).toFixed(2);
+}
+
 function combineFilters<T>(filters: Array<T | undefined>) {
   const filtered = filters.filter((filter): filter is T => Boolean(filter));
   if (filtered.length === 0) {
@@ -115,10 +128,7 @@ export async function createCampaign(
       )
     );
   const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
-  const perGroupAmount =
-    activeGroups > 0
-      ? (Number(goalAmount) / activeGroups).toFixed(2)
-      : goalAmount;
+  const perGroupAmount = perGroupSuggestedAmount(goalAmount, activeGroups);
 
   const created = await db
     .insert(fundraisingCampaigns)
@@ -169,10 +179,7 @@ export async function updateCampaign(
           : eq(groupMemberships.status, "active")
       );
     const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
-    amount =
-      activeGroups > 0
-        ? (Number(goalAmount) / activeGroups).toFixed(2)
-        : goalAmount;
+    amount = perGroupSuggestedAmount(goalAmount, activeGroups);
   }
 
   const { dueDate, ...restData } = data;

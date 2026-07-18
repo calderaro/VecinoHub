@@ -4,6 +4,16 @@ import { isValidTimezone } from "@/lib/timezones/catalog";
 
 export const idSchema = z.string().uuid();
 export const nameSchema = z.string().trim().min(1).max(120);
+// Positive money amount as a decimal string. Rejects non-finite inputs
+// ("Infinity", "1e400") that Number() coerces past a bare `> 0` check and that
+// would otherwise blow up on the numeric(12,2) insert instead of failing here.
+export const positiveAmountSchema = z
+  .string()
+  .trim()
+  .refine((value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0;
+  }, "Amount must be a positive number");
 export const systemRoleSchema = z.enum(["user", "admin", "platform_admin"]);
 export const roleSchema = systemRoleSchema;
 export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
