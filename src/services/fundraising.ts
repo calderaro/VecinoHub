@@ -21,7 +21,7 @@ import {
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
-import { idSchema, contributionMethodSchema } from "./validators";
+import { idSchema, contributionMethodSchema, positiveAmountSchema } from "./validators";
 
 // Per-group suggested contribution shown on the campaign. Computed in integer
 // cents and rounded UP so the groups collectively meet-or-exceed the goal — a
@@ -92,7 +92,7 @@ const createCampaignSchema = z.object({
   neighborhoodId: idSchema.optional(),
   title: z.string().min(1),
   description: z.string().optional(),
-  goalAmount: z.string().min(1),
+  goalAmount: positiveAmountSchema,
   dueDate: z.date().optional(),
 });
 
@@ -151,7 +151,7 @@ const updateCampaignSchema = z.object({
   campaignId: idSchema,
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  goalAmount: z.string().min(1).optional(),
+  goalAmount: positiveAmountSchema.optional(),
   dueDate: z.date().optional(),
   status: z.enum(["open", "closed"]).optional(),
 });
@@ -230,13 +230,7 @@ const submitContributionSchema = z
     campaignId: idSchema,
     groupId: idSchema,
     method: contributionMethodSchema,
-    amount: z
-      .string()
-      .trim()
-      .refine((value) => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) && parsed > 0;
-      }, "Amount must be a positive number"),
+    amount: positiveAmountSchema,
     wireReference: z.string().min(1).optional(),
     wireDate: z.date().optional(),
     wireAmount: z.string().min(1).optional(),
@@ -365,9 +359,22 @@ export async function deleteContribution(
     throw new ServiceError("Campaign is closed", "INVALID");
   }
 
+  // For the owner path, re-assert submitted-by-me + still-submitted in the DELETE
+  // itself: the checks above ran against an unlocked read, so a concurrent admin
+  // confirm landing in between would otherwise let an owner delete a now-confirmed
+  // contribution and silently shrink the campaign's raised total. Admins delete by
+  // id unconditionally.
   const deleted = await db
     .delete(fundraisingContributions)
-    .where(eq(fundraisingContributions.id, contributionId))
+    .where(
+      ownerCanDelete
+        ? and(
+            eq(fundraisingContributions.id, contributionId),
+            eq(fundraisingContributions.submittedBy, ctx.user.id),
+            eq(fundraisingContributions.status, "submitted")
+          )
+        : eq(fundraisingContributions.id, contributionId)
+    )
     .returning({ id: fundraisingContributions.id });
 
   if (!deleted[0]) {

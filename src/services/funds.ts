@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, inArray, ne, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, isNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -1014,20 +1014,29 @@ export async function confirmFundPayment(
     // and writing back a computed value: under READ COMMITTED two concurrent
     // confirmations of different payments on the same charge would otherwise both
     // read the same starting balance and the second would clobber the first.
+    // The `waived_by IS NULL` predicate also closes the confirm/waive race: the
+    // outside-txn guard above only sees a waive that landed before this call's
+    // read, so a waive committing concurrently would otherwise credit the fund
+    // and clobber the waived status. If the row is now waived, nothing matches
+    // and we abort — rolling back the allocation insert above.
     const [incremented] = await tx
       .update(fundGroupCharges)
       .set({
         amountPaid: sql`${fundGroupCharges.amountPaid} + ${payment.amount}::numeric`,
         updatedAt: new Date(),
       })
-      .where(eq(fundGroupCharges.id, charge.id))
+      .where(and(eq(fundGroupCharges.id, charge.id), isNull(fundGroupCharges.waivedBy)))
       .returning({ amountPaid: fundGroupCharges.amountPaid });
+
+    if (!incremented) {
+      throw new ServiceError("This charge has been waived", "INVALID");
+    }
 
     const nextStatus = computeGroupChargeStatus({
       amountDue: toNumber(charge.amountDue),
       amountPaid: toNumber(incremented.amountPaid),
       dueDate: charge.dueDate,
-      waived: Boolean(charge.waivedBy),
+      waived: false, // guaranteed unwaived by the WHERE predicate above
     });
 
     await tx

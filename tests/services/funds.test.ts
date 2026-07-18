@@ -497,13 +497,35 @@ describe("funds service", () => {
     });
 
     // The 50 overpayment must not hide that the second charge is fully unpaid.
+    expect(summary.totalPaid).toBe(100);
     expect(summary.outstandingAmount).toBe(100);
+    const overpaid = summary.charges.find((charge) => charge.id === fixtures.groupChargeId);
+    expect(overpaid?.remainingAmount).toBe(0);
   });
 
   it("rejects non-finite fund amount strings at the validator boundary", async () => {
     expect(positiveAmountSchema.safeParse("10.00").success).toBe(true);
     expect(positiveAmountSchema.safeParse("Infinity").success).toBe(false);
     expect(positiveAmountSchema.safeParse("1e400").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("-5").success).toBe(false);
     expect(positiveAmountSchema.safeParse("0").success).toBe(false);
+  });
+
+  it("wires the finite-amount guard into the payment submit path", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+
+    // Proves positiveAmountSchema is actually applied in submitPaymentSchema,
+    // not just correct in isolation — "Infinity" must be rejected before insert.
+    await expect(
+      submitFundPayment(residentCtx, {
+        fundId: fixtures.fundId,
+        groupId: fixtures.groupId,
+        groupChargeId: fixtures.groupChargeId,
+        method: "cash",
+        amount: "Infinity",
+        paidAt: new Date("2026-03-15T00:00:00.000Z"),
+      })
+    ).rejects.toThrow();
   });
 });
