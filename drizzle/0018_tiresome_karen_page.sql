@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "fund_movements_reversal_source_unique" ON "fund_movements" USING btree ("source_id") WHERE "fund_movements"."type" = 'reversal';
