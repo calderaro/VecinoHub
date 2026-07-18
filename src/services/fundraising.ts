@@ -378,7 +378,12 @@ export async function deleteContribution(
     .returning({ id: fundraisingContributions.id });
 
   if (!deleted[0]) {
-    throw new ServiceError("Contribution not found", "NOT_FOUND");
+    // Owner path matched nothing: the row still exists but was confirmed/rejected
+    // concurrently (it's no longer owner-deletable), so report that rather than a
+    // misleading NOT_FOUND. The admin path only misses when the row is truly gone.
+    throw ownerCanDelete
+      ? new ServiceError("This contribution can no longer be deleted", "INVALID")
+      : new ServiceError("Contribution not found", "NOT_FOUND");
   }
 
   return deleted[0];
