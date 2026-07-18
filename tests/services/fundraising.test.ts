@@ -22,6 +22,7 @@ import {
   getCampaignDetail,
   getResidentCampaignDetail,
   listCampaigns,
+  perGroupSuggestedAmount,
 } from "@/services/fundraising";
 import {
   closeTestDatabase,
@@ -566,5 +567,18 @@ describe("fundraising service authorization", () => {
     const remaining = await db.select().from(fundraisingContributions);
     expect(remaining).toHaveLength(1);
     expect(remaining[0]?.id).toBe(confirmedId);
+  });
+});
+
+describe("perGroupSuggestedAmount", () => {
+  it("rounds up in integer cents so groups collectively cover an indivisible goal", () => {
+    // 100 / 3 must not floor to 33.33 (3×33.33 = 99.99, short of the goal).
+    const amount = perGroupSuggestedAmount("100.00", 3);
+    expect(amount).toBe("33.34");
+    expect(Number(amount) * 3).toBeGreaterThanOrEqual(100);
+  });
+
+  it("returns the goal unchanged when there are no active groups", () => {
+    expect(perGroupSuggestedAmount("100.00", 0)).toBe("100.00");
   });
 });

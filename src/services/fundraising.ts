@@ -22,7 +22,20 @@ import {
   requirePlatformAdmin,
 } from "./guards";
 import type { ServiceContext } from "./types";
-import { idSchema, contributionMethodSchema } from "./validators";
+import { idSchema, contributionMethodSchema, positiveAmountSchema } from "./validators";
+
+// Per-group suggested contribution shown on the campaign. Computed in integer
+// cents and rounded UP so the groups collectively meet-or-exceed the goal — a
+// single shared scalar can't hold a true remainder split, and under-targeting
+// (e.g. 3×33.33 = 99.99 for a 100 goal) is the worse direction for a fundraiser.
+// Display-only: contributions are free-form and progress tracks goalAmount.
+export function perGroupSuggestedAmount(goalAmount: string, activeGroups: number) {
+  if (activeGroups <= 0) {
+    return goalAmount;
+  }
+  const goalCents = Math.round(Number(goalAmount) * 100);
+  return (Math.ceil(goalCents / activeGroups) / 100).toFixed(2);
+}
 
 async function getCampaignScope(campaignId: string) {
   const campaign = await db
@@ -57,7 +70,7 @@ const createCampaignSchema = z.object({
   neighborhoodId: idSchema.optional(),
   title: z.string().min(1).max(200),
   description: z.string().max(5000).optional(),
-  goalAmount: z.string().min(1),
+  goalAmount: positiveAmountSchema,
   dueDate: z.date().optional(),
 });
 
@@ -93,10 +106,7 @@ export async function createCampaign(
       )
     );
   const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
-  const perGroupAmount =
-    activeGroups > 0
-      ? (Number(goalAmount) / activeGroups).toFixed(2)
-      : goalAmount;
+  const perGroupAmount = perGroupSuggestedAmount(goalAmount, activeGroups);
 
   const created = await db
     .insert(fundraisingCampaigns)
@@ -119,7 +129,7 @@ const updateCampaignSchema = z.object({
   campaignId: idSchema,
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(5000).optional(),
-  goalAmount: z.string().min(1).optional(),
+  goalAmount: positiveAmountSchema.optional(),
   dueDate: z.date().optional(),
   status: z.enum(["open", "closed"]).optional(),
 });
@@ -147,10 +157,7 @@ export async function updateCampaign(
           : eq(groupMemberships.status, "active")
       );
     const activeGroups = Number(activeGroupsResult[0]?.value ?? 0);
-    amount =
-      activeGroups > 0
-        ? (Number(goalAmount) / activeGroups).toFixed(2)
-        : goalAmount;
+    amount = perGroupSuggestedAmount(goalAmount, activeGroups);
   }
 
   const { dueDate, ...restData } = data;
@@ -201,13 +208,7 @@ const submitContributionSchema = z
     campaignId: idSchema,
     groupId: idSchema,
     method: contributionMethodSchema,
-    amount: z
-      .string()
-      .trim()
-      .refine((value) => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) && parsed > 0;
-      }, "Amount must be a positive number"),
+    amount: positiveAmountSchema,
     wireReference: z.string().min(1).optional(),
     wireDate: z.date().optional(),
     wireAmount: z.string().min(1).optional(),
