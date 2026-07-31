@@ -4,6 +4,18 @@ import { isValidTimezone } from "@/lib/timezones/catalog";
 
 export const idSchema = z.string().uuid();
 export const nameSchema = z.string().trim().min(1).max(120);
+// Positive money amount as a plain decimal string, shaped to the numeric(12,2)
+// column: up to 10 integer digits and 2 decimals. The regex rejects the inputs
+// Number() would otherwise coerce past a bare `> 0` check — "Infinity", "1e400",
+// hex ("0x10"), signs, and >2-decimal / >precision values — so they fail here
+// rather than blowing up on the DB insert.
+export const positiveAmountSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => /^\d{1,10}(\.\d{1,2})?$/.test(value) && Number(value) > 0,
+    "Amount must be a positive number"
+  );
 export const roleSchema = z.enum(["user", "admin", "platform_admin"]);
 export const neighborhoodRoleSchema = z.enum(["neighbor", "neighborhood_admin"]);
 export const groupRoleSchema = z.enum(["group_member", "group_admin"]);

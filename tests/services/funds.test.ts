@@ -32,12 +32,14 @@ import {
   confirmFundPayment,
   createNeighborhoodFund,
   getFundPeriodDetail,
+  getGroupFundSummary,
   getResidentFundDashboard,
   rejectFundPayment,
   reverseFundMovement,
   submitFundPayment,
   waiveFundGroupCharge,
 } from "@/services/funds";
+import { positiveAmountSchema } from "@/services/validators";
 
 function createCtx(
   userId: string,
@@ -575,5 +577,79 @@ describe("funds service", () => {
       { periodId: fixtures.periodId }
     );
     expect(adminView.payments).toHaveLength(2);
+  });
+
+  it("does not net an overpaid charge against an unpaid one in the group summary", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+
+    // Overpay the seeded charge (due 100 / paid 150) and add a second, unpaid one.
+    await db
+      .update(fundGroupCharges)
+      .set({ amountPaid: "150.00", status: "paid" })
+      .where(eq(fundGroupCharges.id, fixtures.groupChargeId));
+
+    const secondPeriodId = randomUUID();
+    await db.insert(fundChargePeriods).values({
+      id: secondPeriodId,
+      fundId: fixtures.fundId,
+      neighborhoodId: fixtures.neighborhoodId,
+      title: "April 2026",
+      amountPerGroup: "100.00",
+      dueDate: "2026-04-30",
+      status: "open",
+      createdBy: fixtures.adminId,
+    });
+    await db.insert(fundGroupCharges).values({
+      id: randomUUID(),
+      periodId: secondPeriodId,
+      groupId: fixtures.groupId,
+      amountDue: "100.00",
+      amountPaid: "0.00",
+      status: "unpaid",
+    });
+
+    const summary = await getGroupFundSummary(residentCtx, {
+      groupId: fixtures.groupId,
+      fundId: fixtures.fundId,
+    });
+
+    // The 50 overpayment must not hide that the second charge is fully unpaid.
+    expect(summary.totalPaid).toBe(100);
+    expect(summary.outstandingAmount).toBe(100);
+    const overpaid = summary.charges.find((charge) => charge.id === fixtures.groupChargeId);
+    expect(overpaid?.remainingAmount).toBe(0);
+  });
+
+  it("rejects non-finite fund amount strings at the validator boundary", async () => {
+    expect(positiveAmountSchema.safeParse("10.00").success).toBe(true);
+    expect(positiveAmountSchema.safeParse("10").success).toBe(true);
+    expect(positiveAmountSchema.safeParse("Infinity").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("1e400").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("-5").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("0").success).toBe(false);
+    // Aligned to numeric(12,2): hex, >2 decimals, and >precision all fail here
+    // instead of erroring on the insert.
+    expect(positiveAmountSchema.safeParse("0x10").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("10.999").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("99999999999").success).toBe(false);
+  });
+
+  it("wires the finite-amount guard into the payment submit path", async () => {
+    const fixtures = await seedFundFixtures();
+    const residentCtx = createCtx(fixtures.residentId);
+
+    // Proves positiveAmountSchema is actually applied in submitPaymentSchema,
+    // not just correct in isolation — "Infinity" must be rejected before insert.
+    await expect(
+      submitFundPayment(residentCtx, {
+        fundId: fixtures.fundId,
+        groupId: fixtures.groupId,
+        groupChargeId: fixtures.groupChargeId,
+        method: "cash",
+        amount: "Infinity",
+        paidAt: new Date("2026-03-15T00:00:00.000Z"),
+      })
+    ).rejects.toThrow();
   });
 });
