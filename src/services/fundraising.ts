@@ -31,7 +31,7 @@ import { idSchema, contributionMethodSchema, positiveAmountSchema } from "./vali
 // Display-only: contributions are free-form and progress tracks goalAmount.
 export function perGroupSuggestedAmount(goalAmount: string, activeGroups: number) {
   if (activeGroups <= 0) {
-    return goalAmount;
+    return Number(goalAmount).toFixed(2);
   }
   const goalCents = Math.round(Number(goalAmount) * 100);
   return (Math.ceil(goalCents / activeGroups) / 100).toFixed(2);

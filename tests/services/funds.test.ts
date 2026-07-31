@@ -623,10 +623,16 @@ describe("funds service", () => {
 
   it("rejects non-finite fund amount strings at the validator boundary", async () => {
     expect(positiveAmountSchema.safeParse("10.00").success).toBe(true);
+    expect(positiveAmountSchema.safeParse("10").success).toBe(true);
     expect(positiveAmountSchema.safeParse("Infinity").success).toBe(false);
     expect(positiveAmountSchema.safeParse("1e400").success).toBe(false);
     expect(positiveAmountSchema.safeParse("-5").success).toBe(false);
     expect(positiveAmountSchema.safeParse("0").success).toBe(false);
+    // Aligned to numeric(12,2): hex, >2 decimals, and >precision all fail here
+    // instead of erroring on the insert.
+    expect(positiveAmountSchema.safeParse("0x10").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("10.999").success).toBe(false);
+    expect(positiveAmountSchema.safeParse("99999999999").success).toBe(false);
   });
 
   it("wires the finite-amount guard into the payment submit path", async () => {

@@ -578,7 +578,8 @@ describe("perGroupSuggestedAmount", () => {
     expect(Number(amount) * 3).toBeGreaterThanOrEqual(100);
   });
 
-  it("returns the goal unchanged when there are no active groups", () => {
+  it("returns the goal (normalized to 2 decimals) when there are no active groups", () => {
     expect(perGroupSuggestedAmount("100.00", 0)).toBe("100.00");
+    expect(perGroupSuggestedAmount("100", 0)).toBe("100.00");
   });
 });
