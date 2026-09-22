@@ -144,7 +144,10 @@ export async function listPostsPaged(
     ? or(ilike(posts.title, search), ilike(posts.content, search))
     : undefined;
 
-  const neighborhoodFilter = neighborhoodId ? eq(posts.neighborhoodId, neighborhoodId) : undefined;
+  const resolvedNeighborhoodId = neighborhoodId ?? ctx.user.activeNeighborhoodId;
+  const neighborhoodFilter = resolvedNeighborhoodId
+    ? eq(posts.neighborhoodId, resolvedNeighborhoodId)
+    : undefined;
   let scopeFilter = neighborhoodFilter;
   let statusFilter;
   if (isPlatformAdmin(ctx)) {
@@ -210,7 +213,14 @@ export async function getPostById(
     })
     .from(posts)
     .leftJoin(users, eq(posts.createdBy, users.id))
-    .where(eq(posts.id, postId))
+    .where(
+      and(
+        eq(posts.id, postId),
+        ctx.user.activeNeighborhoodId
+          ? eq(posts.neighborhoodId, ctx.user.activeNeighborhoodId)
+          : undefined
+      )
+    )
     .limit(1);
 
   const row = rows[0];
@@ -312,9 +322,14 @@ export async function removePost(
 
 export async function getPostsStats(ctx: ServiceContext) {
   const neighborhoodAdminIds = await requireNeighborhoodAdminScope(ctx);
-  const scopeFilter = isPlatformAdmin(ctx)
-    ? undefined
-    : inArray(posts.neighborhoodId, neighborhoodAdminIds ?? []);
+  const scopeFilter = and(
+    ctx.user.activeNeighborhoodId
+      ? eq(posts.neighborhoodId, ctx.user.activeNeighborhoodId)
+      : undefined,
+    isPlatformAdmin(ctx)
+      ? undefined
+      : inArray(posts.neighborhoodId, neighborhoodAdminIds ?? [])
+  );
 
   const publishedResult = await db
     .select({ value: count() })
@@ -343,9 +358,14 @@ export async function listRecentPosts(ctx: ServiceContext, limit = 6) {
     .from(posts)
     .leftJoin(users, eq(posts.createdBy, users.id))
     .where(
-      isPlatformAdmin(ctx)
-        ? undefined
-        : inArray(posts.neighborhoodId, neighborhoodAdminIds ?? [])
+      and(
+        ctx.user.activeNeighborhoodId
+          ? eq(posts.neighborhoodId, ctx.user.activeNeighborhoodId)
+          : undefined,
+        isPlatformAdmin(ctx)
+          ? undefined
+          : inArray(posts.neighborhoodId, neighborhoodAdminIds ?? [])
+      )
     )
     .orderBy(desc(posts.createdAt))
     .limit(limit);

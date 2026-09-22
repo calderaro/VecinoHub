@@ -1225,7 +1225,7 @@ Preconditions:
 - Admin logged in.
 
 Steps:
-1. Go to /admin/posts/new.
+1. Go to /admin/{neighborhoodId}/posts/new.
 2. Create post as draft.
 3. Open post detail and publish.
 4. Verify post appears in member list.
@@ -1244,6 +1244,25 @@ Steps:
 
 Expected:
 - Post content is visible and formatted.
+
+### Test Run: Posts Stay in Their Neighborhood
+Preconditions:
+- Platform admin logged in.
+- Two neighborhoods A and B exist, each with a group.
+
+Steps:
+1. Open `/admin/{neighborhoodAId}/posts/new`, create a uniquely named draft, and publish it from its detail page.
+2. Confirm the post appears in A's post list and the recent posts section on `/admin/{neighborhoodAId}`.
+3. Open `/admin/{neighborhoodBId}/posts` and search for that title; verify no match and a zero matching total.
+4. Open `/admin/{neighborhoodBId}` and verify its post counts and recent posts exclude A's post.
+5. Try A's post ID under B's post detail and edit routes, and under `/dashboard/{groupInBId}/posts/{postFromAId}`.
+6. Create a draft in B and verify it is absent from A's post list and overview.
+7. Repeat neighborhood switching as a neighborhood admin and resident with access to both neighborhoods; confirm the resident cannot read B's draft.
+
+Expected:
+- Each post appears only within its own neighborhood, including for platform admins.
+- Search results, pagination totals, and overview counts exclude foreign posts.
+- A foreign post's content and edit form are not exposed under the wrong neighborhood/group route.
 
 ## Feature: Fundraising
 ### Test Run: Admin Creates Campaign

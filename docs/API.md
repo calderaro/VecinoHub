@@ -105,6 +105,8 @@
 
 ### posts
 - `posts.list` / `posts.get` (query, neighborhood scoped)
+- `posts.list` uses the explicit `neighborhoodId` when supplied, otherwise the active neighborhood; membership checks still apply. This filter also applies to platform admins and to pagination totals.
+- `posts.get` returns `NOT_FOUND` when the post is outside the active neighborhood, including for platform admins. Platform admins retain global reads when no neighborhood context is selected.
 - `posts.create` / `posts.update` / `posts.publish` / `posts.unpublish` / `posts.remove` (mutation, neighborhood admin or platform admin)
 
 ## Input Notes (high level)

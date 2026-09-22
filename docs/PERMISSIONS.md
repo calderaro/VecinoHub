@@ -9,6 +9,7 @@
 - All domain data is neighborhood-scoped.
 - Server-side checks are mandatory in services for both reads and mutations.
 - Client-provided neighborhood identifiers are validated against actor permissions.
+- Post reads honor the selected neighborhood even for platform admins: lists, totals, recent posts, and detail reads must not include another neighborhood's posts. Platform admins can still read across neighborhoods when no neighborhood context is selected.
 - Resident neighborhood access is derived from active group membership in that neighborhood.
 - A standalone active `neighbor` membership is not sufficient resident access if the user has no active groups in that neighborhood.
 
