@@ -145,6 +145,10 @@
 - Funds: due dates, payment dates, and movement dates use the shared date selector and do not shift across browser timezones.
 - Fundraising: campaign due date and wire transfer date use the shared date selector and render in neighborhood time on list/detail screens.
 - Posts: create/edit/publish/unpublish/delete flows work.
+- Posts: as a platform admin, publish in neighborhood A and verify the post appears only in A's list, overview counts, and recent posts; repeat with a draft in neighborhood B. Searching, filtering, and pagination totals remain scoped to the selected neighborhood.
+- Posts: opening A's post under B's admin detail/edit route or resident group route does not expose the post, including for platform admins and users with access to both neighborhoods.
+- Posts: residents still cannot view drafts, and a neighborhood admin cannot bypass scope with an explicit foreign `neighborhoodId` filter.
+- Automated post regression checks: `npm test -- tests/services/posts.test.ts` (isolated in-memory database; no running app required).
 - Profile update (full name/username/language) still works.
 - Neighbor dashboard pages and shared resident components render correctly in both Spanish and English after switching language from `/profile`.
 

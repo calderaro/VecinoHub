@@ -156,6 +156,8 @@
   - `/admin/[neighborhoodId]/events`, `/admin/[neighborhoodId]/events/new`, `/admin/[neighborhoodId]/events/[eventId]`, `/admin/[neighborhoodId]/events/[eventId]/edit`
     - event start/end scheduling uses the shared datetime dialog and port-time rendering on list/detail views.
   - `/admin/[neighborhoodId]/posts`, `/admin/[neighborhoodId]/posts/new`, `/admin/[neighborhoodId]/posts/[postId]`, `/admin/[neighborhoodId]/posts/[postId]/edit`
+    - lists, pagination totals, and detail/edit reads use the route neighborhood, including for platform admins; a post from another neighborhood cannot be opened under this route.
+    - post counts and recent posts on `/admin/[neighborhoodId]` use the same neighborhood scope.
   - `/admin/[neighborhoodId]/users`
     - neighborhood-scoped list of users who hold at least one active group membership in that neighborhood.
     - neighborhood admins and platform admins can open the list and the user detail screen.

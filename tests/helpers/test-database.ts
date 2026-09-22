@@ -25,6 +25,7 @@ mem.public.none(`
   CREATE TYPE group_invite_status AS ENUM ('pending', 'accepted', 'rejected', 'cancelled', 'expired');
   CREATE TYPE group_access_request_status AS ENUM ('pending', 'approved', 'rejected', 'cancelled', 'expired');
   CREATE TYPE poll_status AS ENUM ('draft', 'active', 'closed');
+  CREATE TYPE post_status AS ENUM ('draft', 'published');
   CREATE TYPE contribution_method AS ENUM ('cash', 'wire_transfer');
   CREATE TYPE contribution_status AS ENUM ('submitted', 'confirmed', 'rejected');
   CREATE TYPE campaign_status AS ENUM ('open', 'closed');
@@ -159,6 +160,18 @@ mem.public.none(`
     title text NOT NULL,
     description text,
     status poll_status NOT NULL DEFAULT 'draft',
+    created_by uuid NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+
+  CREATE TABLE posts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    neighborhood_id uuid NOT NULL,
+    title text NOT NULL,
+    content text NOT NULL,
+    status post_status NOT NULL DEFAULT 'draft',
+    published_at timestamptz,
     created_by uuid NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
@@ -516,6 +529,7 @@ export async function resetTestDatabase() {
   await testDb.delete(schema.votes);
   await testDb.delete(schema.pollOptions);
   await testDb.delete(schema.polls);
+  await testDb.delete(schema.posts);
   await testDb.delete(schema.fundraisingContributions);
   await testDb.delete(schema.fundraisingCampaigns);
   await testDb.delete(schema.groupMemberships);
